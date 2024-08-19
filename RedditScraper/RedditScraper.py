@@ -8,7 +8,14 @@ from typing import List
 class RedditScraper:
     """Class for scraping posts, comments, subreddits, etc. from Reddit"""
 
-    def __init__(self, client_id, secret_key, username, password, user_agent):
+    def __init__(
+        self,
+        client_id: str,
+        secret_key: str,
+        username: str,
+        password: str,
+        user_agent: str,
+    ):
         """
         Initialises an instance of the RedditScraper class with the necessary
         authentication details for accessing the Reddit API. This constructor sets up
@@ -16,12 +23,12 @@ class RedditScraper:
         with the access token for future API requests.
 
         Parameters:
-        client_id: The client ID provided by Reddit for API access.
-        secret_key: The secret key provided by Reddit that pairs with the client ID.
-        username: The Reddit account username used for authentication.
-        password: The password corresponding to the Reddit account.
+        client_id: The client ID provided by Reddit for API access
+        secret_key: The secret key provided by Reddit that pairs with the client ID
+        username: The Reddit account username used for authentication
+        password: The password corresponding to the Reddit account
         user_agent: A string identifying the application making the request, typically
-                    formatted as 'appname/version'.
+                    formatted as 'appname/version'
         """
         # Creates an authentication object, which is used to securely pass user
         # credentials to API services
@@ -256,7 +263,7 @@ class RedditScraper:
         return subreddits
 
     def get_comments_from_post(
-        self, sort, subreddit, depth, post_id, limit
+        self, sort: str, subreddit: str, depth: int, post_id: str, limit: int
     ) -> List[RedditComment]:
         """Returns subreddits most relevant to a keyword in all of Reddit
 

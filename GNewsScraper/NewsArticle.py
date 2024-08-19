@@ -1,7 +1,9 @@
 class NewsArticle:
     """Class for storing information about a news article"""
 
-    def __init__(self, title, url, date, publisher, publisher_url):
+    def __init__(
+        self, title: str, url: str, date: str, publisher: str, publisher_url: str
+    ):
         """
         Initialises the NewsArticle object
 

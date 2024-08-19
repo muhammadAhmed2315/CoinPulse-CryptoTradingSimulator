@@ -1,10 +1,11 @@
 import requests
 import urllib.parse
+from typing import List
+from goose3 import Goose
 from bs4 import BeautifulSoup
 from datetime import datetime
 from constants import COUNTRY_CODES
 from NewsArticle import NewsArticle
-from goose3 import Goose
 
 
 class GNewsScraper:
@@ -21,9 +22,9 @@ class GNewsScraper:
 
     def search(
         self,
-        query,
-        country="united_kingdom",
-        max_results=100,
+        query: str,
+        country: str = "united_kingdom",
+        max_results: int = 100,
     ):
         """
         Returns a list of NewsArticle objects, based on the search query and other
@@ -83,7 +84,7 @@ class GNewsScraper:
 
         return articles, date_generated
 
-    def add_excluded_publishers(self, urls):
+    def add_excluded_publishers(self, urls: List[str]):
         """
         Adds each URL specified in the "urls" parameter to the GNewsScraper instance's
         excluded_publishers set
@@ -95,7 +96,7 @@ class GNewsScraper:
         for url in urls:
             self.excluded_publishers.add(url.lower())
 
-    def remove_excluded_publishers(self, urls):
+    def remove_excluded_publishers(self, urls: List[str]):
         """
         Removes each URL specified in the "urls" parameter from the GNewsScraper
         instance's excluded_publishers set
@@ -109,7 +110,7 @@ class GNewsScraper:
             self.excluded_publishers.discard(url.lower())
 
     @staticmethod
-    def convert_date_time(date_time):
+    def convert_date_time(date_time: str):
         """
         Helper method that converts strings in "%a, %d %b %Y %H:%M:%S GMT" format (i.e.,
         the format that the Google News RSS feed uses for date and time) into another
@@ -125,7 +126,7 @@ class GNewsScraper:
         return date_obj.strftime("%d-%m-%Y %H:%M:%S")
 
     @staticmethod
-    def get_article_text(url):
+    def get_article_text(url: str):
         """
         Helper method that extracts and returns the meta description and main content
         of an article from the specified URL.

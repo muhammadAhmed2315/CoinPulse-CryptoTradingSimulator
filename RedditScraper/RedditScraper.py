@@ -6,11 +6,12 @@ from typing import List
 
 
 class RedditScraper:
+    """Class for scraping posts, comments, subreddits, etc. from Reddit"""
 
     def __init__(self, client_id, secret_key, username, password, user_agent):
         """
         Initialises an instance of the RedditScraper class with the necessary
-        authentication details for accessing the Reddit API. This consturcot sets up
+        authentication details for accessing the Reddit API. This constructor sets up
         authentication parameters, retrieves an access token, and prepares the header
         with the access token for future API requests.
 

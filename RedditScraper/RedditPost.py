@@ -12,7 +12,7 @@ class RedditPost:
         url: str,
     ):
         """
-        Intialises the RedditPost object with the required data
+        Intialises the RedditPost object
 
         Parameters:
         title: Post title

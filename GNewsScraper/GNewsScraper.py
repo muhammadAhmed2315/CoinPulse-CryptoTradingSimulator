@@ -9,7 +9,7 @@ from NewsArticle import NewsArticle
 
 
 class GNewsScraper:
-    """Class for scraping news articles from Google News"""
+    """Class for scraping news articles from Google News using Google New's RSS feed"""
 
     def __init__(self):
         """

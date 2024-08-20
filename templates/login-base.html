@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../static/css/login-base.css" />
+    <link rel="stylesheet" href="../static/css/general.css" />
+
+    <title>{% block title %}{% endblock %}</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="form-container">{% block content %}{% endblock %}</div>
+    </div>
+
+    <div id="particles-js"></div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0"></script>
+    <script src="../static/js/login-base.js" defer></script>
+  </body>
+</html>

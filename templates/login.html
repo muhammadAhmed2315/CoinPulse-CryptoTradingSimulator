@@ -1,0 +1,17 @@
+<!-- prettier-ignore -->
+{% extends "login-base.html" %}
+{% block content %}
+<!-- prettier-ignore -->
+<form method="post">
+  {{ form.hidden_tag() }} 
+
+  {{ form.email.label }} {{ form.email }}
+  <br />
+  {{ form.password.label }} {{ form.password }}
+  <br />
+  {{ form.submit() }}
+</form>
+<a href="{{ url_for('login_register.register') }}"
+  >Don't have an account? Sign up</a
+>
+{% endblock %}

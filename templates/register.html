@@ -1,5 +1,5 @@
 <!-- prettier-ignore -->
-{% extends "login-base.html" %}
+{% extends "login-base.html" %} 
 {% block content %}
 <!-- prettier-ignore -->
 <form method="post">
@@ -9,16 +9,19 @@
   <br />
   {{ form.password.label }} {{ form.password }}
   <br />
+  {{ form.pass_confirm.label }} {{ form.pass_confirm }}
+  <br />
   {{ form.submit() }}
 </form>
 <a href="{{ url_for('user_authentication.login_google') }}"
-  >Log in with Google</a
->
-<a href="{{ url_for('user_authentication.login_discord') }}"
-  >Log in with Discord</a
+  >Register with Google</a
 >
 <br />
-<a href="{{ url_for('user_authentication.register') }}"
-  >Don't have an account? Sign up</a
+<a href="{{ url_for('user_authentication.login_discord') }}"
+  >Register with Discord</a
+>
+<br />
+<a href="{{ url_for('user_authentication.login') }}"
+  >Already have an account? Sign in</a
 >
 {% endblock %}

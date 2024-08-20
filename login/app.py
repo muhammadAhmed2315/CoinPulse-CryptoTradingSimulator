@@ -66,15 +66,16 @@ def callback_discord():
     session["oauth2_token"] = token
 
     discord = make_session(token=session.get("oauth2_token"))
-    user_info = jsonify(discord.get(DISCORD_API_BASE_URL + "/users/@me").json())
-    user_email = user_info["user"]["email"]
-    user_id = user_info["user"]["id"]
+    user_info = jsonify(discord.get(DISCORD_API_BASE_URL + "/users/@me").json()).json
+    print(user_info)
+    user_email = user_info["email"]
+    user_id = user_info["id"]
 
     # Check if user already exists in the database
     user = User.query.filter_by(email=user_email).first()
     if not user:
         # Create the user, add to the database and then login
-        user = User(email=user_email, provider="google", provider_id=user_id)
+        user = User(email=user_email, provider="discord", provider_id=user_id)
         db.session.add(user)
         db.session.commit()
 
@@ -114,7 +115,7 @@ def login_google():
         google_client_id, redirect_uri=google_redirect_uri, scope=google_scope
     )
     authorization_url, state = google.authorization_url(
-        google_authorization_base_url, access_type="offline", prompt="select_account"
+        google_authorization_base_url, access_type="offline", prompt=None
     )
     session["oauth_state"] = state
     return redirect(authorization_url)
@@ -171,7 +172,7 @@ def callback_google():
 
 
 # #################### DEFAULT AUTHENTICATION ####################
-@user_authentication.route("/login", methods=["get", "post"])
+@user_authentication.route("/", methods=["get", "post"])
 def login():
     """
     View function to handle login requests. Redirects users who are already logged in to

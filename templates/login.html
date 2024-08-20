@@ -11,7 +11,11 @@
   <br />
   {{ form.submit() }}
 </form>
-<a href="{{ url_for('login_register.register') }}"
+<a href="{{ url_for('user_authentication.login_google') }}"
+  >Log in with Google</a
+>
+<br />
+<a href="{{ url_for('user_authentication.register') }}"
   >Don't have an account? Sign up</a
 >
 {% endblock %}

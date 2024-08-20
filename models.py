@@ -23,12 +23,12 @@ class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.Text, nullable=False, unique=True)
-    password_hash = db.Column(db.Text, nullable=False)
+    password_hash = db.Column(db.Text, nullable=True)
     provider = db.Column(db.Text, nullable=True)
     provider_id = db.Column(db.Text, nullable=True)
     verified = db.Column(Boolean, default=False, nullable=False)
 
-    def __init__(self, email, password, provider=None, provider_id=None):
+    def __init__(self, email, password=None, provider=None, provider_id=None):
         """
         Initialises a new User instance.
 
@@ -40,7 +40,8 @@ class User(db.Model, UserMixin):
             provider_id: The OAuth provider's user identifier (if applicable)
         """
         self.email = email
-        self.password_hash = generate_password_hash(password)
+        if password:
+            self.password_hash = generate_password_hash(password)
         if provider and provider_id:
             self.provider = provider
             self.provider_id = provider_id

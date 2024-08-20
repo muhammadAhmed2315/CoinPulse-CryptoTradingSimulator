@@ -42,7 +42,7 @@ def create_app():
 
     # Initialize login manager
     login_manager.init_app(app)
-    login_manager.login_view = "login_register.login"
+    login_manager.login_view = "user_authentication.login"
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -58,11 +58,11 @@ def create_app():
         return db.session.get(User, int(user_id))
 
     # Import blueprints
-    from login.app import login_register
+    from login.app import user_authentication
     from home.app import home
 
     # Register blueprints
-    app.register_blueprint(login_register)
+    app.register_blueprint(user_authentication)
     app.register_blueprint(home)
 
     # Create database tables

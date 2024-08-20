@@ -5,6 +5,8 @@ from models import User
 
 
 class LoginForm(FlaskForm):
+    """Creates a form for users to log in with their email and password"""
+
     email = StringField(
         "Email",
         render_kw={"placeholder": "john@example.com"},
@@ -19,6 +21,11 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
+    """
+    Creates a form for users to register by entering their email, password, and
+    confirming their password
+    """
+
     email = StringField(
         "Email",
         render_kw={"placeholder": "john@example.com"},

@@ -10,6 +10,16 @@ log = logging.getLogger("werkzeug")
 
 
 def create_app():
+    """
+    Creates an configures an instance of a Flask application.
+
+    Sets up configuration settings for the app and the associated database. Sets up the
+    database and the login manager. Registers blueprints and prepares database tables
+    if necessary.
+
+    Returns:
+        app: Configured Flask application
+    """
     # Initialize Flask app
     app = Flask(__name__)
 
@@ -36,6 +46,15 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
+        """
+        Required user_loader callback for Flask-Login, loads a user from the database.
+
+        Parameters:
+            user_id: The user ID stored in the session
+
+        Returns:
+            User: The user object if found, None otherwise
+        """
         return db.session.get(User, int(user_id))
 
     # Import blueprints

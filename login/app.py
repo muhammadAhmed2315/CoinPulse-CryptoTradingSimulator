@@ -13,6 +13,12 @@ login_register = Blueprint("login_register", __name__)
 
 @login_register.route("/login", methods=["get", "post"])
 def login():
+    """
+    View function to handle login requests. Redirects users who are already logged in to
+    the home page. Handles form submission and validates login credentials. Successfully
+    validated users are redirected to either the home page, or the restricted page
+    they were trying to access.
+    """
     if current_user.is_authenticated:
         return redirect(url_for("home.index"))  # TODO
 
@@ -41,6 +47,13 @@ def login():
 
 @login_register.route("/register", methods=["get", "post"])
 def register():
+    """
+    View function to handle registration requests. Redirects users who are already
+    logged in to the home page. Handles form submission, and validates the input by
+    checking the email is in the correct format, checking against common passwords, and
+    ensuring the password meets the complexity requirements. Register the user and add
+    them to the database if successful, and then redirect them to the home page.
+    """
     if current_user.is_authenticated:
         return redirect(url_for("home.index"))
 
@@ -109,5 +122,9 @@ def register():
 
 @login_register.route("/logout")
 def logout():
+    """
+    View function for logging out the current user and redirecting them to the log in
+    page.
+    """
     logout_user()
     return render_template("register.html", form=RegisterForm())

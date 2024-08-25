@@ -1,0 +1,16 @@
+<!-- prettier-ignore -->
+{% extends "login-base.html" %}
+{% block content %}
+<!-- prettier-ignore -->
+<h3>Account Not Verified</h3>
+<p>
+  Your email address <strong>{{ user_email }}</strong> has not been verified
+  yet.
+</p>
+<p>You need to verify your email in order to access your account.</p>
+<p>
+  Please check your inbox for the verification link or request a new one by
+  clicking the link below.
+</p>
+<p>Resent Verification Email</p>
+{% endblock %}

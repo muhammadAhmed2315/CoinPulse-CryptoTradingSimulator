@@ -1,15 +1,15 @@
 import os
 from models import User
 from home.app import home
+from flask import jsonify
 from extensions import db
 from constants import MOST_COMMON_PASSWORDS
 from requests_oauthlib import OAuth2Session
 from login.forms import LoginForm, RegisterForm
 from validate_email_address import validate_email
 from constants import PASSWORD_ALLOWED_SPECIAL_CHARS
-from flask import render_template, redirect, request, url_for, Blueprint, session
-from flask import jsonify
 from flask_login import login_user, login_required, logout_user, current_user
+from flask import render_template, redirect, request, url_for, Blueprint, session
 
 
 user_authentication = Blueprint("user_authentication", __name__)
@@ -180,25 +180,38 @@ def login():
     validated users are redirected to either the home page, or the restricted page
     they were trying to access.
     """
+    # Redirect user if already logged in
     if current_user.is_authenticated:
         return redirect(url_for("home.index"))
 
     form = LoginForm()
 
+    # Submit form handling
     if form.is_submitted() and form.validate():
+        # Get user info from database
         user = User.query.filter_by(email=form.email.data).first()
 
         if not user:
+            # If user doesn't exist
             form.password.errors.append("Incorrect email or password")
             return render_template("login.html", form=form)
 
+        # If user exists and their password is correct
         if user.check_password(form.password.data):
-            login_user(user)
+            if user.verified == True:
+                # If user is already verified
+                login_user(user)
 
-            if next == None or next[0] != "/":
-                next = url_for("core.index")
+                next = request.args.get("next")
 
-            return redirect(next)
+                if next == None or next[0] != "/":
+                    next = url_for("home.index")
+
+                return redirect(next)
+            else:
+                # If user is not verified
+                # TODO
+                return render_template("verification-sent.html", user_email=user.email)
         else:
             form.password.errors.append("Incorrect email or password")
             return render_template("login.html", form=form)

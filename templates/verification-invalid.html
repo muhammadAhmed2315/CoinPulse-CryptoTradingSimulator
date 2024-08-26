@@ -2,8 +2,8 @@
 {% extends "login-base.html" %}
 {% block content %}
 <!-- prettier-ignore -->
-<h3>Verification Link Expired</h3>
-<p>The verification link for <strong>{{ user_email }}</strong> has expired.</p>
+<h3>Verification Unsuccessful</h3>
+<p>This verification link is either invalid or has already been used.</p>
 <p>Please request a new verification link by clicking the button below.</p>
 <a href="{{url_for('user_authentication.login')}}">Resend Verification Email</a>
 {% endblock %}

@@ -7,8 +7,16 @@
 
   {{ form.email.label }} {{ form.email }}
   <br />
+
   {{ form.password.label }} {{ form.password }}
   <br />
+  <!-- PASSWORD ERROR MESSAGES -->
+  {% for error in form.password.errors %}
+  <div class="invalid-feedback">
+    {{ error }}
+  </div>
+  {% endfor %}
+
   {{ form.submit() }}
 </form>
 <a href="{{ url_for('user_authentication.login_google') }}"

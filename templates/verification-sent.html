@@ -6,5 +6,5 @@
 <p>We've sent a verification link to <strong>{{ user_email }}.</strong></p>
 <p>Click on the link to complete the verification process.</p>
 <p>You might need to <strong>check your spam folder.</strong></p>
-<p>Resend email</p>
+<a href="{{url_for('user_authentication.login')}}">Resend Verification Email</a>
 {% endblock %}

@@ -1,3 +1,26 @@
+import os
+
+DISCORD_OAUTH2_CLIENT_ID = ""
+DISCORD_OAUTH2_CLIENT_SECRET = ""
+DISCORD_API_BASE_URL = os.environ.get("API_BASE_URL", "https://discordapp.com/api")
+DISCORD_AUTHORIZATION_BASE_URL = DISCORD_API_BASE_URL + "/oauth2/authorize"
+DISCORD_TOKEN_URL = DISCORD_API_BASE_URL + "/oauth2/token"
+
+GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_SECRET = ""
+GOOGLE_AUTHORIZATION_BASE_URL = "https://accounts.google.com/o/oauth2/auth"
+GOOGLE_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
+GOOGLE_REDIRECT_URI = "http://127.0.0.1:5000/callback_google"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
+GOOGLE_SCOPE = ["profile", "email"]
+
+MAIL_USERNAME = ""
+MAIL_PASSWORD = ""
+
+TOKEN_GENERATOR_SECRET_KEY = ""
+TOKEN_GENERATOR_SALT = ""
+TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS = 3600
+
 MOST_COMMON_PASSWORDS = [
     "password",
     "123456",

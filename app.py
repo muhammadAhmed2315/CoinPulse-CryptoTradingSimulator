@@ -1,9 +1,12 @@
 import os
 import logging
 from flask import Flask
-from flask_migrate import Migrate
-from extensions import db, login_manager
 from models import User
+from flask_mail import Mail
+from flask_migrate import Migrate
+from constants import MAIL_USERNAME
+from constants import MAIL_PASSWORD
+from extensions import db, login_manager
 
 # Configure logging
 log = logging.getLogger("werkzeug")
@@ -35,6 +38,17 @@ def create_app():
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
             basedir, "data.sqlite"
         )
+
+    # Configure mail
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 465
+    app.config["MAIL_USERNAME"] = MAIL_USERNAME
+    app.config["MAIL_PASSWORD"] = MAIL_PASSWORD
+    app.config["MAIL_USE_TLS"] = False
+    app.config["MAIL_USE_SSL"] = True
+
+    # Initialise Mail object
+    mail_server = Mail(app)
 
     # Initialize database
     db.init_app(app)
@@ -69,11 +83,11 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    return app
+    return app, mail_server
 
 
 # Create the app instance
-app = create_app()
+app, mail_server = create_app()
 
 if __name__ == "__main__":
     app.run()

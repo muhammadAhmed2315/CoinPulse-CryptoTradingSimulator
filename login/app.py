@@ -28,6 +28,8 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_login import login_user, login_required, logout_user, current_user
 from flask import render_template, redirect, request, url_for, Blueprint, session
 from flask_mail import Message
+from login.forms import RequestPasswordResetForm
+from login.forms import PasswordResetForm
 
 # This URLSafeTimedSerializer object will handle generating and verifying tokens
 serializer = URLSafeTimedSerializer(TOKEN_GENERATOR_SECRET_KEY)
@@ -368,6 +370,85 @@ def verify_user(token):
         return render_template("verification-invalid.html")
 
 
+@user_authentication.route("/reset_password/<token>", methods=["get", "post"])
+def reset_password(token):
+    # Verify the token
+    try:
+        data = serializer.loads(
+            token,
+            salt=TOKEN_GENERATOR_SALT,
+            max_age=TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS,
+        )
+    except SignatureExpired:
+        # Token has expired
+        data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
+        return render_template("reset-password-expired.html", user_email=data["email"])
+    except BadSignature:
+        # Token has been corrupted or tampered with or is invalid token
+        return render_template("reset-password-invalid.html")
+
+    # Token is valid
+    user = User.query.filter_by(email=data["email"]).first()
+
+    if user and user.id == data["id"]:
+        # Show password reset form
+        form = PasswordResetForm()
+
+        if form.is_submitted() and form.validate():
+            input_password = form.password.data
+            input_pass_confirm = form.pass_confirm.data
+
+            # Confirm password is not in too common list
+            if input_password.lower() in MOST_COMMON_PASSWORDS:
+                form.password.errors.append(
+                    "This password is too common. Choose a less common password for better security."
+                )
+                return render_template("reset-password.html", form=form)
+
+            # Confirm password is correct format
+            password_errors = []
+            if not any(char.isupper() for char in input_password):
+                password_errors.append(
+                    "Password must include at least one uppercase letter"
+                )
+            if not any(char.islower() for char in input_password):
+                password_errors.append(
+                    "Password must include at least one lowercase character"
+                )
+            if not any(char.isdigit() for char in input_password):
+                password_errors.append("Password must include at least one digit (0-9)")
+            if not any(
+                char in PASSWORD_ALLOWED_SPECIAL_CHARS for char in input_password
+            ):
+                password_errors.append(
+                    "Password must include at least one special character"
+                )
+            if not len(input_password) >= 8:
+                password_errors.append("Password must be at least 8 characters long")
+
+            if password_errors:
+                for error in password_errors:
+                    form.password.errors.append(error)
+                return render_template("reset-password.html", form=form)
+
+            # Check passwords match
+            if input_password != input_pass_confirm:
+                form.password.errors.append("Passwords do not match")
+                form.pass_confirm.errors.append("Passwords do not match")
+                return render_template("reset-password.html", form=form)
+
+            # Update user password in the database
+            user = db.session.get(User, data["id"])
+            user.update_password(input_password)
+            db.session.add(user)
+            db.session.commit()
+
+            return render_template("reset-password-successful.html")
+        return render_template("reset-password.html", form=form)
+    else:
+        return render_template("reset-password-invalid.html")
+
+
 @user_authentication.route("/logout")
 def logout():
     """
@@ -422,3 +503,45 @@ def send_verification_email(user_email, token):
         html=html_body,
     )
     mail_server.send(msg)
+
+
+def send_password_reset_email(user_email, token):
+    from app import mail_server
+
+    html_body = render_template("reset-password-email.html", token=token)
+    msg = Message(
+        subject="Verify Your Email Address for INVESTR",
+        sender="MAIL_DEFAULT_SENDER",
+        recipients=[user_email],
+        html=html_body,
+    )
+    mail_server.send(msg)
+
+
+@user_authentication.route("/forgot_password", methods=["get", "post"])
+def forgot_password():
+    # Redirect user if already logged in
+    if current_user.is_authenticated:
+        return redirect(url_for("home.index"))
+
+    form = RequestPasswordResetForm()
+
+    # Submit form handling
+    if form.is_submitted() and form.validate():
+        input_email = form.email.data
+
+        # Confirm email is valid format
+        if not validate_email(input_email):
+            form.email.errors.append("Email is invalid")
+            return render_template("request-password-reset.html", form=form)
+
+        # If user exists and isn't using OAuth for login
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and not user.provider:
+            token = generate_verification_token(user_email=user.email, user_id=user.id)
+            send_password_reset_email(user_email=user.email, token=token)
+
+        # Redirect user to email sent page
+        return render_template("reset-password-email-sent.html")
+
+    return render_template("request-password-reset.html", form=form)

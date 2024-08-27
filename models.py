@@ -46,6 +46,10 @@ class User(db.Model, UserMixin):
             self.provider = provider
             self.provider_id = provider_id
 
+    def update_password(self, password):
+        if not self.provider and self.provider_id:
+            self.password_hash = generate_password_hash(password)
+
     def check_password(self, password):
         """
         Checks input password against the stored hash

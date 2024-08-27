@@ -38,7 +38,37 @@ class RegisterForm(FlaskForm):
     )
     pass_confirm = PasswordField(
         "Confirm Password",
-        render_kw={"palceholder": "******************"},
+        render_kw={"placeholder": "******************"},
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Sign Up")
+
+
+class RequestPasswordResetForm(FlaskForm):
+    """Creates a form for users to request a password reset link by entering their email"""
+
+    email = StringField(
+        "Email",
+        render_kw={"placeholder": "john@example.com"},
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Send Email")
+
+
+class PasswordResetForm(FlaskForm):
+    """
+    Creates a form for users to reset their password by entering a new password and
+    confirming that new password
+    """
+
+    password = PasswordField(
+        "Password",
+        render_kw={"placeholder": "******************"},
+        validators=[DataRequired()],
+    )
+    pass_confirm = PasswordField(
+        "Confirm Password",
+        render_kw={"placeholder": "******************"},
         validators=[DataRequired()],
     )
     submit = SubmitField("Sign Up")

@@ -90,4 +90,4 @@ def create_app():
 app, mail_server = create_app()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

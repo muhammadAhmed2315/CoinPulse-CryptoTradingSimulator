@@ -219,9 +219,11 @@ def login():
             else:
                 # If user is not verified, resend verification link
                 logout_user()
-                token = generate_verification_token(user.email, user.id)
+                token = generate_token(user.email, user.id)
                 send_verification_email(user.email, token)
-                return render_template("verification-sent.html", user_email=user.email)
+                return render_template(
+                    "verification-link-sent.html", user_email=user.email
+                )
         else:
             form.password.errors.append("Incorrect email or password")
             return render_template("login.html", form=form)
@@ -267,23 +269,7 @@ def register():
             return render_template("register.html", form=form)
 
         # Confirm password is correct format
-        password_errors = []
-        if not any(char.isupper() for char in input_password):
-            password_errors.append(
-                "Password must include at least one uppercase letter"
-            )
-        if not any(char.islower() for char in input_password):
-            password_errors.append(
-                "Password must include at least one lowercase character"
-            )
-        if not any(char.isdigit() for char in input_password):
-            password_errors.append("Password must include at least one digit (0-9)")
-        if not any(char in PASSWORD_ALLOWED_SPECIAL_CHARS for char in input_password):
-            password_errors.append(
-                "Password must include at least one special character"
-            )
-        if not len(input_password) >= 8:
-            password_errors.append("Password must be at least 8 characters long")
+        password_errors = check_password_format(input_password)
 
         if password_errors:
             for error in password_errors:
@@ -307,6 +293,17 @@ def register():
     return render_template("register.html", form=form)
 
 
+@user_authentication.route("/logout")
+def logout():
+    """
+    View function for logging out the current user and redirecting them to the log in
+    page.
+    """
+    logout_user()
+    return render_template("register.html", form=RegisterForm())
+
+
+# #################### VERIFY USER'S EMAIL ####################
 @user_authentication.route("/verification_sent")
 def verification_sent():
     """
@@ -316,9 +313,9 @@ def verification_sent():
     email to them. It then renders a template to display a confirmation message that
     the verification email has been sent.
     """
-    token = generate_verification_token(current_user.email, current_user.id)
+    token = generate_token(current_user.email, current_user.id)
     send_verification_email(current_user.email, token)
-    return render_template("verification-sent.html", user_email=current_user.email)
+    return render_template("verification-link-sent.html", user_email=current_user.email)
 
 
 @user_authentication.route("/verify_user/<token>")
@@ -356,129 +353,20 @@ def verify_user(token):
                 "verification-successful.html", user_email=data["email"]
             )
         else:
-            return render_template("verification-invalid.html")
+            return render_template("verification-token-invalid.html")
 
     except SignatureExpired:
         # Token has expired
         logout_user()
         data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
-        return render_template("verification-expired.html", user_email=data["email"])
-
-    except BadSignature:
-        # Token has been corrupted or tampered with or is invalid token
-        logout_user()
-        return render_template("verification-invalid.html")
-
-
-@user_authentication.route("/reset_password/<token>", methods=["get", "post"])
-def reset_password(token):
-    # Verify the token
-    try:
-        data = serializer.loads(
-            token,
-            salt=TOKEN_GENERATOR_SALT,
-            max_age=TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS,
+        return render_template(
+            "verification-token-expired.html", user_email=data["email"]
         )
-    except SignatureExpired:
-        # Token has expired
-        data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
-        return render_template("reset-password-expired.html", user_email=data["email"])
+
     except BadSignature:
         # Token has been corrupted or tampered with or is invalid token
-        return render_template("reset-password-invalid.html")
-
-    # Token is valid
-    user = User.query.filter_by(email=data["email"]).first()
-
-    if user and user.id == data["id"]:
-        # Show password reset form
-        form = PasswordResetForm()
-
-        if form.is_submitted() and form.validate():
-            input_password = form.password.data
-            input_pass_confirm = form.pass_confirm.data
-
-            # Confirm password is not in too common list
-            if input_password.lower() in MOST_COMMON_PASSWORDS:
-                form.password.errors.append(
-                    "This password is too common. Choose a less common password for better security."
-                )
-                return render_template("reset-password.html", form=form)
-
-            # Confirm password is correct format
-            password_errors = []
-            if not any(char.isupper() for char in input_password):
-                password_errors.append(
-                    "Password must include at least one uppercase letter"
-                )
-            if not any(char.islower() for char in input_password):
-                password_errors.append(
-                    "Password must include at least one lowercase character"
-                )
-            if not any(char.isdigit() for char in input_password):
-                password_errors.append("Password must include at least one digit (0-9)")
-            if not any(
-                char in PASSWORD_ALLOWED_SPECIAL_CHARS for char in input_password
-            ):
-                password_errors.append(
-                    "Password must include at least one special character"
-                )
-            if not len(input_password) >= 8:
-                password_errors.append("Password must be at least 8 characters long")
-
-            if password_errors:
-                for error in password_errors:
-                    form.password.errors.append(error)
-                return render_template("reset-password.html", form=form)
-
-            # Check passwords match
-            if input_password != input_pass_confirm:
-                form.password.errors.append("Passwords do not match")
-                form.pass_confirm.errors.append("Passwords do not match")
-                return render_template("reset-password.html", form=form)
-
-            # Update user password in the database
-            user = db.session.get(User, data["id"])
-            user.update_password(input_password)
-            db.session.add(user)
-            db.session.commit()
-
-            return render_template("reset-password-successful.html")
-        return render_template("reset-password.html", form=form)
-    else:
-        return render_template("reset-password-invalid.html")
-
-
-@user_authentication.route("/logout")
-def logout():
-    """
-    View function for logging out the current user and redirecting them to the log in
-    page.
-    """
-    logout_user()
-    return render_template("register.html", form=RegisterForm())
-
-
-def generate_verification_token(user_email, user_id):
-    """
-    Generates a verification token for a user based on their email and user ID.
-
-    This function encodes the user's email and ID into a token using a serializer with
-    a specified salt. The resulting token can be used for verifying the user' email
-    address.
-
-    Parameters:
-        user_email: Email address of the user for whom the token is being generated.
-        user_id (int): The unique identifier of the user in the database (the primary
-                       key)
-
-    Returns:
-        str: A serialized token that contains the user's email, ID, and the timestamp
-             for when the token was generated, secured with a salt
-    """
-    data_to_encode = {"email": user_email, "id": user_id}
-    token = serializer.dumps(data_to_encode, salt=TOKEN_GENERATOR_SALT)
-    return token
+        logout_user()
+        return render_template("verification-token-invalid.html")
 
 
 def send_verification_email(user_email, token):
@@ -505,17 +393,68 @@ def send_verification_email(user_email, token):
     mail_server.send(msg)
 
 
-def send_password_reset_email(user_email, token):
-    from app import mail_server
+# #################### RESET USER'S PASSWORD ####################
+@user_authentication.route("/reset_password/<token>", methods=["get", "post"])
+def reset_password(token):
+    # Verify the token
+    try:
+        data = serializer.loads(
+            token,
+            salt=TOKEN_GENERATOR_SALT,
+            max_age=TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS,
+        )
+    except SignatureExpired:
+        # Token has expired
+        data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
+        return render_template(
+            "password-reset-token-expired.html", user_email=data["email"]
+        )
+    except BadSignature:
+        # Token has been corrupted or tampered with or is invalid token
+        return render_template("password-reset-token-invalid.html")
 
-    html_body = render_template("reset-password-email.html", token=token)
-    msg = Message(
-        subject="Verify Your Email Address for INVESTR",
-        sender="MAIL_DEFAULT_SENDER",
-        recipients=[user_email],
-        html=html_body,
-    )
-    mail_server.send(msg)
+    # Token is valid
+    user = User.query.filter_by(email=data["email"]).first()
+
+    if user and user.id == data["id"]:
+        # Show password reset form
+        form = PasswordResetForm()
+
+        if form.is_submitted() and form.validate():
+            input_password = form.password.data
+            input_pass_confirm = form.pass_confirm.data
+
+            # Confirm password is not in too common list
+            if input_password.lower() in MOST_COMMON_PASSWORDS:
+                form.password.errors.append(
+                    "This password is too common. Choose a less common password for better security."
+                )
+                return render_template("password-reset-form.html", form=form)
+
+            # Confirm password is correct format
+            password_errors = check_password_format(input_password)
+
+            if password_errors:
+                for error in password_errors:
+                    form.password.errors.append(error)
+                return render_template("password-reset-form.html", form=form)
+
+            # Check passwords match
+            if input_password != input_pass_confirm:
+                form.password.errors.append("Passwords do not match")
+                form.pass_confirm.errors.append("Passwords do not match")
+                return render_template("password-reset-form.html", form=form)
+
+            # Update user password in the database
+            user = db.session.get(User, data["id"])
+            user.update_password(input_password)
+            db.session.add(user)
+            db.session.commit()
+
+            return render_template("password-reset-successful.html")
+        return render_template("password-reset-form.html", form=form)
+    else:
+        return render_template("password-reset-token-invalid.html")
 
 
 @user_authentication.route("/forgot_password", methods=["get", "post"])
@@ -533,15 +472,68 @@ def forgot_password():
         # Confirm email is valid format
         if not validate_email(input_email):
             form.email.errors.append("Email is invalid")
-            return render_template("request-password-reset.html", form=form)
+            return render_template("password-reset-request-email-form.html", form=form)
 
         # If user exists and isn't using OAuth for login
         user = User.query.filter_by(email=form.email.data).first()
         if user and not user.provider:
-            token = generate_verification_token(user_email=user.email, user_id=user.id)
+            token = generate_token(user_email=user.email, user_id=user.id)
             send_password_reset_email(user_email=user.email, token=token)
 
         # Redirect user to email sent page
-        return render_template("reset-password-email-sent.html")
+        return render_template("password-reset-email-successfully-sent.html")
 
-    return render_template("request-password-reset.html", form=form)
+    return render_template("password-reset-request-email-form.html", form=form)
+
+
+def send_password_reset_email(user_email, token):
+    from app import mail_server
+
+    html_body = render_template("password-reset-email.html", token=token)
+    msg = Message(
+        subject="Verify Your Email Address for INVESTR",
+        sender="MAIL_DEFAULT_SENDER",
+        recipients=[user_email],
+        html=html_body,
+    )
+    mail_server.send(msg)
+
+
+# #################### HELPER FUNCTIONS ####################
+def generate_token(user_email, user_id):
+    """
+    Generates a verification token for a user based on their email and user ID.
+
+    This function encodes the user's email and ID into a token using a serializer with
+    a specified salt. The resulting token can be used for verifying the user' email
+    address.
+
+    Parameters:
+        user_email: Email address of the user for whom the token is being generated.
+        user_id (int): The unique identifier of the user in the database (the primary
+                       key)
+
+    Returns:
+        str: A serialized token that contains the user's email, ID, and the timestamp
+             for when the token was generated, secured with a salt
+    """
+    data_to_encode = {"email": user_email, "id": user_id}
+    token = serializer.dumps(data_to_encode, salt=TOKEN_GENERATOR_SALT)
+    return token
+
+
+def check_password_format(input_password):
+    password_errors = []
+
+    if not any(char.isupper() for char in input_password):
+        password_errors.append("Password must include at least one uppercase letter")
+    if not any(char.islower() for char in input_password):
+        password_errors.append("Password must include at least one lowercase character")
+    if not any(char.isdigit() for char in input_password):
+        password_errors.append("Password must include at least one digit (0-9)")
+    if not any(char in PASSWORD_ALLOWED_SPECIAL_CHARS for char in input_password):
+        password_errors.append("Password must include at least one special character")
+    if not len(input_password) >= 8:
+        password_errors.append("Password must be at least 8 characters long")
+
+    return password_errors

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../../static/css/core-base.css" />
     <link rel="stylesheet" href="../../static/css/general.css" />
+    {% block css_links %}{% endblock %}
+
     <title>Document</title>
   </head>
   <body>
@@ -51,5 +53,7 @@
 
       <div class="main-content">{% block content %}{% endblock %}</div>
     </div>
+
+    {% block js_scripts %}{% endblock %}
   </body>
 </html>

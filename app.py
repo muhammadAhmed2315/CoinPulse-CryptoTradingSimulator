@@ -73,11 +73,11 @@ def create_app():
 
     # Import blueprints
     from login.app import user_authentication
-    from home.app import home
+    from core.app import core
 
     # Register blueprints
     app.register_blueprint(user_authentication)
-    app.register_blueprint(home)
+    app.register_blueprint(core)
 
     # Create database tables
     with app.app_context():

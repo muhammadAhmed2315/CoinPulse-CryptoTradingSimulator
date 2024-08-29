@@ -1,7 +1,7 @@
 import os
 import time
 from models import User
-from home.app import home
+from core.app import core
 from flask import jsonify
 from extensions import db
 from constants import GOOGLE_CLIENT_ID
@@ -190,7 +190,7 @@ def login():
     """
     # Redirect user if already logged in
     if current_user.is_authenticated:
-        return redirect(url_for("home.index"))
+        return redirect(url_for("core.index"))
 
     form = LoginForm()
 

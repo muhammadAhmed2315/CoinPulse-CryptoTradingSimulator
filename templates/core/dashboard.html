@@ -1,11 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>WELCOME {{ user_email }}</h1>
-  </body>
-</html>
+<!-- prettier-ignore -->
+{% extends "core/core-base.html" %} 
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/dashboard.css" />
+{% endblock %}
+<!-- prettier-ignore -->
+{% block content %}
+<!-- OPEN POSITIONS SECTION -->
+<div class="open-positions-container">
+  <div class="open-positions-header">
+    <p class="open-positions-header-title">Open Positions</p>
+    <p class="open-positions-header-dropdown">SORT BY DROPDOWN</p>
+    <p class="open-positions-header-new-trade-btn">NEW TRADE BUTTON</p>
+  </div>
+  <div class="open-positions-cards">
+    <div class="open-positions-card">
+      <p>PLACEHOLDER</p>
+    </div>
+
+    <div class="open-positions-card">
+      <p>PLACEHOLDER</p>
+    </div>
+
+    <div class="open-positions-card">
+      <p>PLACEHOLDER</p>
+    </div>
+
+    <div class="open-positions-card">
+      <p>PLACEHOLDER</p>
+    </div>
+
+    <div class="open-positions-card">
+      <p>PLACEHOLDER</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOP CRYPTOCURRENCIES TABLE -->
+<div class="top-coins-container">
+  <div class="top-coins-header">
+    <p>Cryptocurrencies</p>
+    <select class="sort-dropdown-menu" name="cars">
+      <option value="market_cap_asc">Market Cap ↑</option>
+      <option value="market_cap_desc" selected>Market Cap ↓</option>
+      <option value="volume_asc">Volume ↑</option>
+      <option value="volume_desc">Volume ↓</option>
+    </select>
+  </div>
+
+  <p>See the 100 top performing cryptocurrencies</p>
+
+  <div class="table-container">
+    <div class="table">
+      <div class="table-header">
+        <p>#</p>
+        <p>CRYPTOCURRENCY</p>
+        <p>CURRENT PRICE</p>
+        <p>MARKET CAP</p>
+        <p>CHANGE</p>
+        <p>TOTAL VOLUME</p>
+      </div>
+    </div>
+    <div class="pagination-buttons-container">
+      <p class="pagination-button pagination-button--previous hidden">
+        PREVIOUS
+      </p>
+      <p class="pagination-button pagination-button--next">NEXT</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore -->
+{% block js_scripts %}
+<script>
+  const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
+</script>
+<script src="../../static/js/dashboard.js"></script>
+{% endblock %}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../static/css/core-base.css" />
+    <link rel="stylesheet" href="../../static/css/general.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="sidebar">
+      <!-- LOGO -->
+      <img class="logo" src="../../static/img/logo.svg" />
+
+      <!-- NAVIGATION LINKS -->
+      <div class="sidebar-item">
+        <img class="sidebar-icon" src="../../static/img/icons/home.svg" />
+        <a href="#">Home</a>
+      </div>
+      <div class="sidebar-item">
+        <img class="sidebar-icon" src="../../static/img/icons/sliders.svg" />
+        <a href="#">My Trades</a>
+      </div>
+      <div class="sidebar-item">
+        <img class="sidebar-icon" src="../../static/img/icons/line-chart.svg" />
+        <a href="#">Cryptocurrencies</a>
+      </div>
+      <div class="sidebar-item">
+        <img class="sidebar-icon" src="../../static/img/icons/fire.svg" />
+        <a href="#">News</a>
+      </div>
+      <div class="sidebar-item">
+        <img
+          class="sidebar-icon"
+          src="../../static/img/icons/thunderbolt.svg"
+        />
+        <a href="#">Reviews</a>
+      </div>
+      <div class="sidebar-item">
+        <img class="sidebar-icon" src="../../static/img/icons/experiment.svg" />
+        <a href="#">Guides</a>
+      </div>
+    </div>
+
+    <!-- MAIN SECTION OF THE PAGE -->
+    <div class="main">
+      <!-- PORTFOLIO VALUE HEADER -->
+      <header>
+        <div class="header-info-container"><h1>PORFOLIO $1,000,000</h1></div>
+      </header>
+
+      <div class="main-content">{% block content %}{% endblock %}</div>
+    </div>
+  </body>
+</html>

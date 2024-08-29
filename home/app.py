@@ -8,4 +8,4 @@ home = Blueprint("home", __name__)
 @login_required
 def index():
     user_email = current_user.email
-    return render_template("home.html", user_email=user_email)
+    return render_template("core/dashboard.html", user_email=user_email)

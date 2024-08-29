@@ -202,7 +202,7 @@ def login():
         if not user:
             # If user doesn't exist
             form.password.errors.append("Incorrect email or password")
-            return render_template("login.html", form=form)
+            return render_template("login/login.html", form=form)
 
         # If user exists and their password is correct
         if user.check_password(form.password.data):
@@ -222,13 +222,14 @@ def login():
                 token = generate_token(user.email, user.id)
                 send_verification_email(user.email, token)
                 return render_template(
-                    "verification-link-sent.html", user_email=user.email
+                    "emailVerification/verification-link-sent.html",
+                    user_email=user.email,
                 )
         else:
             form.password.errors.append("Incorrect email or password")
-            return render_template("login.html", form=form)
+            return render_template("login/login.html", form=form)
 
-    return render_template("login.html", form=form)
+    return render_template("login/login.html", form=form)
 
 
 @user_authentication.route("/register", methods=["get", "post"])
@@ -253,20 +254,20 @@ def register():
         # Confirm email is valid format
         if not validate_email(input_email):
             form.email.errors.append("Email is invalid")
-            return render_template("register.html", form=form)
+            return render_template("login/register.html", form=form)
 
         # Confirm email is not already in use
         user = User.query.filter_by(email=input_email).first()
         if user:
             form.email.errors.append("Email is already registered")
-            return render_template("register.html", form=form)
+            return render_template("login/register.html", form=form)
 
         # Confirm password is not in too common list
         if input_password.lower() in MOST_COMMON_PASSWORDS:
             form.password.errors.append(
                 "This password is too common. Choose a less common password for better security."
             )
-            return render_template("register.html", form=form)
+            return render_template("login/register.html", form=form)
 
         # Confirm password is correct format
         password_errors = check_password_format(input_password)
@@ -274,13 +275,13 @@ def register():
         if password_errors:
             for error in password_errors:
                 form.password.errors.append(error)
-            return render_template("register.html", form=form)
+            return render_template("login/register.html", form=form)
 
         # Confirm passwords match
         if input_password != input_pass_confirm:
             form.password.errors.append("Passwords do not match")
             form.pass_confirm.errors.append("Passwords do not match")
-            return render_template("register.html", form=form)
+            return render_template("login/register.html", form=form)
 
         # Save user information to database and log them in
         user = User(email=input_email, password=input_password)
@@ -290,7 +291,7 @@ def register():
 
         # Redirect user to "You need to verify your email" page
         return redirect(url_for("user_authentication.verification_sent"))
-    return render_template("register.html", form=form)
+    return render_template("login/register.html", form=form)
 
 
 @user_authentication.route("/logout")
@@ -300,7 +301,7 @@ def logout():
     page.
     """
     logout_user()
-    return render_template("register.html", form=RegisterForm())
+    return render_template("login/register.html", form=RegisterForm())
 
 
 # #################### VERIFY USER'S EMAIL ####################
@@ -315,7 +316,9 @@ def verification_sent():
     """
     token = generate_token(current_user.email, current_user.id)
     send_verification_email(current_user.email, token)
-    return render_template("verification-link-sent.html", user_email=current_user.email)
+    return render_template(
+        "emailVerification/verification-link-sent.html", user_email=current_user.email
+    )
 
 
 @user_authentication.route("/verify_user/<token>")
@@ -350,7 +353,8 @@ def verify_user(token):
             db.session.add(user)
             db.session.commit()
             return render_template(
-                "verification-successful.html", user_email=data["email"]
+                "emailVerification/verification-successful.html",
+                user_email=data["email"],
             )
         else:
             return render_template("verification-token-invalid.html")
@@ -360,13 +364,14 @@ def verify_user(token):
         logout_user()
         data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
         return render_template(
-            "verification-token-expired.html", user_email=data["email"]
+            "emailVerification/verification-token-expired.html",
+            user_email=data["email"],
         )
 
     except BadSignature:
         # Token has been corrupted or tampered with or is invalid token
         logout_user()
-        return render_template("verification-token-invalid.html")
+        return render_template("emailVerification/verification-token-invalid.html")
 
 
 def send_verification_email(user_email, token):
@@ -383,7 +388,9 @@ def send_verification_email(user_email, token):
     """
     from app import mail_server
 
-    html_body = render_template("verification-email.html", token=token)
+    html_body = render_template(
+        "emailVerification/verification-email.html", token=token
+    )
     msg = Message(
         subject="Verify Your Email Address for INVESTR",
         sender="MAIL_DEFAULT_SENDER",
@@ -407,11 +414,11 @@ def reset_password(token):
         # Token has expired
         data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
         return render_template(
-            "password-reset-token-expired.html", user_email=data["email"]
+            "passwordReset/password-reset-token-expired.html", user_email=data["email"]
         )
     except BadSignature:
         # Token has been corrupted or tampered with or is invalid token
-        return render_template("password-reset-token-invalid.html")
+        return render_template("passwordReset/password-reset-token-invalid.html")
 
     # Token is valid
     user = User.query.filter_by(email=data["email"]).first()
@@ -429,7 +436,9 @@ def reset_password(token):
                 form.password.errors.append(
                     "This password is too common. Choose a less common password for better security."
                 )
-                return render_template("password-reset-form.html", form=form)
+                return render_template(
+                    "passwordReset/password-reset-form.html", form=form
+                )
 
             # Confirm password is correct format
             password_errors = check_password_format(input_password)
@@ -437,13 +446,17 @@ def reset_password(token):
             if password_errors:
                 for error in password_errors:
                     form.password.errors.append(error)
-                return render_template("password-reset-form.html", form=form)
+                return render_template(
+                    "passwordReset/password-reset-form.html", form=form
+                )
 
             # Check passwords match
             if input_password != input_pass_confirm:
                 form.password.errors.append("Passwords do not match")
                 form.pass_confirm.errors.append("Passwords do not match")
-                return render_template("password-reset-form.html", form=form)
+                return render_template(
+                    "passwordReset/password-reset-form.html", form=form
+                )
 
             # Update user password in the database
             user = db.session.get(User, data["id"])
@@ -451,10 +464,10 @@ def reset_password(token):
             db.session.add(user)
             db.session.commit()
 
-            return render_template("password-reset-successful.html")
-        return render_template("password-reset-form.html", form=form)
+            return render_template("passwordReset/password-reset-successful.html")
+        return render_template("passwordReset/password-reset-form.html", form=form)
     else:
-        return render_template("password-reset-token-invalid.html")
+        return render_template("passwordReset/password-reset-token-invalid.html")
 
 
 @user_authentication.route("/forgot_password", methods=["get", "post"])
@@ -472,7 +485,9 @@ def forgot_password():
         # Confirm email is valid format
         if not validate_email(input_email):
             form.email.errors.append("Email is invalid")
-            return render_template("password-reset-request-email-form.html", form=form)
+            return render_template(
+                "passwordReset/password-reset-request-email-form.html", form=form
+            )
 
         # If user exists and isn't using OAuth for login
         user = User.query.filter_by(email=form.email.data).first()
@@ -481,15 +496,19 @@ def forgot_password():
             send_password_reset_email(user_email=user.email, token=token)
 
         # Redirect user to email sent page
-        return render_template("password-reset-email-successfully-sent.html")
+        return render_template(
+            "passwordReset/password-reset-email-successfully-sent.html"
+        )
 
-    return render_template("password-reset-request-email-form.html", form=form)
+    return render_template(
+        "passwordReset/password-reset-request-email-form.html", form=form
+    )
 
 
 def send_password_reset_email(user_email, token):
     from app import mail_server
 
-    html_body = render_template("password-reset-email.html", token=token)
+    html_body = render_template("passwordReset/password-reset-email.html", token=token)
     msg = Message(
         subject="Verify Your Email Address for INVESTR",
         sender="MAIL_DEFAULT_SENDER",

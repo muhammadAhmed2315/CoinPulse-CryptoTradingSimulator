@@ -2,7 +2,6 @@ html,
 body {
   height: 100%;
   width: 100%;
-  box-sizing: border-box;
 }
 
 #particles-js {
@@ -12,7 +11,7 @@ body {
   top: 0;
   left: 0;
   z-index: -1;
-  background-color: #000000;
+  background: linear-gradient(180deg, #545490 0%, #8282c4 100%);
 }
 
 .main {

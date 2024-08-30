@@ -2,6 +2,8 @@ from extensions import db
 from sqlalchemy import Boolean
 from flask_login import UserMixin, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class User(db.Model, UserMixin):
@@ -21,7 +23,7 @@ class User(db.Model, UserMixin):
 
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = db.Column(db.Text, nullable=False, unique=True)
     password_hash = db.Column(db.Text, nullable=True)
     provider = db.Column(db.Text, nullable=True)

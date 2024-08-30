@@ -96,7 +96,7 @@ def callback_discord():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for("home.index"))
+    return redirect(url_for("core.index"))
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
@@ -176,7 +176,7 @@ def callback_google():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for("home.index"))
+    return redirect(url_for("core.index"))
 
 
 # #################### DEFAULT AUTHENTICATION ####################
@@ -213,7 +213,7 @@ def login():
                 next = request.args.get("next")
 
                 if next == None or next[0] != "/":
-                    next = url_for("home.index")
+                    next = url_for("core.index")
 
                 return redirect(next)
             else:
@@ -242,7 +242,7 @@ def register():
     database if successful, and then redirect them to the home page.
     """
     if current_user.is_authenticated:
-        return redirect(url_for("home.index"))
+        return redirect(url_for("core.index"))
 
     form = RegisterForm()
 
@@ -348,7 +348,7 @@ def verify_user(token):
 
         user = User.query.filter_by(email=data["email"]).first()
         # Token is valid and matches data
-        if user and user.id == data["id"] and not user.verified:
+        if user and str(user.id) == data["id"] and not user.verified:
             user.verified = True
             db.session.add(user)
             db.session.commit()
@@ -357,7 +357,7 @@ def verify_user(token):
                 user_email=data["email"],
             )
         else:
-            return render_template("verification-token-invalid.html")
+            return render_template("emailVerification/verification-token-invalid.html")
 
     except SignatureExpired:
         # Token has expired
@@ -474,7 +474,7 @@ def reset_password(token):
 def forgot_password():
     # Redirect user if already logged in
     if current_user.is_authenticated:
-        return redirect(url_for("home.index"))
+        return redirect(url_for("core.index"))
 
     form = RequestPasswordResetForm()
 
@@ -536,7 +536,7 @@ def generate_token(user_email, user_id):
         str: A serialized token that contains the user's email, ID, and the timestamp
              for when the token was generated, secured with a salt
     """
-    data_to_encode = {"email": user_email, "id": user_id}
+    data_to_encode = {"email": user_email, "id": str(user_id)}
     token = serializer.dumps(data_to_encode, salt=TOKEN_GENERATOR_SALT)
     return token
 

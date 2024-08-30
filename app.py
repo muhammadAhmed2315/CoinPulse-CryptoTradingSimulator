@@ -7,6 +7,8 @@ from flask_migrate import Migrate
 from constants import MAIL_USERNAME
 from constants import MAIL_PASSWORD
 from extensions import db, login_manager
+import uuid
+from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
 
 # Configure logging
 log = logging.getLogger("werkzeug")
@@ -29,15 +31,9 @@ def create_app():
     # Configure app
     app.config["SECRET_KEY"] = "mysecretkey"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    if os.environ.get("DATABASE_URL"):
-        app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL").replace(
-            "postgres://", "postgresql://"
-        )
-    else:
-        basedir = os.path.abspath(os.path.dirname(__file__))
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-            basedir, "data.sqlite"
-        )
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"postgresql://{POSTGRESQL_USERNAME}:{POSTGRESQL_PASSWORD}@localhost/cryptotradingsimulator"
+    )
 
     # Configure mail
     app.config["MAIL_SERVER"] = "smtp.gmail.com"
@@ -69,7 +65,8 @@ def create_app():
         Returns:
             User: The user object if found, None otherwise
         """
-        return db.session.get(User, int(user_id))
+        uid = uuid.UUID(user_id, version=4)
+        return db.session.get(User, uid)
 
     # Import blueprints
     from login.app import user_authentication

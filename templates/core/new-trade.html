@@ -1,0 +1,95 @@
+<div class="new-trade-sidebar">
+  <!-- NEW TRADE SIDEBAR TITLE AND CLOSE BUTTON -->
+  <div class="nts-header">
+    <h1 class="nts-header__title">Make a trade</h1>
+    <img class="nts-header__close-btn" src="../../static/img/icons/close.svg" />
+  </div>
+
+  <!-- NEW TRADE SIDEBAR SEARCH BAR -->
+  <div class="nts-search-box">
+    <input
+      class="nts-search-box__input"
+      type="search"
+      placeholder="Search..."
+    />
+    <div class="nts-search-box__results"></div>
+  </div>
+
+  <!-- NEW TRADE SIDEBAR COIN AND BALANCE INFO CONTAINER -->
+  <div class="nts-trade-info">
+    <!-- COIN INFO -->
+    <div class="nts-trade-info__coin">
+      <div class="header">
+        <img class="coin-image" src="" />
+        <p class="coin-name">BITCOIN</p>
+        <p class="coin-divider">/</p>
+        <p class="coin-ticker">BTC</p>
+      </div>
+      <h1 class="coin-price-change">PERCENTAGE CHANGE</h1>
+      <h1 class="coin-price">PRICE</h1>
+    </div>
+
+    <!-- BALANCE INFO -->
+    <div class="nts-trade-info__balance">
+      <p class="title">Your Balance</p>
+      <div>
+        <img src="../../static/img/dollar_symbol.svg" height="21" />
+        <p>$1,000,000.00</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW TRADE SIDEBAR BUY + SELL BUTTONS -->
+  <div class="nts-transaction-btns">
+    <h1 class="nts-transaction-btns__btn nts-transaction-btns__btn--buy transaction-btn-active">
+      Buy
+    </h1>
+    <h1 class="nts-transaction-btns__btn nts-transaction-btns__btn--sell">
+      Sell
+    </h1>
+  </div>
+
+  <!-- NEW TRADE SIDEBAR QUANTITY INPUT BOXES -->
+  <div class="nts-quantity">
+    <div class="nts-quantity__box nts-quantity__box--dollars">
+      <p>Dollars</p>
+      <div class="input-box input-box--dollars">
+        <img src="../../static/img/dollar_symbol.svg" />
+        <input class="input-box-active" type="text" placeholder="0.00" />
+      </div>
+    </div>
+
+    <div class="nts-quantity__box nts-quantity__box--crypto">
+      <p>Crypto</p>
+      <div class="input-box input-box--crypto">
+        <img src="" />
+        <input type="text" placeholder="0.00" />
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW TRADE SHARE ON TIMELINE TOGGLE SWITCH -->
+   <div class="share-timeline-switch-container">
+    <p>Share On Timeline</p>
+    <label class="share-timeline-switch">
+      <input type="checkbox">
+      <span class="share-timeline-switch__slider"></span>
+    </label>
+   </div>
+    
+    <!-- NEW TRADE SIDEBAR COMMENT CONTAINER -->
+    <div class="nts-comment">
+      <input
+        class="nts-comment__input"
+        type="text"
+        placeholder="Let others know more about your trade..."
+      />
+    </div>
+
+    <!-- NEW TRADE SIDEBAR "PLACE BUY ORDER" BUTTON -->
+    <div class="nts-place-order-btn-container">
+      <p class="nts-place-order-btn">PLACE BUY ORDER</p>
+    </div>
+  </div>
+  <div class="new-trade-sidebar-overlay"></div>
+</div>

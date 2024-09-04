@@ -1,0 +1,332 @@
+/* ******************** NEW TRADE SIDEBAR ******************** */
+.new-trade-sidebar {
+  width: 58.4rem;
+  height: 69.6rem;
+  position: fixed;
+  right: -100%;
+  padding: 3.2rem;
+  top: 0;
+  background: #ffffff;
+  color: #000000;
+  transition: right 0.3s;
+  z-index: 100;
+  top: 50%; /* Position at 50% of the viewport height */
+  transform: translateY(-50%);
+}
+
+/* *************** HEADER *************** */
+.nts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nts-header__close-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.nts-header__close-btn {
+  cursor: pointer;
+  height: 2.8rem;
+  width: 2.8rem;
+}
+
+.new-trade-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  display: none; /* Hidden initially */
+  z-index: 1; /* Below the sidebar but above other content */
+}
+
+/* *************** SEARCH BAR *************** */
+
+.nts-search-box {
+  position: relative;
+  width: 300px;
+  margin: auto;
+}
+
+.nts-search-box__input {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.nts-search-box__results {
+  position: absolute;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  display: none; /* Hidden by default */
+  max-height: 400px; /* This should be adjusted to fit the height of 10 items */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.nts-search-box__results .result-item {
+  padding: 10px;
+  cursor: pointer;
+  border-top: 1px solid #ccc;
+}
+
+.nts-search-box__results .result-item:first-child {
+  border-top: none;
+}
+
+.nts-search-box__results.result-item:hover {
+  background-color: #f9f9f9;
+}
+
+/* *************** CRYPTO + BALANCE INFO (TRADE INFO) *************** */
+.nts-trade-info {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ********** CRYPTO INFO ********** */
+.nts-trade-info__coin {
+  /* border-right: 1px solid #dee2e6; TODO */
+}
+
+.nts-trade-info__coin .header {
+  display: flex;
+  align-items: center;
+}
+
+.nts-trade-info__coin .header .coin-image {
+  height: 2.1rem;
+  width: 2.1rem;
+}
+
+.nts-trade-info__coin .header p {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #343a40;
+}
+
+.nts-trade-info__coin .coin-price-change {
+  font-size: 3.2rem;
+  font-weight: 500;
+}
+
+.nts-trade-info__coin .coin-price {
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #828282;
+}
+
+/* ********** BALANCE INFO ********** */
+.nts-trade-info__balance {
+}
+
+.nts-trade-info__balance .title {
+  font-size: 1.8rem;
+  color: #212529;
+}
+
+.nts-trade-info__balance div {
+  display: flex;
+  align-items: center;
+}
+
+.nts-trade-info__balance div img {
+}
+
+.nts-trade-info__balance div p {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #343a40;
+}
+
+/* *************** TRANSACTION BUTTONS *************** */
+.nts-transaction-btns {
+  display: flex;
+  justify-content: space-around;
+}
+
+.nts-transaction-btns__btn {
+  width: 25.4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+  background-color: #dddde9;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* .nts-transaction-btns__btn--buy,
+.nts-transaction-btns__btn--sell {
+  background-color: #000000;
+  color: #ffffff;
+} */
+
+.nts-transaction-btns__btn--buy:hover,
+.nts-transaction-btns__btn--sell:hover {
+  cursor: pointer;
+  color: #212529;
+}
+
+.transaction-btn-active {
+  background-color: #000000;
+  color: #ffffff !important;
+}
+
+/* *************** TRADE QUANTITY INPUTS *************** */
+.nts-quantity {
+  height: 12.6rem;
+  width: 50.3rem;
+  background-color: #f5f5fa;
+  display: flex;
+  padding: 1.6rem;
+  border-radius: 8px;
+}
+
+.nts-quantity__box p {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #9696bb;
+}
+
+.nts-quantity__box .input-box {
+  background-color: #e9ecef;
+  border: 1px solid #f0f0ef;
+  height: 4rem;
+  width: 24rem;
+  border-radius: 20px;
+  color: #000000;
+  display: flex;
+  align-items: center;
+}
+
+.nts-quantity__box .input-box input,
+.nts-quantity__box .input-box input::placeholder {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #000000;
+  border: none;
+  background-color: #e9ecef;
+}
+
+.nts-quantity__box .input-box input:focus {
+  outline: none;
+}
+
+.nts-quantity__box .input-box img {
+  height: 2.6rem;
+  width: 2.6rem;
+}
+
+/* *************** SHARE ON TIMELINE TOGGLE SWITCH *************** */
+.share-timeline-switch-container {
+  display: flex;
+  align-items: center;
+}
+
+.share-timeline-switch-container p {
+  font-size: 1.8rem;
+  color: #212529;
+}
+
+/* ********** ACTUAL TOGGLE CODE ********** */
+.share-timeline-switch {
+  position: relative;
+  display: inline-block;
+  width: 5rem;
+  height: 2.8rem;
+}
+
+.share-timeline-switch:hover,
+.share-timeline-switch input:hover,
+.share-timeline-switch span:hover {
+  cursor: default;
+}
+
+.share-timeline-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.share-timeline-switch__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.share-timeline-switch__slider:before {
+  position: absolute;
+  content: "";
+  height: 2rem;
+  width: 2rem;
+  left: 5px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+
+.share-timeline-switch input:checked + .share-timeline-switch__slider {
+  background-color: #17c671;
+}
+
+.share-timeline-switch input:checked + .share-timeline-switch__slider:before {
+  transform: translateX(20px);
+}
+
+/* *************** COMMENT *************** */
+.nts-comment {
+  height: 10.8rem;
+  width: 51.8rem;
+  padding: 1.6rem;
+  border: 1px solid #f0f0ef;
+  border-radius: 8px;
+}
+
+.nts-comment__input {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+.nts-comment__input::placeholder {
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.nts-comment__input:focus {
+  outline: none;
+}
+
+/* *************** PLACE BUY ORDER BUTTON *************** */
+.nts-place-order-btn-container {
+  display: flex;
+  justify-content: end;
+}
+
+.nts-place-order-btn {
+  background-color: #17c671;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 0.8rem 3.2rem;
+  text-align: center;
+}
+
+.nts-place-order-btn:hover {
+  cursor: pointer;
+  background-color: #0069d9;
+}

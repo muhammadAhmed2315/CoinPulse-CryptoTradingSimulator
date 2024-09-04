@@ -1,0 +1,76 @@
+/* ******************** TOP COINS TABLE SECTION ******************** */
+.top-coins-container {
+  padding: 4.8rem;
+}
+
+.top-coins-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.top-coins-title {
+  color: #212529;
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.top-coins-subtitle {
+  color: #828282;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.table-header,
+.table-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+}
+
+.table-header {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #9696bb;
+}
+
+.table-row {
+  padding: 1rem;
+  background-color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.coin-image {
+  height: 3.2rem;
+  width: 3.2rem;
+}
+
+.coin-name,
+.coin-price-change {
+  font-weight: 700;
+}
+
+.coin-name,
+.coin-price,
+.coin-market-cap,
+.coin-price-change,
+.coin-volume {
+  font-size: 1.6rem;
+}
+
+.pagination-buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.pagination-button {
+  background-color: red;
+  padding: 1rem;
+  color: white;
+}
+
+.pagination-button:hover {
+  cursor: pointer;
+}

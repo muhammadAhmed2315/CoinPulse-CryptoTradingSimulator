@@ -1,3 +1,23 @@
+/* ******************** MESSAGE POPUP SECTION ******************** */
+.message-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: auto;
+  padding: 10px;
+  background-color: #ff3b3b;
+  color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: none; /* Hidden by default */
+  z-index: 1000;
+}
+
+.message-popup-text {
+  margin: 0;
+  padding-right: 10px;
+}
+
 /* ******************** OPEN POSITIONS SECTION ******************** */
 .open-positions-container {
   padding: 4.8rem;
@@ -6,11 +26,30 @@
 .open-positions-header {
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 4.8rem;
+  margin-bottom: 2.4rem;
 }
 
-.open-positions-header-new-trade-btn {
+.open-positions-header-title {
+  font-size: 2rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+.new-trade-btn {
   margin-left: auto;
+  background-color: #17c671;
+  color: white;
+  padding: 0.8rem 3.2rem;
+  border-radius: 5px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  border-radius: 20px;
+}
+
+.new-trade-btn:hover {
+  cursor: pointer;
 }
 
 .open-positions-cards {
@@ -23,44 +62,10 @@
   height: 10rem;
   width: 25.4rem;
   background-color: #ffffff;
+  border-radius: 10px;
+  padding: 1.6rem;
 }
 
-/* ******************** TOP COINS TABLE SECTION ******************** */
-.top-coins-container {
-  padding: 4.8rem;
-}
-
-.top-coins-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.table-header,
-.table-row {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  align-items: center;
-}
-
-.coin-image {
-  height: 3.2rem;
-  width: 3.2rem;
-}
-
-.pagination-buttons-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.pagination-button {
-  background-color: red;
-  padding: 1rem;
-  color: white;
-}
-
-.pagination-button:hover {
-  cursor: pointer;
+.open-positions-card:hover {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
 }

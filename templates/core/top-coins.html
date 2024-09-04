@@ -1,0 +1,54 @@
+<!-- prettier-ignore -->
+{% extends "core/core-base.html" %} 
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/general.css" />
+<link rel="stylesheet" href="../../static/css/top-coins.css" />
+{% endblock %}
+<!-- prettier-ignore -->
+{% block content %}
+<!-- TOP CRYPTOCURRENCIES TABLE -->
+<div class="top-coins-container">
+  <div class="top-coins-header">
+    <!-- TITLE -->
+    <p class="top-coins-title">Cryptocurrencies</p>
+
+    <!-- SORT BY DROPDOWN -->
+    <select class="sort-dropdown-menu" name="cars">
+      <option value="market_cap_asc">Market Cap ↑</option>
+      <option value="market_cap_desc" selected>Market Cap ↓</option>
+      <option value="volume_asc">Volume ↑</option>
+      <option value="volume_desc">Volume ↓</option>
+    </select>
+  </div>
+
+  <!-- TITLE  -->
+  <p class="top-coins-subtitle">See the 100 top performing cryptocurrencies</p>
+
+  <div class="table-container">
+    <div class="table">
+      <div class="table-header">
+        <p>#</p>
+        <p>CRYPTOCURRENCY</p>
+        <p>CURRENT PRICE</p>
+        <p>MARKET CAP</p>
+        <p>CHANGE</p>
+        <p>TOTAL VOLUME</p>
+        <p>PRICE GRAPH (7 DAYS)</p>
+      </div>
+    </div>
+    <div class="pagination-buttons-container">
+      <p class="pagination-button pagination-button--previous hidden">
+        PREVIOUS
+      </p>
+      <p class="pagination-button pagination-button--next">NEXT</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore -->
+{% block js_scripts %}
+<script>
+  const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
+</script>
+<script type="module" src="../../static/js/top-coins.js"></script>
+{% endblock %}

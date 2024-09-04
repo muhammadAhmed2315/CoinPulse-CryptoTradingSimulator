@@ -1,6 +1,6 @@
 import os
 import time
-from models import User
+from models import User, Wallet
 from core.app import core
 from flask import jsonify
 from extensions import db
@@ -96,7 +96,7 @@ def callback_discord():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for("core.index"))
+    return redirect(url_for("core.dashboard"))
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
@@ -176,7 +176,7 @@ def callback_google():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for("core.index"))
+    return redirect(url_for("core.dashboard"))
 
 
 # #################### DEFAULT AUTHENTICATION ####################
@@ -190,7 +190,7 @@ def login():
     """
     # Redirect user if already logged in
     if current_user.is_authenticated:
-        return redirect(url_for("core.index"))
+        return redirect(url_for("core.dashboard"))
 
     form = LoginForm()
 
@@ -213,7 +213,7 @@ def login():
                 next = request.args.get("next")
 
                 if next == None or next[0] != "/":
-                    next = url_for("core.index")
+                    next = url_for("core.dashboard")
 
                 return redirect(next)
             else:
@@ -242,7 +242,7 @@ def register():
     database if successful, and then redirect them to the home page.
     """
     if current_user.is_authenticated:
-        return redirect(url_for("core.index"))
+        return redirect(url_for("core.dashboard"))
 
     form = RegisterForm()
 
@@ -283,10 +283,15 @@ def register():
             form.pass_confirm.errors.append("Passwords do not match")
             return render_template("login/register.html", form=form)
 
-        # Save user information to database and log them in
+        # Save user information to database, create a wallet for them, and log them in
         user = User(email=input_email, password=input_password)
         db.session.add(user)
         db.session.commit()
+
+        wallet = Wallet(user.id)
+        db.session.add(wallet)
+        db.session.commit()
+
         login_user(user)
 
         # Redirect user to "You need to verify your email" page
@@ -474,7 +479,7 @@ def reset_password(token):
 def forgot_password():
     # Redirect user if already logged in
     if current_user.is_authenticated:
-        return redirect(url_for("core.index"))
+        return redirect(url_for("core.dashboard"))
 
     form = RequestPasswordResetForm()
 

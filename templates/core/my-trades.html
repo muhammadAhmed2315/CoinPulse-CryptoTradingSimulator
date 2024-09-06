@@ -1,0 +1,42 @@
+<!-- prettier-ignore -->
+{% extends "core/core-base.html" %} 
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/general.css" />
+<link rel="stylesheet" href="../../static/css/my-trades.css" />
+{% endblock %}
+<!-- prettier-ignore -->
+{% block content %}
+<!-- OPEN POSITIONS SECTION -->
+<div class="my-trades-container">
+  <div class="header">
+    <p class="header__title">My Trades</p>
+    <a href="" class="header__new-trade-btn">New Trade</a>
+  </div>
+
+  <div class="my-trades-table">
+    <div class="my-trades-table__header">
+      <p>#</p>
+      <p class="my-trades-table__header-order-type">Order Type</p>
+      <p class="my-trades-table__header-coin">Coin</p>
+      <p class="my-trades-table__header-quantity">Quantity</p>
+      <p class="my-trades-table__header-price">Price</p>
+      <p class="my-trades-table__header-time">Time ↓</p>
+      <p class="my-trades-table__header-total-value">Total Value</p>
+      <p class="my-trades-table__header-comment">Comment</p>
+    </div>
+  </div>
+
+  <div class="pagination-buttons">
+    <p class="pagination-btn pagination-btn--previous hidden">PREVIOUS</p>
+    <p class="pagination-btn pagination-btn--next">NEXT</p>
+  </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore -->
+{% block js_scripts %}
+<script>
+  <!-- TODO IS THIS NEEDED? -->
+  const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
+</script>
+<script type="module" src="../../static/js/my-trades.js"></script>
+{% endblock %}

@@ -25,6 +25,103 @@ def top_coins():
     )
 
 
+@core.route("/my_trades")
+@login_required
+def my_trades():
+    return render_template(
+        "core/my-trades.html",
+        COINGECKO_API_KEY=COINGECKO_API_KEY,
+    )
+
+
+@core.route("/get_trades_info", methods=["POST"])
+@login_required
+def get_trades_info():
+    data = request.get_json()
+    page = data["page"]
+    sort = data["sort"]
+
+    transactions = current_user.wallet.transactions
+
+    # TODO TEST THIS WITH A NEW USER WHO HAS NO TRANSACTIONS
+    if transactions:
+        transactions = sort_transactions(transactions, sort)
+        maxPages = (len(transactions) // 25) + 1
+        transactions = transactions[(page - 1) * 25 : page * 25]
+
+        res = []
+
+        for transaction in transactions:
+            temp = {}
+            temp["type"] = transaction.type
+            temp["id"] = transaction.id
+            temp["timestamp"] = transaction.timestamp
+            temp["coin_id"] = transaction.coin_id
+            temp["quantity"] = transaction.quantity
+            temp["price_per_unit"] = transaction.price_per_unit
+            temp["comment"] = transaction.comment
+            temp["total_value"] = transaction.total_value
+            res.append(temp)
+
+        return (
+            jsonify(
+                {
+                    "success": "Transaction history successfully fetched",
+                    "data": res,
+                    "maxPages": maxPages,
+                }
+            ),
+            200,
+        )
+    else:
+        return jsonify(
+            {
+                "success": "Transaction history successfully fetched",
+                "data": [],
+                "maxPages": 0,
+            },
+            200,
+        )
+
+
+def sort_transactions(transactions, sort="timestamp_desc"):
+    match sort:
+        case "type_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.type)
+        case "type_desc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.type, reverse=True)
+        case "coin_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.coin_id)
+        case "coin_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.coin_id, reverse=True
+            )
+        case "quantity_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.quantity)
+        case "quantity_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.quantity, reverse=True
+            )
+        case "price_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.price_per_unit)
+        case "price_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.price_per_unit, reverse=True
+            )
+        case "total_value_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.total_value)
+        case "total_value_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.total_value, reverse=True
+            )
+        case "timestamp_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.timestamp)
+        case "timestamp_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.timestamp, reverse=True
+            )
+
+
 @core.route("/process_transaction", methods=["POST"])
 @login_required
 def process_transaction():
@@ -129,12 +226,3 @@ def process_transaction():
             jsonify({"error": f"Failed to process transaction. Reason: {str(e)}"}),
             500,
         )
-
-
-# user = User(email=input_email, password=input_password)
-# db.session.add(user)
-
-# wallet = Wallet(user.id)
-# db.session.add(wallet)
-
-# db.session.commit()

@@ -131,6 +131,7 @@ class Transaction(db.Model):
     comment = db.Column(db.Text)
     balance_before = db.Column(db.Float, nullable=False)
     balance_after = db.Column(db.Float, nullable=False)
+    total_value = db.Column(db.Float, nullable=False)
     wallet_id = db.Column(UUID(as_uuid=True), db.ForeignKey("wallets.id"))
 
     def __init__(
@@ -149,8 +150,12 @@ class Transaction(db.Model):
         self.comment = comment
         self.price_per_unit = price_per_unit
         self.wallet_id = wallet_id
+        self.total_value = quantity * price_per_unit
         self.balance_before = balance_before
         if type == "buy":
             self.balance_after = balance_before - (quantity * price_per_unit)
         elif type == "sell":
             self.balance_after = balance_before + (quantity * price_per_unit)
+
+    def __repr__(self):
+        return f"#: {self.id}, {self.timestamp}, {self.type}, {self.coin_id}, {self.quantity}, {self.price_per_unit}, {self.total_value}, {self.comment}"

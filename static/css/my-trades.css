@@ -1,0 +1,89 @@
+.my-trades-container {
+  padding: 4.8rem;
+}
+
+/* ******************** HEADER ******************** */
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header__title {
+  color: #212529;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.header__new-trade-btn:link,
+.header__new-trade-btn:visited {
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  background-color: #17c671;
+  width: 14.6rem;
+  height: 4rem;
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header__new-trade-btn:hover,
+.header__new-trade-btn:active {
+  background-color: #0069d9;
+}
+
+/* ******************** ACTUAL TRADES TABLE ******************** */
+.my-trades-table {
+}
+
+/* *************** FIRST ROW OF TABLE *************** */
+.my-trades-table__header {
+  color: #9696bb;
+  font-size: 1.6rem;
+  font-weight: 700;
+
+  display: flex;
+  gap: 5rem;
+  margin-bottom: 1.6rem;
+}
+
+.my-trades-table__header > p:not(:first-child):not(:last-child) {
+  cursor: pointer;
+}
+
+/* *************** REST OF THE ROWS *************** */
+.my-trades-table__row {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+
+  color: #212529;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.my-trades-table__row:nth-child(even) {
+  background-color: white;
+}
+
+/* ******************** ACTUAL TRADES TABLE ******************** */
+.pagination-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pagination-btn {
+  color: #ffffff;
+  font-size: 1.6rem;
+
+  background-color: red;
+  padding: 1rem;
+}
+
+.pagination-btn:hover {
+  cursor: pointer;
+}

@@ -3,6 +3,7 @@ import {
   showMessagePopup,
   hideMessagePopup,
   addMessagePopupCloseEventListener,
+  getAllCoinNamesDict,
 } from "../js/helpers.js";
 
 let coinNamesDict = {};
@@ -15,33 +16,6 @@ let currentCoin = {
   ticker: "",
 };
 let currentTransactionType = "buy";
-
-// //////////////////// GET DICT OF ALL COIN NAMES + SYMBOLS + IDS ////////////////////
-
-/**
- * Returns a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]
- * for every coin currently available in the CoinGecko API.
- *
- * @async
- * @function
- * @returns {Promise<Object>} A promise that resolves to a dictionary of coin names,
- *                            each associated with its ticker and API-specific ID.
- * @throws {Error} Will throw an error if the fetch request fails or if the API returns
- *                 an invalid response.
- */
-async function getAllCoinNamesDict() {
-  const url = new URL("https://api.coingecko.com/api/v3/coins/list");
-
-  const result = {};
-
-  const data = await fetch(url, COINGECKO_API_OPTIONS);
-  const response = await data.json();
-  for (const coin of response) {
-    // IMPORTANT: ID = API SPECIFIC ID, TICKERS = NOT UNIQUE, NAMES = UNIQUE
-    result[coin.name] = [coin.symbol, coin.id];
-  }
-  return result;
-}
 
 /**
  * Caches a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]

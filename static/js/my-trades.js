@@ -5,6 +5,10 @@ let coinNamesDict = {};
 let currentPage = 1;
 let maxPages = 0;
 let currentSort = "timestamp_desc";
+let assetsValueHistory = [];
+let balanceHistory = [];
+let totalValueHistory = [];
+let historyTimestamps = [];
 
 /**
  * Fetches all of a user's previous transactions from the Flask server based on the
@@ -308,13 +312,122 @@ function addSortingEventListeners() {
 }
 
 /**
+ * Asynchronously fetches wallet history from the server and updates the following
+ * global variables: assetsValueHistory, balanceHistory, historyTimestamps, and
+ * totalValueHistory
+ *
+ * This function sends a POST request to the "/get_wallet_history" endpoint
+ * to retrieve the wallet's history, including assets value, balance, timestamps,
+ * and total value history. If the server responds with an error or the request fails,
+ * an error is thrown and logged to the console.
+ *
+ * @async
+ * @function getWalletHistory
+ * @throws {Error} If the server response is not OK or if the server returns an error in the response.
+ * @returns {Promise<void>} No return value. Updates global variables with the fetched data.
+ */
+async function getWalletHistory() {
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    const response = await fetch("/get_wallet_history", fetchOptions);
+    if (!response.ok) {
+      throw new Error("Server responded with an error: " + response.status);
+    }
+
+    const data = await response.json();
+    if (data.error) {
+      throw new Error("Server responded with an error: " + data.error);
+    }
+
+    assetsValueHistory = data.assets_value_history;
+    balanceHistory = data.balance_history;
+    historyTimestamps = data.timestamps;
+    totalValueHistory = data.total_value_history;
+  } catch (error) {
+    console.error("Failed to fetch wallet history: ", error);
+  }
+}
+
+/**
+ * Renders a line chart displaying wallet history data (based off of the following
+ * global variables: assetsValueHistory, balanceHistory, historyTimestamps, and
+ * totalValueHistory
+ *
+ * The chart visualizes three datasets: balance history, assets value history, and
+ * total value history.
+ * Each dataset is represented as a line on the chart, with specific colors assigned to
+ * each for distinction. The chart is configured to format y-axis tick labels as
+ * currency values. It uses a canvas element identified by the class
+ * 'wallet-history-chart' for rendering.
+ *
+ * @function drawChart
+ * @returns {void} Draws the chart on the canvas but does not return any value.
+ */
+function drawChart() {
+  // Setup the chart
+  const labels = historyTimestamps;
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        label: "Balance History",
+        backgroundColor: "rgb(255, 99, 132)", // Dot colour
+        borderColor: "rgb(255, 99, 132)", // Line colour
+        data: balanceHistory,
+      },
+      {
+        label: "Assets Value History",
+        backgroundColor: "rgb(0, 255, 0)",
+        borderColor: "rgb(0, 255, 0)",
+        data: assetsValueHistory,
+      },
+      {
+        label: "Total Value History",
+        backgroundColor: "rgb(0, 0, 255)",
+        borderColor: "rgb(0, 0, 255)",
+        data: totalValueHistory,
+      },
+    ],
+  };
+
+  // CONFIG Block
+  const config = {
+    type: "line",
+    data,
+    options: {
+      scales: {
+        y: {
+          ticks: {
+            // Function to format tick labels
+            callback: function (value, index, values) {
+              return "$" + value.toLocaleString();
+            },
+          },
+        },
+      },
+    },
+  };
+
+  // Render the chart
+  const myChart = new Chart(
+    document.querySelector(".wallet-history-chart"),
+    config
+  );
+}
+
+/**
  * Initialises the page by fetching the initial transaction data, setting up pagination,
  * and adding event listeners to each column heading to enable sorting.
  *
  * @async
  * @function main
  */
-
 async function main() {
   await cacheCoinNamesInSession();
   const temp = await getTransactionData(1);
@@ -326,6 +439,9 @@ async function main() {
 
   addPaginationButtonEventListeners();
   addSortingEventListeners();
+
+  await getWalletHistory();
+  drawChart();
 }
 
 main();

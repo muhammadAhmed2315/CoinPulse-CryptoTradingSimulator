@@ -241,6 +241,30 @@ def process_transaction():
         )
 
 
+@core.route("/get_wallet_history", methods=["POST"])
+@login_required
+def get_wallet_history():
+    try:
+        wallet_history = current_user.wallet.value_history
+
+        res = {
+            "balance_history": wallet_history.balance_history,
+            "assets_value_history": wallet_history.assets_value_history,
+            "total_value_history": wallet_history.total_value_history,
+            "timestamps": wallet_history.timestamps,
+        }
+        return jsonify({"success": "Data successfully retrieved", "data": res}), 200
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": "An error occurred while retrieving the wallet history from the database"
+                }
+            ),
+            500,
+        )
+
+
 def update_user_wallet_value_in_background(current_wallet_id=None):
     from app import app
 

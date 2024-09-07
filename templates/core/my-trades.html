@@ -13,6 +13,8 @@
     <a href="" class="header__new-trade-btn">New Trade</a>
   </div>
 
+  <canvas class="wallet-history-chart" height="125%"></canvas>
+
   <div class="my-trades-table">
     <div class="my-trades-table__header">
       <p>#</p>
@@ -38,5 +40,6 @@
   <!-- TODO IS THIS NEEDED? -->
   const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module" src="../../static/js/my-trades.js"></script>
 {% endblock %}

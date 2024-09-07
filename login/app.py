@@ -1,7 +1,6 @@
 import os
 import time
-from models import User, Wallet
-from core.app import core
+from models import User, Wallet, ValueHistory
 from flask import jsonify
 from extensions import db
 from constants import GOOGLE_CLIENT_ID
@@ -83,7 +82,6 @@ def callback_discord():
 
     discord = make_session(token=session.get("oauth2_token"))
     user_info = jsonify(discord.get(DISCORD_API_BASE_URL + "/users/@me").json()).json
-    print(user_info)
     user_email = user_info["email"]
     user_id = user_info["id"]
 
@@ -290,6 +288,10 @@ def register():
 
         wallet = Wallet(user.id)
         db.session.add(wallet)
+        db.session.commit()
+
+        valueHistory = ValueHistory(wallet.id)
+        db.session.add(valueHistory)
         db.session.commit()
 
         login_user(user)

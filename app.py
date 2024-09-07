@@ -9,6 +9,8 @@ from constants import MAIL_PASSWORD
 from extensions import db, login_manager
 import uuid
 from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
+from flask_apscheduler import APScheduler
+import threading
 
 # Configure logging
 log = logging.getLogger("werkzeug")
@@ -83,8 +85,15 @@ def create_app():
     return app, mail_server
 
 
-# Create the app instance
 app, mail_server = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Create the background task thread
+    from core.app import update_user_wallet_value_in_background
+
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        thread = threading.Thread(target=update_user_wallet_value_in_background)
+        thread.daemon = True
+        thread.start()
+
+    app.run()

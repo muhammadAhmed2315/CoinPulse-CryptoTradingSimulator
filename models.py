@@ -1,11 +1,11 @@
 from extensions import db
-from sqlalchemy import Boolean
+from sqlalchemy import Boolean, ARRAY, TIMESTAMP
 from flask_login import UserMixin, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.ext.mutable import MutableDict, MutableList
 import time
 
 
@@ -93,6 +93,7 @@ class Wallet(db.Model):
     total_current_value = db.Column(db.Float, default=0.0, nullable=False)
     owner_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"))
     transactions = db.relationship("Transaction", backref="wallet", lazy="dynamic")
+    value_history = db.relationship("ValueHistory", backref="wallet", uselist=False)
 
     def __init__(self, owner_id):
         self.owner_id = owner_id
@@ -110,13 +111,46 @@ class Wallet(db.Model):
             self.assets[coin_id] = quantity
 
     def update_assets_subtract(self, coin_id, quantity):
-        self.assets[coin_id] -= quantity
+        # If transaction results in User owning 0 of the coin, then remove the coin
+        # from the assets dictionary
+        if self.assets[coin_id] == quantity:
+            self.assets.pop(coin_id)
+        else:
+            self.assets[coin_id] -= quantity
 
     def has_enough_balance(self, amount):
         return self.balance >= amount
 
     def has_enough_coins(self, coin_id, coin_quantity):
         return self.assets.get(coin_id, 0) >= coin_quantity
+
+
+class ValueHistory(db.Model):
+    __tablename__ = "value_histories"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    wallet_id = db.Column(UUID(as_uuid=True), db.ForeignKey("wallets.id"))
+    balance_history = db.Column(
+        MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [1000000]
+    )
+    assets_value_history = db.Column(
+        MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [0]
+    )
+    total_value_history = db.Column(
+        MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [1000000]
+    )
+    timestamps = db.Column(
+        MutableList.as_mutable(ARRAY(db.Integer)), default=lambda: [int(time.time())]
+    )
+
+    def __init__(self, wallet_id):
+        self.wallet_id = wallet_id
+
+    def updateValueHistory(self, balance_value, assets_value, time):
+        self.balance_history.append(balance_value)
+        self.assets_value_history.append(assets_value)
+        self.total_value_history.append(balance_value + assets_value)
+        self.timestamps.append(time)
 
 
 class Transaction(db.Model):

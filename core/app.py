@@ -1,8 +1,12 @@
-from flask import render_template, request, Blueprint, jsonify
+import requests
+import time
+import time
+from flask import render_template, request, Blueprint, jsonify, session
 from flask_login import current_user, login_required
-from models import Transaction
+from models import User, Wallet, Transaction
 from constants import COINGECKO_API_KEY
 from extensions import db
+import time
 
 core = Blueprint("core", __name__)
 
@@ -28,6 +32,14 @@ def top_coins():
 @core.route("/my_trades")
 @login_required
 def my_trades():
+    # Since the CoinGecko API only updates coin prices every 45 seconds, only call the
+    # update wallet history function if this page was accessed 45 seconds or more ago
+    last_visited = session.get("last_visited")
+    if last_visited is not None:
+        if int(time.time()) - last_visited >= 45:
+            update_user_wallet_value_in_background(current_user.wallet.id)
+    session["last_visited"] = int(time.time())
+
     return render_template(
         "core/my-trades.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,
@@ -218,11 +230,74 @@ def process_transaction():
         db.session.add(user_wallet)
         db.session.commit()
 
+        update_user_wallet_value_in_background(user_wallet.id)
+
         return jsonify({"success": "Transaction processed successfully"}), 201
     except Exception as e:
         db.session.rollback()
-        print(str(e))
         return (
             jsonify({"error": f"Failed to process transaction. Reason: {str(e)}"}),
             500,
         )
+
+
+def update_user_wallet_value_in_background(current_wallet_id=None):
+    from app import app
+
+    with app.app_context():
+        coins = set()
+        coin_market_prices = {}
+
+        if current_wallet_id:
+            all_wallets = [db.session.query(Wallet).get(current_wallet_id)]
+        else:
+            # Get list of all coins currently owned by users
+            all_wallets = Wallet.query.all()
+
+        for wallet in all_wallets:
+            coins.update(set(wallet.assets.keys()))
+
+        coins = list(coins)
+
+        # Iterate over 250 coins at a time, getting their market data
+        # 250 because the CoinGecko API only allows fetching market data of 250 coins
+        # at a time
+        current_time = int(time.time())
+        for i in range(0, len(coins), 250):
+            current_batch = coins[i : i + 250]
+            current_batch = ",".join(current_batch)
+
+            url = "https://api.coingecko.com/api/v3/coins/markets"
+            params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
+            response = requests.get(url, params=params)
+            data = response.json()
+
+            for coin in data:
+                coin_market_prices[coin["id"]] = coin["current_price"]
+
+            # If more than one page of data needs to be fetched from the API, then
+            # sleep for 25 seconds before making another request so that we don't get
+            # rate-limited by the API
+            if len(coins) > 250:
+                time.sleep(25)
+
+        # Update the following fields for each wallet:
+        # - balance_value_history
+        # - assets_value_history
+        # - total_value_history
+        # - total_current_value
+        for wallet in all_wallets:
+            # Get current total value of assets
+            curr_assets_value = 0
+            for key in wallet.assets:
+                curr_assets_value += wallet.assets[key] * coin_market_prices[key]
+
+            wallet.value_history.updateValueHistory(
+                wallet.balance, curr_assets_value, current_time
+            )
+
+            db.session.add(wallet)
+        db.session.commit()
+
+    if not current_wallet_id:
+        time.sleep(1800)

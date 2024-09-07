@@ -1,6 +1,6 @@
 body {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   background-color: #f5f5fa;
 }
 
@@ -10,100 +10,87 @@ body {
 }
 
 /* ******************** SIDEBAR ******************** */
-.nav-sidebar {
-  width: 24.76rem;
-  padding: 2.4rem 0 2.4rem 2.4rem;
-  border-right: 3px solid #eeeef7;
+.nav-container {
+  padding: 2.4rem;
+  border-bottom: 3px solid #eeeef7;
   position: fixed;
-  height: 100vh;
+  height: 8rem;
+  width: 100%;
   background-color: #fff;
   display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .logo {
   height: 4.15rem;
   width: 16.5rem;
-  margin-bottom: 2rem;
+  margin-right: 8rem;
 }
 
-.nav-sidebar-item {
+.nav-container-item {
   display: flex;
   flex-direction: row;
   align-items: center;
   height: 3.8rem;
-  gap: 2rem;
-  width: 100%;
 }
 
-.nav-sidebar-item:link,
-.nav-sidebar-item:visited {
+.nav-container-item:link,
+.nav-container-item:visited {
   text-decoration: none;
   color: #9696bb;
   font-size: 14px;
   font-weight: 700;
 }
 
-.nav-sidebar-icon {
+.nav-container-icon {
   height: 1.95rem;
   width: 1.95rem;
   filter: brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%)
     hue-rotate(202deg) brightness(90%) contrast(85%);
 }
 
-.nav-sidebar-item:hover {
+.nav-container-item:hover {
   cursor: pointer;
 }
 
-.nav-sidebar-item:hover p,
-.nav-sidebar-item:hover img {
+.nav-container-item:hover p,
+.nav-container-item:hover img {
   color: #26262a;
   filter: none;
 }
 
-.nav-sidebar-item:hover {
-  border-right: 3px solid #17c671;
-}
-
-/* ******************** MAIN PART OF PAGE ******************** */
-.main {
-  width: 100%;
-  height: 100%;
-  padding-left: 24.76rem;
-}
-
-/* ******************** PORTFOLIO HEADER ******************** */
-
-header {
-  height: 10rem;
-  border-bottom: 3px solid #eeeef7;
-  padding: 2.25rem 4.8rem;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: #f5f5fa;
-}
-
-.header-info-container {
+/* ********** PORTFOLIO SECTION ********** */
+.portfolio-container {
   display: flex;
-  flex-direction: row;
   align-items: center;
   height: 100%;
+  margin-left: 8rem;
 }
 
-.header-info-portfolio-label {
+.portfolio-container__label {
   font-size: 18px;
   font-weight: 400;
 }
 
-.header-info-portfolio-value {
+.portfolio-container__img {
+  height: 2.5rem;
+}
+
+.portfolio-container__total-value {
   font-size: 18px;
   font-weight: 700;
 }
 
-.header-info-image {
-  height: 2.5rem;
+.portfolio-container__value-diff {
+  color: #17c671;
+  font-size: 1.44rem;
+  font-weight: 700;
+}
+
+.portfolio-container__diff-arrow {
+  height: 1.44rem;
+  width: 1.44rem;
 }
 
 /* ******************** MAIN PAGE CONTENT ******************** */

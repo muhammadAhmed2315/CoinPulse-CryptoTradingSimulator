@@ -22,76 +22,76 @@
     {% block message_popup %}{% endblock %}
     {% block new_trade_sidebar %}{% endblock %}
 
-    <div class="nav-sidebar">
+    <!-- TOP NAVIGATION BAR -->
+    <div class="nav-container">
       <!-- LOGO -->
       <img class="logo" src="../../static/img/logo.svg" />
 
       <!-- NAVIGATION LINKS -->
       <!-- HOME LINK -->
-      <a class="nav-sidebar-item" href="{{ url_for('core.dashboard') }}">
-        <img class="nav-sidebar-icon" src="../../static/img/icons/home.svg" />
-        <p class="nav-sidebar-text">Home</p>
+      <a class="nav-container-item" href="{{ url_for('core.dashboard') }}">
+        <img class="nav-container-icon" src="../../static/img/icons/home.svg" />
+        <p class="nav-container-text">Home</p>
       </a>
 
       <!-- MY TRADES LINK -->
-      <a class="nav-sidebar-item" href="{{ url_for('core.my_trades') }}">
+      <a class="nav-container-item" href="{{ url_for('core.my_trades') }}">
         <img
-          class="nav-sidebar-icon"
+          class="nav-container-icon"
           src="../../static/img/icons/sliders.svg"
         />
-        <p class="nav-sidebar-text">My Trades</p>
+        <p class="nav-container-text">My Trades</p>
       </a>
 
       <!-- TOP COINS LINK -->
-      <a class="nav-sidebar-item" href="{{ url_for('core.top_coins') }}">
+      <a class="nav-container-item" href="{{ url_for('core.top_coins') }}">
         <img
-          class="nav-sidebar-icon"
+          class="nav-container-icon"
           src="../../static/img/icons/line-chart.svg"
         />
-        <p class="nav-sidebar-text">Top Coins</p>
+        <p class="nav-container-text">Top Coins</p>
       </a>
 
       <!-- NEWS LINK -->
-      <a class="nav-sidebar-item" href="#">
-        <img class="nav-sidebar-icon" src="../../static/img/icons/fire.svg" />
-        <p class="nav-sidebar-text">News</p>
+      <a class="nav-container-item" href="#">
+        <img class="nav-container-icon" src="../../static/img/icons/fire.svg" />
+        <p class="nav-container-text">News</p>
       </a>
 
       <!-- REVIEWS LINK -->
-      <a class="nav-sidebar-item" href="#">
+      <a class="nav-container-item" href="#">
         <img
-          class="nav-sidebar-icon"
+          class="nav-container-icon"
           src="../../static/img/icons/thunderbolt.svg"
         />
-        <p class="nav-sidebar-text">Reviews</p>
+        <p class="nav-container-text">Reviews</p>
       </a>
 
       <!-- GUIDES LINK -->
-      <a class="nav-sidebar-item" href="#">
+      <a class="nav-container-item" href="#">
         <img
-          class="nav-sidebar-icon"
+          class="nav-container-icon"
           src="../../static/img/icons/experiment.svg"
         />
-        <p class="nav-sidebar-text">Guides</p>
+        <p class="nav-container-text">Guides</p>
       </a>
-    </div>
 
-    <!-- MAIN SECTION OF THE PAGE -->
-    <div class="main">
       <!-- PORTFOLIO VALUE HEADER -->
-      <header>
-        <div class="header-info-container">
-          <h1 class="header-info-portfolio-label">Portfolio</h1>
-          <img
-            class="header-info-image"
-            src="../../static/img/dollar_symbol.svg"
-          />
-          <h1 class="header-info-portfolio-value">$1,000,000</h1>
-        </div>
-      </header>
-
-      <div class="main-content">{% block content %}{% endblock %}</div>
+      <div class="portfolio-container">
+        <h1 class="portfolio-container__label">Portfolio</h1>
+        <img
+          class="portfolio-container__img"
+          src="../../static/img/dollar_symbol.svg"
+        />
+        <h1 class="portfolio-container__total-value">$1,000,000</h1>
+        <p class="portfolio-container__value-diff">+0.2%</p>
+        <img
+          class="portfolio-container__diff-arrow"
+          src="../../static/img/icons/arrow-up.svg"
+        />
+      </div>
     </div>
+    <div class="main-content">{% block content %}{% endblock %}</div>
 
     {% block js_scripts %}{% endblock %}
   </body>

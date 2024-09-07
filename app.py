@@ -96,4 +96,5 @@ if __name__ == "__main__":
         thread.daemon = True
         thread.start()
 
+    # TODO DOES DEBUG EVEN NEED TO BE FALSE?
     app.run()

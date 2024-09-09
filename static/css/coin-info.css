@@ -69,6 +69,11 @@
 }
 
 /* ***** COIN IMAGE + NAME + TICKER  ***** */
+.coin-name img {
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
 .coin-name p:first-of-type {
   font-size: 1.8rem;
   font-weight: 600;
@@ -198,3 +203,5 @@
   border-bottom: 1.6px solid #17c671;
   cursor: pointer;
 }
+
+/* ***** GRAPH ***** */

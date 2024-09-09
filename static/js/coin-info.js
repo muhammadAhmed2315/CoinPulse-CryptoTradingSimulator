@@ -97,7 +97,17 @@ function addSearchBarEventListeners() {
 
           currentCoin.id = coinNamesDict[e.target.textContent][1];
 
+          // Get market info of selected coin and update the page
           await getCurrentCoinInfo();
+          updateCoinInfo();
+
+          // Get OHLC data of selected coin and render the chart
+          await getCurrentCoinOHLC();
+          drawOHLCChart();
+
+          // Click the "OHLC Chart" button so that the OHLC chart is the one that is
+          // shown
+          document.querySelector(".sn-btn--ohlc").click();
         }
       } else {
         document.querySelector(".search-box").value = "";
@@ -137,22 +147,27 @@ async function getCurrentCoinInfo() {
     const response = await fetch(url, COINGECKO_API_OPTIONS);
     const data = await response.json();
 
-    let { name, image, current_price, price_change_24h, symbol } = data[0];
-    price_change_24h =
-      (price_change_24h / (current_price - price_change_24h)) * 100;
-
     // Update currentCoin global variable
-    currentCoin.name = name;
-    currentCoin.image = image;
-    currentCoin.current_price = current_price;
-    currentCoin.price_change_24h = price_change_24h;
-    currentCoin.ticker = symbol;
+    currentCoin = data[0];
   } catch (error) {
     console.error("Error:", error);
     return []; // Return an empty array in case of error
   }
 }
 
+/**
+ * Fetches the OHLC (Open, High, Low, Close) data for the cryptocurrency specified by
+ * the "currentCoin" global variable over the last 365 days using the CoinGeckoAPI.
+ *
+ * @async
+ * @function getCurrentCoinOHLC
+ *
+ * @returns {Promise<void>} A promise that resolves when the API call is complete.
+ * On success, it updates the global `currentCoinOHLC` variable with the fetched OHLC data.
+ * On failure, it logs an error and returns an empty array.
+ *
+ * @throws Will log an error if the API request fails.
+ */
 async function getCurrentCoinOHLC() {
   // Make API call to get percentage_price_change and current price
   const url = new URL(
@@ -170,6 +185,21 @@ async function getCurrentCoinOHLC() {
   }
 }
 
+/**
+ * Fetches the historical market data (prices, market caps, and total volumes)
+ * for the cryptocurrency specified by the "currentCoin" global variable over the last
+ * 365 days using the CoinGecko API.
+ *
+ * @async
+ * @function getCurrentCoinHistoricalData
+ *
+ * @returns {Promise<void>} A promise that resolves when the API call is complete.
+ * On success, it updates the global `currentCoinHistoricalData` object with
+ * the fetched data, including prices, market caps, and total volumes.
+ * On failure, it logs an error and returns an empty array.
+ *
+ * @throws Will log an error if the API request fails.
+ */
 async function getCurrentCoinHistoricalData() {
   // Make API call to get percentage_price_change and current price
   const url = new URL(
@@ -189,6 +219,15 @@ async function getCurrentCoinHistoricalData() {
   }
 }
 
+/**
+ * Draws a candlestick chart for the cryptocurrency (specified by the "currentCoin"
+ * global variable), based off of its OHLC (Open, High, Low, Close) data using the
+ * Highcharts library.
+ *
+ * @function drawOHLCChart
+ *
+ * @throws Will log an error if the chart rendering fails or if the `currentCoinOHLC` data is not properly loaded.
+ */
 function drawOHLCChart() {
   Highcharts.stockChart("coin-info-chart", {
     rangeSelector: {
@@ -227,6 +266,16 @@ function drawOHLCChart() {
   });
 }
 
+/**
+ * Draws a historical chart for the cryptocurrency specified by the "currentCoin" global
+ * variable.
+ * This function uses the Highcharts library to render a stock chart displaying
+ * historical price, market cap, or total volume data based on the `coin_data` parameter.
+ *
+ * @param {string} [coin_data="price"] - The type of cryptocurrency data to display in
+ *                                       the chart. It can be "price", "market-cap", or
+ *                                       "total-volume".
+ */
 function drawHistoricalChart(coin_data = "price") {
   let data = [];
 
@@ -258,6 +307,22 @@ function drawHistoricalChart(coin_data = "price") {
   });
 }
 
+/**
+ * Adds event listeners to the second navigation buttons for interacting with various
+ * charts and features.
+ *
+ * - "OHLC Chart" button triggers the drawing of the OHLC chart.
+ * - "Price Chart" button fetches the historical data (if not already fetched) and
+ *   draws the price chart.
+ * - "Market Cap Chart" button fetches the historical data (if not already fetched) and
+ *   draws the market cap chart.
+ * - "Total Volume Chart" button fetches the historical data (if not already fetched)
+ *   and draws the total volume chart.
+ * - "News" and "Reddit" buttons are placeholders for future event handling.
+ *
+ * @async
+ * @function addSecondNavButtonEventListeners
+ */
 async function addSecondNavButtonEventListeners() {
   // "OHLC Chart" Button Event Listener
   document
@@ -311,11 +376,135 @@ async function addSecondNavButtonEventListeners() {
     });
 }
 
+/**
+ * Updates the DOM with current cryptocurrency data for the coin specified by the
+ * "currentCoin" global variable.
+ *
+ * This function modifies various HTML elements to reflect the current information
+ * of the selected cryptocurrency (`currentCoin`). It updates the coin's image,
+ * name, ticker symbol, price, price changes, market cap, volume, supply details,
+ * fully diluted market cap, all-time high (ATH), and all-time low (ATL) data.
+ *
+ * @function
+ * @global
+ */
+function updateCoinInfo() {
+  // Update image + name + ticker
+  document
+    .querySelector(".coin-name img")
+    .setAttribute("src", currentCoin.image);
+  document.querySelector(".coin-name p:nth-of-type(1)").textContent =
+    currentCoin.name;
+  document.querySelector(".coin-name p:nth-of-type(2)").textContent =
+    currentCoin.symbol;
+
+  // Update coin price
+  document.querySelector(".coin-price").textContent = currentCoin.current_price
+    .toFixed(2)
+    .toLocaleString();
+
+  // Update coin price changes
+  if (currentCoin.price_change_percentage_24h >= 0) {
+    document
+      .querySelector(".coin-price-change img")
+      .setAttribute("src", "../../static/img/icons/arrow-up.svg");
+    document.querySelector(".coin-price-change img").style.color = "#17C671";
+    document.querySelector(".coin-price-change p").style.color = "#17C671";
+  } else {
+    document
+      .querySelector(".coin-price-change img")
+      .setAttribute("src", "../../static/img/icons/arrow-down.svg");
+    document.querySelector(".coin-price-change img").style.color = "#EB5757";
+    document.querySelector(".coin-price-change p").style.color = "#EB5757";
+  }
+  document.querySelector(
+    ".coin-price-change p"
+  ).textContent = `${currentCoin.price_change_percentage_24h.toFixed(2)} (1d)`;
+
+  // Last updated text
+  document.querySelector(".coin-last-updated").textContent = new Date();
+
+  // Market cap
+  if (currentCoin.market_cap_change_percentage_24h >= 0) {
+    document
+      .querySelector(".coin-market-cap img")
+      .setAttribute("src", "../../static/img/icons/arrow-up.svg");
+    document.querySelector(".coin-market-cap img").style.color = "#17C671";
+    document.querySelector(".coin-market-cap .percentage-change").style.color =
+      "#17C671";
+  } else {
+    document
+      .querySelector(".coin-market-cap img")
+      .setAttribute("src", "../../static/img/icons/arrow-up.svg");
+    document.querySelector(".coin-market-cap img").style.color = "#EB5757";
+    document.querySelector(".coin-market-cap .percentage-change").style.color =
+      "#EB5757";
+  }
+  document.querySelector(
+    ".coin-market-cap .percentage-change"
+  ).textContent = `${currentCoin.market_cap_change_percentage_24h.toFixed(
+    2
+  )}% (1d)`;
+  document.querySelector(
+    ".coin-market-cap .value"
+  ).textContent = `$${currentCoin.market_cap.toLocaleString()}`;
+  document.querySelector(".coin-market-cap .rank").textContent =
+    currentCoin.market_cap_rank;
+
+  // Volume
+  document.querySelector(".coin-volume .value").textContent =
+    currentCoin.total_volume.toLocaleString();
+
+  // Circulating supply
+  document.querySelector(".coin-circulating-supply .value").textContent =
+    currentCoin.circulating_supply.toLocaleString();
+
+  // Total supply
+  document.querySelector(".coin-total-supply .value").textContent =
+    currentCoin.total_supply.toLocaleString();
+
+  // Max supply
+  document.querySelector(".coin-max-supply .value").textContent =
+    currentCoin.max_supply.toLocaleString();
+
+  // Fully diluted market cap
+  document.querySelector(
+    ".coin-fully-diluted-market-cap .value"
+  ).textContent = `$${currentCoin.fully_diluted_valuation.toLocaleString()}`;
+
+  // All time high
+  document.querySelector(".coin-ath img").style.color = "#17C671";
+  document.querySelector(".coin-ath .percentage-change").style.color =
+    "#17C671";
+  document.querySelector(
+    ".coin-ath .percentage-change"
+  ).textContent = `${currentCoin.ath_change_percentage}%`;
+  document.querySelector(".coin-ath .value").textContent = `$${currentCoin.ath
+    .toFixed(2)
+    .toLocaleString()}`;
+  document.querySelector(".coin-ath .timestamp").textContent =
+    currentCoin.ath_date;
+
+  // All time low
+  document.querySelector(".coin-atl img").style.color = "#17C671";
+  document.querySelector(".coin-atl .percentage-change").style.color =
+    "#17C671";
+  document.querySelector(
+    ".coin-atl .percentage-change"
+  ).textContent = `${currentCoin.atl_change_percentage}%`;
+  document.querySelector(".coin-atl .value").textContent = `$${currentCoin.atl
+    .toFixed(2)
+    .toLocaleString()}`;
+  document.querySelector(".coin-atl .timestamp").textContent =
+    currentCoin.atl_date;
+}
+
 async function main() {
   await cacheCoinNamesInSession();
 
   addSearchBarEventListeners();
   await getCurrentCoinInfo();
+  updateCoinInfo();
 
   await getCurrentCoinOHLC();
   drawOHLCChart();

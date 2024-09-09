@@ -325,3 +325,12 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
 
     if not current_wallet_id:
         time.sleep(1800)
+
+
+@core.route("/coin_info")
+@login_required
+def coin_info():
+    return render_template(
+        "core/coin-info.html",
+        COINGECKO_API_KEY=COINGECKO_API_KEY,
+    )

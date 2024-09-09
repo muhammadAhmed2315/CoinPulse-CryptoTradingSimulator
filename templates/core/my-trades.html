@@ -13,7 +13,13 @@
     <a href="" class="header__new-trade-btn">New Trade</a>
   </div>
 
-  <canvas class="wallet-history-chart" height="125%"></canvas>
+  <div class="chart-buttons">
+    <p class="chart-btn chart-btn--balance">Balance History</p>
+    <p class="chart-btn chart-btn--assets">Assets Value History</p>
+    <p class="chart-btn chart-btn--total">Total Value History</p>
+  </div>
+
+  <div id="wallet-history-chart" height="125%"></div>
 
   <div class="my-trades-table">
     <div class="my-trades-table__header">
@@ -40,6 +46,10 @@
   <!-- TODO IS THIS NEEDED? -->
   const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="https://code.highcharts.com/stock/highstock.js"></script>
+<script
+  defer
+  src="https://code.highcharts.com/stock/modules/exporting.js"
+></script>
 <script type="module" src="../../static/js/my-trades.js"></script>
 {% endblock %}

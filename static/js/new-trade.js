@@ -6,7 +6,6 @@ import {
   getAllCoinNamesDict,
 } from "../js/helpers.js";
 
-let coinNamesDict = {};
 let currentCoin = {
   id: "bitcoin",
   name: "",
@@ -16,6 +15,7 @@ let currentCoin = {
   ticker: "",
 };
 let currentTransactionType = "buy";
+let coinNamesDict = {};
 
 /**
  * Caches a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]
@@ -116,7 +116,10 @@ function addNewTradeSidebarSearchEventListeners() {
     });
 
   document.addEventListener("click", function (e) {
-    if (!e.target.classList.contains("nts-search-box")) {
+    if (
+      !e.target.classList.contains("nts-search-box") &&
+      !e.target.classList.contains("nts-search-box__input")
+    ) {
       document.querySelector(".nts-search-box__results").innerHTML = "";
     }
   });

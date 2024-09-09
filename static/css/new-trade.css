@@ -78,7 +78,7 @@
   border-top: none;
 }
 
-.nts-search-box__results.result-item:hover {
+.nts-search-box__results .result-item:hover {
   background-color: #f9f9f9;
 }
 

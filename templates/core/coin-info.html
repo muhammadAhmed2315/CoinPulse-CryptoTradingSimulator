@@ -1,0 +1,135 @@
+<!-- prettier-ignore -->
+{% extends "core/core-base.html" %} 
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/general.css" />
+<link rel="stylesheet" href="../../static/css/dashboard.css" />
+<link rel="stylesheet" href="../../static/css/coin-info.css" />
+{% endblock %}
+<!-- prettier-ignore -->
+{% block content %}
+<!-- OPEN POSITIONS SECTION -->
+<div class="coin-info-page">  
+  <div class="coin-info-container">
+    
+    <div class="coin-info-container__first">
+      <h1 class="coin-info__title">Search for a coin</h1>
+      <!-- NEW TRADE SIDEBAR SEARCH BAR -->
+      <div class="coin-info__search">
+        <input
+          class="coin-info__search-input"
+          type="search"
+          placeholder="Search..."
+        />
+        <div class="coin-info__search-results"></div>
+      </div>
+
+
+      <div class="coin-name">
+        <img src="" />
+        <p>Bitcoin</p>
+        <p>BTC</p>
+      </div>
+
+      <p class="coin-price">$54,238.59</p>
+
+      <div class="coin-price-change">
+        <img src="../../static/img/icons/arrow-down.svg" />
+        <p>6.40% (24h)</p>
+        <img src="../../static/img/icons/arrow-down.svg" />
+        <p>0.63% (1h)</p>
+      </div>
+
+      <p>Last Updated: 1725808114</p>
+
+      <div class="coin-market-cap">
+        <p class="label">Market cap</p>
+        <p class="gap"></p>
+        <img src="../static/img/icons/arrow-down.svg" />
+        <p class="percentage-change">0.20%</p>
+        <p class="value">$1,073,889,897,949</p>
+        <p class="rank">#1</p>
+      </div>
+
+      <div class="coin-volume">
+        <p class="label">Volume (24h)</p>
+        <p class="gap"></p>
+        <p class="value">$16,056,730,128</p>
+      </div>
+
+      <div class="coin-circulating-supply">
+        <p class="label">Circulating supply</p>
+        <p class="gap"></p>
+        <p class="value">19,751,450 BTC</p>
+      </div>
+
+      <div class="coin-total-supply">
+        <p class="label">Total supply</p>
+        <p class="gap"></p>
+        <p class="value">19,751,450 BTC</p>
+      </div>
+
+      <div class="coin-max-supply">
+        <p class="label">Max. supply</p>
+        <p class="gap"></p>
+        <p class="value">21,000,000 BTC</p>
+      </div>
+
+      <div class="coin-fully-diluted-market-cap">
+        <p class="label">Fully diluted market cap</p>
+        <p class="gap"></p>
+        <p class="value">$1,141,778,850,053</p>
+      </div>
+
+      <div class="coin-ath">
+        <p class="label">All time high</p>
+        <p class="gap"></p>
+        <img src="../../static/img/icons/arrow-down.svg" />
+        <p class="percentage-change">20.53%</p>
+        <p class="value">$54,370.18</p>
+        <p>1725808114</p>
+      </div>
+
+      <div class="coin-atl">
+        <p class="label">All time low</p>
+        <p class="gap"></p>
+        <img src="../../static/img/icons/arrow-up.svg" />
+        <p class="percentage-change">20.53%</p>
+        <p class="value">$54,370.18</p>
+        <p>1725808114</p>
+      </div>
+    </div>
+
+    <div class="coin-info-container__second">
+      <div class="second-nav-buttons">
+        <p class="sn-btn sn-btn--ohlc">OHLC Chart</p>
+        <p class="sn-btn sn-btn--price">Price Chart</p>
+        <p class="sn-btn sn-btn--market-cap">Market Cap Chart</p>
+        <p class="sn-btn sn-btn--total-volume">Volume Chart</p>
+        <p class="sn-btn sn-btn--news">News</p>
+        <p class="sn-btn sn-btn--reddit">Reddit</p>
+      </div>
+
+
+      <div id="coin-info-chart"></div>
+    </div>
+
+    <div class="coin-info-container__third">
+      <p>asdfasfasdfsdf</p>
+    </div>
+  </div>
+</div>
+    {% endblock %}
+    <!-- prettier-ignore -->
+    {% block js_scripts %}
+    <script>
+      const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
+    </script>
+    <script defer src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script
+      defer
+      src="https://code.highcharts.com/stock/modules/exporting.js"
+    ></script>
+    <script type="module" src="../../static/js/coin-info.js"></script>
+    {% endblock %}
+  </div>
+</div>

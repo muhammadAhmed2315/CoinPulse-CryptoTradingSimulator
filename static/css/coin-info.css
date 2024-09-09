@@ -1,0 +1,200 @@
+.coin-info-page {
+  padding: 4.8rem;
+}
+
+/* *************** SEARCH BAR SECTION *************** */
+.coin-info__search {
+  margin-bottom: 1.2rem;
+}
+
+.coin-info__search-input {
+  width: 100%;
+  padding: 10px;
+}
+
+.coin-info__search-results {
+  position: absolute;
+  width: 23.1%;
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  display: none; /* Hidden by default */
+  max-height: 400px; /* This should be adjusted to fit the height of 10 items */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.coin-info__search-results .result-item {
+  padding: 10px;
+  cursor: pointer;
+  border-top: 1px solid #cccccc;
+}
+
+.coin-info__search-results .result-item:first-child {
+  border-top: none;
+}
+
+.coin-info__search-results.result-item:hover {
+  background-color: #f9f9f9;
+}
+
+/* ******************** ACTUAL COIN INFO SECTION ******************** */
+.coin-info-container {
+  display: flex;
+}
+
+.coin-info-container__first {
+  padding: 0 2.4rem 2.4rem 0;
+  flex: 1;
+}
+
+.coin-info-container__second {
+  flex: 2;
+}
+
+.coin-info-container__third {
+  flex: 1;
+}
+
+/* ********** FIRST SECTION ********** */
+.coin-name,
+.coin-price-change,
+.coin-market-cap,
+.coin-volume,
+.coin-circulating-supply,
+.coin-total-supply,
+.coin-max-supply,
+.coin-fully-diluted-market-cap,
+.coin-ath,
+.coin-atl {
+  display: flex;
+}
+
+/* ***** COIN IMAGE + NAME + TICKER  ***** */
+.coin-name p:first-of-type {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.coin-name p:nth-of-type(2) {
+  color: #616e85;
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+/* ***** COIN PRICE ***** */
+.coin-price {
+  font-size: 4rem;
+  font-weight: 700;
+}
+
+/* ***** COIN PRICE CHANGE ***** */
+.coin-price-change {
+  align-items: center;
+}
+
+.coin-price-change img {
+  height: 1.44rem;
+  width: 1.44rem;
+}
+
+.coin-price-change p {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* ***** COIN OTHER INFO ***** */
+.coin-market-cap,
+.coin-volume,
+.coin-circulating-supply,
+.coin-total-supply,
+.coin-max-supply,
+.coin-fully-diluted-market-cap,
+.coin-ath,
+.coin-atl {
+  align-items: center;
+}
+
+.coin-market-cap .label,
+.coin-volume .label,
+.coin-circulating-supply .label,
+.coin-total-supply .label,
+.coin-max-supply .label,
+.coin-fully-diluted-market-cap .label,
+.coin-ath .label,
+.coin-atl .label {
+  color: #616e85;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.coin-market-cap .gap,
+.coin-volume .gap,
+.coin-circulating-supply .gap,
+.coin-total-supply .gap,
+.coin-max-supply .gap,
+.coin-fully-diluted-market-cap .gap,
+.coin-ath .gap,
+.coin-atl .gap {
+  flex: 100;
+}
+
+.coin-market-cap img,
+.coin-ath img,
+.coin-atl img {
+  height: 1.44rem;
+  width: 1.44rem;
+}
+
+.coin-market-cap .percentage-change,
+.coin-ath .percentage-change,
+.coin-atl .percentage-change {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.coin-market-cap .value,
+.coin-volume .value,
+.coin-circulating-supply .value,
+.coin-total-supply .value,
+.coin-max-supply .value,
+.coin-fully-diluted-market-cap .value,
+.coin-ath .value,
+.coin-atl .value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.coin-market-cap .rank {
+  color: #616e85;
+  background-color: #eff2f5;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.coin-market-cap,
+.coin-volume,
+.coin-circulating-supply,
+.coin-total-supply,
+.coin-max-supply,
+.coin-fully-diluted-market-cap,
+.coin-ath {
+  margin-bottom: 1.6rem;
+}
+
+/* ********** SECOND SECTION ********** */
+/* ***** BUTTONS ***** */
+.second-nav-buttons {
+  display: flex;
+}
+
+.sn-btn {
+  font-size: 1.4rem;
+  font-weight: 500;
+  padding: 1.6rem;
+  border-bottom: 1.6px solid #f5f5fa;
+}
+
+.sn-btn:hover {
+  color: #17c671;
+  border-bottom: 1.6px solid #17c671;
+  cursor: pointer;
+}

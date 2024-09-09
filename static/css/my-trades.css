@@ -36,6 +36,28 @@
   background-color: #0069d9;
 }
 
+/* *************** CHART CONTROL BUTTONS *************** */
+.chart-buttons {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.chart-btn {
+  color: #ffffff;
+  background-color: #17c671;
+  padding: 0.5rem 1rem;
+}
+
+.chart-btn:hover {
+  background-color: #0069d9;
+  cursor: pointer;
+}
+
+.chart-btn--total {
+  background-color: #0069d9;
+}
+
 /* ******************** CHART ******************** */
 .wallet-history-chart {
 }

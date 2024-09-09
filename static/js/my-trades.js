@@ -8,7 +8,6 @@ let currentSort = "timestamp_desc";
 let assetsValueHistory = [];
 let balanceHistory = [];
 let totalValueHistory = [];
-let historyTimestamps = [];
 
 /**
  * Fetches all of a user's previous transactions from the Flask server based on the
@@ -164,8 +163,8 @@ function addPaginationButtonEventListeners() {
       createTableRows(transactionsData.length);
       displayTransactionData();
 
-      nextButton.classList.toggle("hidden", currentPage == maxPages);
-      previousButton.classList.toggle("hidden", currentPage == 1);
+      nextButton.classList.toggle("hidden", currentPage === maxPages);
+      previousButton.classList.toggle("hidden", currentPage === 1);
     }
   });
 
@@ -177,8 +176,8 @@ function addPaginationButtonEventListeners() {
       createTableRows(transactionsData.length);
       displayTransactionData();
 
-      previousButton.classList.toggle("hidden", currentPage == 1);
-      nextButton.classList.toggle("hidden", currentPage == 10);
+      previousButton.classList.toggle("hidden", currentPage === 1);
+      nextButton.classList.toggle("hidden", currentPage === 10);
     }
   });
 }
@@ -313,7 +312,7 @@ function addSortingEventListeners() {
 
 /**
  * Asynchronously fetches wallet history from the server and updates the following
- * global variables: assetsValueHistory, balanceHistory, historyTimestamps, and
+ * global variables: assetsValueHistory, balanceHistory, and
  * totalValueHistory
  *
  * This function sends a POST request to the "/get_wallet_history" endpoint
@@ -345,10 +344,20 @@ async function getWalletHistory() {
       throw new Error("Server responded with an error: " + data.error);
     }
 
-    assetsValueHistory = data.assets_value_history;
-    balanceHistory = data.balance_history;
-    historyTimestamps = data.timestamps;
-    totalValueHistory = data.total_value_history;
+    for (let i = 0; i < data.data.timestamps.length; i++) {
+      assetsValueHistory.push([
+        data.data.timestamps[i],
+        data.data.assets_value_history[i],
+      ]);
+      balanceHistory.push([
+        data.data.timestamps[i],
+        data.data.balance_history[i],
+      ]);
+      totalValueHistory.push([
+        data.data.timestamps[i],
+        data.data.total_value_history[i],
+      ]);
+    }
   } catch (error) {
     console.error("Failed to fetch wallet history: ", error);
   }
@@ -356,8 +365,7 @@ async function getWalletHistory() {
 
 /**
  * Renders a line chart displaying wallet history data (based off of the following
- * global variables: assetsValueHistory, balanceHistory, historyTimestamps, and
- * totalValueHistory
+ * global variables: assetsValueHistory, balanceHistory, and totalValueHistory
  *
  * The chart visualizes three datasets: balance history, assets value history, and
  * total value history.
@@ -369,56 +377,77 @@ async function getWalletHistory() {
  * @function drawChart
  * @returns {void} Draws the chart on the canvas but does not return any value.
  */
-function drawChart() {
-  // Setup the chart
-  const labels = historyTimestamps;
-  const data = {
-    labels: labels,
-    datasets: [
+function drawChart(chartType = "totalValueHistory") {
+  let data = [];
+  let titleText = "";
+  let seriesName = "";
+  if (chartType === "assets") {
+    data = assetsValueHistory;
+    titleText = "Assets Value Over Time";
+    seriesName = "Assets Value";
+  } else if (chartType === "balance") {
+    data = balanceHistory;
+    titleText = "Balance Over Time";
+    seriesName = "Balance";
+  } else if (chartType === "total") {
+    data = totalValueHistory;
+    titleText = "Total Wallet Value Over Time";
+    seriesName = "Total Wallet Value";
+  }
+
+  Highcharts.stockChart("wallet-history-chart", {
+    rangeSelector: {
+      selected: 1,
+    },
+
+    title: {
+      text: titleText,
+    },
+
+    series: [
       {
-        label: "Balance History",
-        backgroundColor: "rgb(255, 99, 132)", // Dot colour
-        borderColor: "rgb(255, 99, 132)", // Line colour
-        data: balanceHistory,
-      },
-      {
-        label: "Assets Value History",
-        backgroundColor: "rgb(0, 255, 0)",
-        borderColor: "rgb(0, 255, 0)",
-        data: assetsValueHistory,
-      },
-      {
-        label: "Total Value History",
-        backgroundColor: "rgb(0, 0, 255)",
-        borderColor: "rgb(0, 0, 255)",
-        data: totalValueHistory,
+        name: seriesName,
+        data: data,
+        tooltip: { valueDecimals: 2 },
+        color: "#EB5757", // #17C671 #EB5757
+        backgroundColor: "#000",
       },
     ],
-  };
+  });
+}
 
-  // CONFIG Block
-  const config = {
-    type: "line",
-    data,
-    options: {
-      scales: {
-        y: {
-          ticks: {
-            // Function to format tick labels
-            callback: function (value, index, values) {
-              return "$" + value.toLocaleString();
-            },
-          },
-        },
-      },
-    },
-  };
+function addChartButtonEventListeners() {
+  document
+    .querySelector(".chart-btn--balance")
+    .addEventListener("click", function () {
+      resetChartButtons();
+      this.style.backgroundColor = "#0069d9";
+      drawChart("balance");
+    });
 
-  // Render the chart
-  const myChart = new Chart(
-    document.querySelector(".wallet-history-chart"),
-    config
-  );
+  document
+    .querySelector(".chart-btn--assets")
+    .addEventListener("click", function () {
+      resetChartButtons();
+      this.style.backgroundColor = "#0069d9";
+      drawChart("assets");
+    });
+
+  document
+    .querySelector(".chart-btn--total")
+    .addEventListener("click", function () {
+      resetChartButtons();
+      this.style.backgroundColor = "#0069d9";
+      drawChart("total");
+    });
+}
+
+function resetChartButtons() {
+  document.querySelector(".chart-btn--balance").style.backgroundColor =
+    "#17C671";
+  document.querySelector(".chart-btn--assets").style.backgroundColor =
+    "#17C671";
+  document.querySelector(".chart-btn--total").style.backgroundColor = "#17C671";
 }
 
 /**
@@ -441,7 +470,8 @@ async function main() {
   addSortingEventListeners();
 
   await getWalletHistory();
-  drawChart();
+  drawChart("total");
+  addChartButtonEventListeners();
 }
 
 main();

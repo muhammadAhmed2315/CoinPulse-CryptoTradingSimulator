@@ -1,7 +1,7 @@
 /* ******************** NEW TRADE SIDEBAR ******************** */
 .new-trade-sidebar {
-  width: 58.4rem;
-  height: 69.6rem;
+  width: 60rem;
+  height: 73.2rem;
   position: fixed;
   right: -100%;
   padding: 3.2rem;
@@ -12,6 +12,7 @@
   z-index: 100;
   top: 50%; /* Position at 50% of the viewport height */
   transform: translateY(-50%);
+  border-radius: 15px;
 }
 
 /* *************** HEADER *************** */
@@ -150,7 +151,7 @@
 }
 
 .nts-transaction-btns__btn {
-  width: 25.4rem;
+  width: 26rem;
   height: 4rem;
   display: flex;
   align-items: center;
@@ -179,49 +180,139 @@
   color: #ffffff !important;
 }
 
+/* *************** ORDER TYPE BUTTONS *************** */
+.nts-order-type-btns {
+  display: flex;
+  gap: 2.4rem;
+}
+
+.order-type-btn {
+  display: flex;
+  align-items: center;
+}
+
+.order-type-btn:hover {
+  cursor: pointer;
+}
+
+.order-type-btn:hover p,
+.order-type-btn:hover img {
+  filter: none;
+  color: black;
+}
+
+.order-type-btn img {
+  height: 1.6rem;
+  filter: brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%)
+    hue-rotate(202deg) brightness(90%) contrast(85%);
+}
+
+.order-type-btn p {
+  color: #9696bb;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
 /* *************** TRADE QUANTITY INPUTS *************** */
-.nts-quantity {
+.market-order-container,
+.limit-order-container,
+.stop-order-container {
   height: 12.6rem;
-  width: 50.3rem;
+  width: 53.6rem;
   background-color: #f5f5fa;
   display: flex;
   padding: 1.6rem;
   border-radius: 8px;
+  margin-bottom: 2rem; /* TODO DELETE THIS */
 }
 
-.nts-quantity__box p {
+.market-order--total .label,
+.market-order--amount .label,
+.limit-order--amount .label,
+.limit-order--price .label,
+.limit-order--total .label,
+.stop-order--amount .label,
+.stop-order--price .label,
+.stop-order--total .label {
   font-size: 1.8rem;
   font-weight: 500;
   color: #9696bb;
 }
 
-.nts-quantity__box .input-box {
-  background-color: #e9ecef;
+.market-order--total .input-box,
+.market-order--amount .input-box {
+  width: 25rem;
+}
+
+.limit-order--amount .input-box,
+.limit-order--price .input-box,
+.limit-order--total .input-box,
+.stop-order--amount .input-box,
+.stop-order--price .input-box,
+.stop-order--total .input-box {
+  width: 16rem;
+}
+
+.market-order--total .input-box input,
+.market-order--amount .input-box input {
+  width: 20rem;
+}
+
+.limit-order--amount .input-box input,
+.limit-order--price .input-box input,
+.limit-order--total .input-box input,
+.stop-order--amount .input-box input,
+.stop-order--price .input-box input,
+.stop-order--total .input-box input {
+  width: 10rem;
+}
+
+.input-box {
+  background-color: #ffffff;
   border: 1px solid #f0f0ef;
   height: 4rem;
-  width: 24rem;
   border-radius: 20px;
   color: #000000;
   display: flex;
   align-items: center;
 }
 
-.nts-quantity__box .input-box input,
-.nts-quantity__box .input-box input::placeholder {
+.input-box input,
+.input-box input::placeholder {
   font-size: 1.6rem;
   font-weight: 500;
   color: #000000;
   border: none;
-  background-color: #e9ecef;
+  background-color: #ffffff;
 }
 
-.nts-quantity__box .input-box input:focus {
+.input-box input:focus {
   outline: none;
 }
 
-.nts-quantity__box .input-box img {
+.input-box--disabled {
+  background-color: #e9ecef;
+}
+
+.input-box--disabled input {
+  background-color: #e9ecef;
+  color: #545490;
+  border: none;
+  outline: none;
+}
+
+.input-box--disabled input::placeholder {
+  background-color: #e9ecef;
+  color: #545490;
+  border: none;
+  outline: none;
+}
+
+.input-box img,
+.input-box img {
   height: 2.6rem;
   width: 2.6rem;
+  margin-right: 1rem;
 }
 
 /* *************** SHARE ON TIMELINE TOGGLE SWITCH *************** */

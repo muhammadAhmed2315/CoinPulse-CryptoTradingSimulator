@@ -41,7 +41,9 @@
 
   <!-- NEW TRADE SIDEBAR BUY + SELL BUTTONS -->
   <div class="nts-transaction-btns">
-    <h1 class="nts-transaction-btns__btn nts-transaction-btns__btn--buy transaction-btn-active">
+    <h1
+      class="nts-transaction-btns__btn nts-transaction-btns__btn--buy transaction-btn-active"
+    >
       Buy
     </h1>
     <h1 class="nts-transaction-btns__btn nts-transaction-btns__btn--sell">
@@ -49,34 +51,109 @@
     </h1>
   </div>
 
-  <!-- NEW TRADE SIDEBAR QUANTITY INPUT BOXES -->
-  <div class="nts-quantity">
-    <div class="nts-quantity__box nts-quantity__box--dollars">
-      <p>Dollars</p>
-      <div class="input-box input-box--dollars">
+  <!-- NEW TRADE SIDEBAR ORDER TYPE BUTTONS -->
+  <div class="nts-order-type-btns">
+    <!-- MARKET ORDER BUTTON -->
+    <div class="order-type-btn order-type-btn--market">
+      <img src="../../static/img/icons/line-chart.svg" />
+      <p>Market</p>
+    </div>
+
+    <!-- LIMIT ORDER BUTTON -->
+    <div class="order-type-btn order-type-btn--limit">
+      <img src="../../static/img/icons/pause-circle.svg" />
+      <p>Limit</p>
+    </div>
+
+    <!-- STOP ORDER BUTTON -->
+    <div class="order-type-btn order-type-btn--stop">
+      <img src="../../static/img/icons/stop.svg" />
+      <p>Stop</p>
+    </div>
+  </div>
+
+  <!-- MARKET ORDER TYPE INPUT -->
+  <div class="market-order-container">
+    <div class="market-order--total">
+      <p class="label">Total</p>
+      <div class="input-box">
         <img src="../../static/img/dollar_symbol.svg" />
-        <input class="input-box-active" type="text" placeholder="0.00" />
+        <input type="text" placeholder="0.00" />
       </div>
     </div>
 
-    <div class="nts-quantity__box nts-quantity__box--crypto">
-      <p>Crypto</p>
-      <div class="input-box input-box--crypto">
+    <div class="market-order--amount">
+      <p class="label">Amount</p>
+      <div class="input-box input-box--disabled">
         <img src="" />
-        <input type="text" placeholder="0.00" />
+        <input type="text" placeholder="0.00" disabled />
       </div>
     </div>
   </div>
 
-  <!-- NEW TRADE SHARE ON TIMELINE TOGGLE SWITCH -->
-   <div class="share-timeline-switch-container">
-    <p>Share On Timeline</p>
-    <label class="share-timeline-switch">
-      <input type="checkbox">
-      <span class="share-timeline-switch__slider"></span>
-    </label>
-   </div>
-    
+  <!-- LIMIT ORDER TYPE INPUT -->
+  <div class="limit-order-container">
+    <div class="limit-order--amount">
+      <p class="label">Amount</p>
+      <div class="input-box">
+        <img src="../../static/img/dollar_symbol.svg" />
+        <input type="text" placeholder="0.00" />
+      </div>
+    </div>
+
+    <div class="limit-order--price">
+      <p class="label">Price</p>
+      <div class="input-box">
+        <img src="../../static/img/dollar_symbol.svg" />
+        <input type="text" placeholder="0.00" />
+      </div>
+    </div>
+
+    <div class="limit-order--total">
+      <p class="label">Total</p>
+      <div class="input-box input-box--disabled">
+        <img src="../../static/img/dollar_symbol.svg" />
+        <input type="text" placeholder="0.00" disabled />
+      </div>
+    </div>
+    </div>
+
+    <!-- STOP ORDER TYPE INPUT -->
+    <div class="stop-order-container">
+      <div class="stop-order--amount">
+        <p class="label">Amount</p>
+        <div class="input-box">
+          <img src="" />
+          <input type="text" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="stop-order--price">
+        <p class="label">Price</p>
+        <div class="input-box">
+          <img src="../../static/img/dollar_symbol.svg" />
+          <input type="text" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="stop-order--total">
+        <p class="label">Total</p>
+        <div class="input-box input-box--disabled">
+          <img src="../../static/img/dollar_symbol.svg" />
+          <input type="text" placeholder="0.00" disabled />
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW TRADE SHARE ON TIMELINE TOGGLE SWITCH -->
+    <div class="share-timeline-switch-container">
+      <p>Share On Timeline</p>
+      <label class="share-timeline-switch">
+        <input type="checkbox" />
+        <span class="share-timeline-switch__slider"></span>
+      </label>
+    </div>
+
     <!-- NEW TRADE SIDEBAR COMMENT CONTAINER -->
     <div class="nts-comment">
       <input

@@ -80,7 +80,7 @@ class GNewsScraper:
 
         # Limit number of articles if necessary
         if 1 <= max_results <= 100:
-            articles = articles[: max_results + 1]
+            articles = articles[:max_results]
 
         return articles, date_generated
 

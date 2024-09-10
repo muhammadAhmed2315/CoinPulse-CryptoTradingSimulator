@@ -14,8 +14,9 @@ let currentCoin = {
   price_change_24h: 0,
   ticker: "",
 };
-let currentTransactionType = "buy";
 let coinNamesDict = {};
+let currentTransactionType = "buy";
+let currentOrderType = "market";
 
 /**
  * Caches a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]
@@ -49,6 +50,7 @@ async function cacheCoinNamesInSession() {
 
 // ////////// NEW TRADE SIDEBAR SEARCH BOX //////////
 function addNewTradeSidebarSearchEventListeners() {
+  // Event listener for when the user types something in the search bar
   document
     .querySelector(".nts-search-box input")
     .addEventListener("input", function () {
@@ -82,6 +84,8 @@ function addNewTradeSidebarSearchEventListeners() {
       }
     });
 
+  // Event listener for when user clicks a dynamically generated result item below
+  // the search bar
   document
     .querySelector(".nts-search-box div")
     .addEventListener("click", async function (e) {
@@ -115,6 +119,8 @@ function addNewTradeSidebarSearchEventListeners() {
       }
     });
 
+  // Event listener for removing all of the results when the user clicks elsewhere
+  // on the screen
   document.addEventListener("click", function (e) {
     if (
       !e.target.classList.contains("nts-search-box") &&
@@ -184,8 +190,22 @@ function updateNewTradeCoinInfo() {
   }
 
   document
-    .querySelector(".input-box--crypto img")
+    .querySelector(".market-order--amount img")
     .setAttribute("src", currentCoin.image);
+
+  document
+    .querySelector(".limit-order--amount img")
+    .setAttribute("src", currentCoin.image);
+
+  document
+    .querySelector(".stop-order--amount img")
+    .setAttribute("src", currentCoin.image);
+
+  document.querySelector(".limit-order--price input").value =
+    currentCoin.current_price;
+
+  document.querySelector(".stop-order--price input").value =
+    currentCoin.current_price;
 }
 
 // ////////// PLACE BUY ORDER BUTTON EVENT LISTENER BOX //////////
@@ -237,38 +257,6 @@ function addPlaceBuyOrderButtonEventListener() {
     });
 }
 
-// ////////// NEW TRADE INPUT QUANTITY BOX //////////
-function addNewTradeQuantityEventListeners() {
-  const dollarsInputContainer = document.querySelector(".input-box--dollars");
-  const cryptoInputContainer = document.querySelector(".input-box--crypto");
-  const dollarsInput = document.querySelector(".input-box--dollars input");
-  const cryptoInput = document.querySelector(".input-box--crypto input");
-
-  dollarsInput.addEventListener("input", function () {
-    const input = this.value.trim();
-
-    if (isNaN(input) || input.includes(",") || input.trim() === "") {
-      dollarsInput.value = "";
-      cryptoInput.value = "";
-    } else {
-      let quantity = parseFloat(input) / currentCoin.current_price;
-      cryptoInput.value = quantity;
-    }
-  });
-
-  cryptoInput.addEventListener("input", function () {
-    const input = this.value.trim();
-
-    if (isNaN(input) || input.includes(",") || input.trim() === "") {
-      dollarsInput.value = "";
-      cryptoInput.value = "";
-    } else {
-      let quantity = parseFloat(input) * currentCoin.current_price;
-      dollarsInput.value = quantity;
-    }
-  });
-}
-
 // //////////////////// NEW TRADE SIDEBAR ////////////////////
 function addNewTradeSidebarEventListeners() {
   document
@@ -309,6 +297,161 @@ function addTransactionButtonEventListeners() {
   });
 }
 
+// ////////// ORDER TYPE BUTTON EVENT LISTENERS //////////
+function addOrderTypeButtonEventListeners() {
+  // Have "Market" selected by default
+  document.querySelector(".order-type-btn--market img").style.filter = "none";
+  document.querySelector(".order-type-btn--market p").style.color = "#000000";
+
+  // Only show "Market" input box
+  document.querySelector(".limit-order-container").style.display = "none";
+  document.querySelector(".stop-order-container").style.display = "none";
+
+  document
+    .querySelector(".order-type-btn--market")
+    .addEventListener("click", function () {
+      currentOrderType = "market";
+      resetAllOrderTypeButtons();
+
+      hideAllOrderContainers();
+      document.querySelector(".market-order-container").style.display = "flex";
+
+      document.querySelector(".order-type-btn--market img").style.filter =
+        "none";
+      document.querySelector(".order-type-btn--market p").style.color =
+        "#000000";
+    });
+
+  document
+    .querySelector(".order-type-btn--limit")
+    .addEventListener("click", function () {
+      currentOrderType = "limit";
+      resetAllOrderTypeButtons();
+
+      hideAllOrderContainers();
+      document.querySelector(".limit-order-container").style.display = "flex";
+
+      document.querySelector(".order-type-btn--limit img").style.filter =
+        "none";
+      document.querySelector(".order-type-btn--limit p").style.color =
+        "#000000";
+    });
+
+  document
+    .querySelector(".order-type-btn--stop")
+    .addEventListener("click", function () {
+      currentOrderType = "stop";
+      resetAllOrderTypeButtons();
+
+      hideAllOrderContainers();
+      document.querySelector(".stop-order-container").style.display = "flex";
+
+      document.querySelector(".order-type-btn--stop img").style.filter = "none";
+      document.querySelector(".order-type-btn--stop p").style.color = "#000000";
+    });
+}
+
+function resetAllOrderTypeButtons() {
+  // Reset "Market" button
+  document.querySelector(".order-type-btn--market img").style.filter =
+    "brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%) hue-rotate(202deg) brightness(90%) contrast(85%)";
+  document.querySelector(".order-type-btn--market p").style.color = "#9696bb";
+
+  // Reset "Limit" button
+  document.querySelector(".order-type-btn--limit img").style.filter =
+    "brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%) hue-rotate(202deg) brightness(90%) contrast(85%)";
+  document.querySelector(".order-type-btn--limit p").style.color = "#9696bb";
+
+  // Reset "Stop" button
+  document.querySelector(".order-type-btn--stop img").style.filter =
+    "brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%) hue-rotate(202deg) brightness(90%) contrast(85%)";
+  document.querySelector(".order-type-btn--stop p").style.color = "#9696bb";
+}
+
+function hideAllOrderContainers() {
+  document.querySelector(".market-order-container").style.display = "none";
+  document.querySelector(".limit-order-container").style.display = "none";
+  document.querySelector(".stop-order-container").style.display = "none";
+}
+
+// ////////// ORDER TYPE INPUT QUANTITY BOX EVENT LISTENERS //////////
+function addOrderTypeInputEventListeners() {
+  addMarketOrderTypeInputEventListeners();
+  addLimitOrderTypeInputEventListeners();
+  addStopOrderTypeInputEventListeners();
+}
+
+function addMarketOrderTypeInputEventListeners() {
+  const totalInput = document.querySelector(".market-order--total input");
+  const amountOutput = document.querySelector(".market-order--amount input");
+  totalInput.addEventListener("input", function () {
+    const input = this.value.trim();
+    if (isNaN(input) || input.includes(",") || input.trim() === "") {
+      totalInput.value = "";
+      amountOutput.value = "";
+    } else {
+      let quantity = parseFloat(input) / currentCoin.current_price;
+      amountOutput.value = quantity;
+    }
+  });
+}
+
+function addLimitOrderTypeInputEventListeners() {
+  const amountInput = document.querySelector(".limit-order--amount input");
+  const priceInput = document.querySelector(".limit-order--price input");
+  const totalOutput = document.querySelector(".limit-order--total input");
+
+  amountInput.addEventListener("input", function () {
+    const input = this.value.trim();
+    if (isNaN(input) || input.includes(",") || input.trim() === "") {
+      amountInput.value = "";
+      totalOutput.value = "";
+    } else {
+      let quantity = parseFloat(input) * parseFloat(priceInput.value);
+      totalOutput.value = quantity;
+    }
+  });
+
+  priceInput.addEventListener("input", function () {
+    const input = this.value.trim();
+    if (isNaN(input) || input.includes(",") || input.trim() === "") {
+      priceInput.value = "";
+      amountOutput.value = "";
+    } else {
+      let quantity = parseFloat(input) * parseFloat(priceInput.value);
+      totalOutput.value = quantity;
+    }
+  });
+}
+
+function addStopOrderTypeInputEventListeners() {
+  const amountInput = document.querySelector(".stop-order--amount input");
+  const priceInput = document.querySelector(".stop-order--price input");
+  const totalOutput = document.querySelector(".stop-order--total input");
+
+  amountInput.addEventListener("input", function () {
+    const input = this.value.trim();
+    if (isNaN(input) || input.includes(",") || input.trim() === "") {
+      amountInput.value = "";
+      totalOutput.value = "";
+    } else {
+      let quantity = parseFloat(input) * parseFloat(priceInput.value);
+      totalOutput.value = quantity;
+    }
+  });
+
+  priceInput.addEventListener("input", function () {
+    const input = this.value.trim();
+    if (isNaN(input) || input.includes(",") || input.trim() === "") {
+      priceInput.value = "";
+      amountOutput.value = "";
+    } else {
+      let quantity = parseFloat(input) * parseFloat(priceInput.value);
+      totalOutput.value = quantity;
+    }
+  });
+}
+
 async function main() {
   await cacheCoinNamesInSession();
 
@@ -318,9 +461,10 @@ async function main() {
   await getCurrentCoinInfo();
   updateNewTradeCoinInfo();
 
-  addNewTradeQuantityEventListeners();
   addPlaceBuyOrderButtonEventListener();
   addTransactionButtonEventListeners();
+  addOrderTypeButtonEventListeners();
+  addOrderTypeInputEventListeners();
 }
 
 main();

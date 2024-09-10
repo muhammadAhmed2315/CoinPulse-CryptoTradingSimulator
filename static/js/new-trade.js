@@ -214,19 +214,39 @@ function addPlaceBuyOrderButtonEventListener() {
     .querySelector(".nts-place-order-btn-container")
     .addEventListener("click", function () {
       // Get input data
-      const type = currentTransactionType;
+      const transactionType = currentTransactionType;
+      const orderType = currentOrderType;
       const coin_id = currentCoin.id;
-      const quantity = parseFloat(
-        document.querySelector(".input-box--crypto input").value
-      );
       const comment = document.querySelector(".nts-comment__input").value;
       const price_per_unit = currentCoin.current_price;
+      let orderDetails = {};
+
+      if (orderType === "market") {
+        orderDetails["amount"] = parseFloat(
+          document.querySelector(".market-order--amount input").value
+        );
+      } else if (orderType == "limit") {
+        orderDetails["amount"] = parseFloat(
+          document.querySelector(".limit-order--amount input").value
+        );
+        orderDetails["price"] = parseFloat(
+          document.querySelector(".limit-order--price input").value
+        );
+      } else if (orderType == "stop") {
+        orderDetails["amount"] = parseFloat(
+          document.querySelector(".stop-order--amount input").value
+        );
+        orderDetails["price"] = parseFloat(
+          document.querySelector(".stop-order--price input").value
+        );
+      }
 
       const dataToSend = {
         transactionData: {
-          type: type,
+          transactionType: transactionType,
+          orderType: orderType,
+          orderDetails: orderDetails,
           coin_id: coin_id,
-          quantity: quantity,
           comment: comment,
           price_per_unit: price_per_unit,
         },
@@ -461,10 +481,10 @@ async function main() {
   await getCurrentCoinInfo();
   updateNewTradeCoinInfo();
 
-  addPlaceBuyOrderButtonEventListener();
   addTransactionButtonEventListeners();
   addOrderTypeButtonEventListeners();
   addOrderTypeInputEventListeners();
+  addPlaceBuyOrderButtonEventListener();
 }
 
 main();

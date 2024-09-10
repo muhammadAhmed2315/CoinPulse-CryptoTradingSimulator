@@ -5,6 +5,7 @@
 <form method="post">
   {{ form.hidden_tag() }} 
 
+  <!-- EMAIL LABEL + INPUT -->
   {{ form.email.label }} {{ form.email }}
   <br />
 
@@ -15,6 +16,18 @@
   </div>
   {% endfor %}
 
+  <!-- USERNAME LABEL + INPUT -->
+  {{ form.username.label }} {{ form.username }}
+  <br />
+
+  <!-- USERNAME ERROR MESSAGES -->
+  {% for error in form.username.errors %}
+  <div class="invalid-feedback">
+    {{ error }}
+  </div>
+  {% endfor %}
+
+  <!-- PASSWORD LABEL + INPUT -->
   {{ form.password.label }} {{ form.password }}
   <br />
   {{ form.pass_confirm.label }} {{ form.pass_confirm }}

@@ -137,37 +137,36 @@ def sort_transactions(transactions, sort="timestamp_desc"):
 @core.route("/process_transaction", methods=["POST"])
 @login_required
 def process_transaction():
-    # Validate data
+    # Ensure request contains necessary JSON data
     if not request.json or "transactionData" not in request.json:
         return jsonify({"error": "Missing transaction data"}), 400
 
     data = request.json["transactionData"]
 
+    # Check data contains all required fields
     required_fields = {
-        "type": False,
+        "transactionType": False,
+        "orderType": False,
+        "orderDetails": False,
         "coin_id": False,
-        "quantity": False,
-        "price_per_unit": False,
         "comment": False,
+        "price_per_unit": False,
     }
 
     for key in data:
         if key in required_fields:
             required_fields[key] = True
 
-    errors = ""
-
+    errors = []
     for key in required_fields:
         if not required_fields[key]:
-            errors += key + ", "
-
-    if errors:
-        errors = errors[:-2]
+            errors.append(key)
+    errors = ", ".join(errors)
 
     if any(field not in data for field in required_fields):
         return jsonify({"error": "Missing fields: " + errors}), 400
 
-    if data["type"] == "buy":
+    if data["orderType"] == "market" and data["transactionType"] == "buy":
         # Make sure user has enough balance (USD) to make transaction
         if not current_user.wallet.has_enough_balance(
             data["quantity"] * data["price_per_unit"]
@@ -181,7 +180,7 @@ def process_transaction():
                 400,
             )
 
-    elif data["type"] == "sell":
+    elif data["orderType"] == "market" and data["type"] == "sell":
         # Make sure user is not selling more coins than they own
         if not current_user.wallet.has_enough_coins(data["coin_id"], data["quantity"]):
             return (
@@ -192,6 +191,9 @@ def process_transaction():
                 ),
                 400,
             )
+
+    # TODO
+    # Figure out what changes need to be made to the Transaction class
 
     # Save the transaction in the database
     transaction = Transaction(

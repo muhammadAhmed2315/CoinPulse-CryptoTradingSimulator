@@ -27,8 +27,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_login import login_user, login_required, logout_user, current_user
 from flask import render_template, redirect, request, url_for, Blueprint, session
 from flask_mail import Message
-from login.forms import RequestPasswordResetForm
-from login.forms import PasswordResetForm
+from login.forms import RequestPasswordResetForm, PasswordResetForm, PickUsernameForm
 
 # This URLSafeTimedSerializer object will handle generating and verifying tokens
 serializer = URLSafeTimedSerializer(TOKEN_GENERATOR_SECRET_KEY)
@@ -94,7 +93,7 @@ def callback_discord():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for("core.dashboard"))
+    return redirect(url_for("user_authentication.pick_username"))
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
@@ -174,7 +173,7 @@ def callback_google():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for("core.dashboard"))
+    return redirect(url_for("user_authentication.pick_username"))
 
 
 # #################### DEFAULT AUTHENTICATION ####################
@@ -248,6 +247,7 @@ def register():
         input_email = form.email.data
         input_password = form.password.data
         input_pass_confirm = form.pass_confirm.data
+        input_username = form.username.data
 
         # Confirm email is valid format
         if not validate_email(input_email):
@@ -258,6 +258,24 @@ def register():
         user = User.query.filter_by(email=input_email).first()
         if user:
             form.email.errors.append("Email is already registered")
+            return render_template("login/register.html", form=form)
+
+        # Confirm username is in valid format
+        if not input_username[0].isalpha():
+            form.username.errors.append("Username must begin with a letter")
+            return render_template("/login/register.html", form=form)
+
+        for char in input_username:
+            if not char.isalpha() and not char.isdigit():
+                form.username.errors.append(
+                    "Username can only consist of alphanumeric characters"
+                )
+                return render_template("login/register.html", form=form)
+
+        # Confirm username is not already in use
+        user = User.query.filter_by(username=input_username).first()
+        if user:
+            form.username.errors.append("Username is already in use")
             return render_template("login/register.html", form=form)
 
         # Confirm password is not in too common list
@@ -282,7 +300,8 @@ def register():
             return render_template("login/register.html", form=form)
 
         # Save user information to database, create a wallet for them, and log them in
-        user = User(email=input_email, password=input_password)
+        print(input_username)
+        user = User(email=input_email, username=input_username, password=input_password)
         db.session.add(user)
         db.session.commit()
 
@@ -299,6 +318,46 @@ def register():
         # Redirect user to "You need to verify your email" page
         return redirect(url_for("user_authentication.verification_sent"))
     return render_template("login/register.html", form=form)
+
+
+@user_authentication.route("/pick_username", methods=["get", "post"])
+@login_required
+def pick_username():
+    # Redirect user if user already has a username
+    if current_user.username:
+        return redirect(url_for("core.dashboard"))
+
+    form = PickUsernameForm()
+
+    if form.is_submitted() and form.validate():
+        input_username = form.username.data
+
+        # Check username is in valid format
+        if not input_username[0].isalpha():
+            form.username.errors.append("Username must begin with a letter")
+            return render_template("login/pick-username.html", form=form)
+
+        for char in input_username:
+            if not char.isalpha() and not char.isdigit():
+                form.username.errors.append(
+                    "Username can only consist of alphanumeric characters"
+                )
+                return render_template("login/register.html", form=form)
+
+        # Confirm username is not already in use
+        user = User.query.filter_by(username=input_username).first()
+        if user:
+            form.username.errors.append("Username is already in use")
+            return render_template("login/register.html", form=form)
+
+        # Save username to database and redirect user to the home page
+        current_user.update_username(input_username)
+        db.session.add(current_user)
+        db.session.commit()
+
+        return redirect(url_for("core.dashboard"))
+
+    return render_template("login/pick-username.html", form=form)
 
 
 @user_authentication.route("/logout")

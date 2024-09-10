@@ -20,6 +20,15 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Log In")
 
 
+class PickUsernameForm(FlaskForm):
+    """Creates a form for users to pick a username"""
+
+    username = StringField(
+        "Username", render_kw={"placeholder": "john2024"}, validators=[DataRequired()]
+    )
+    submit = SubmitField("Submit")
+
+
 class RegisterForm(FlaskForm):
     """
     Creates a form for users to register by entering their email, password, and
@@ -30,6 +39,9 @@ class RegisterForm(FlaskForm):
         "Email",
         render_kw={"placeholder": "john@example.com"},
         validators=[DataRequired()],
+    )
+    username = StringField(
+        "Username", render_kw={"placeholder": "john2024"}, validators=[DataRequired()]
     )
     password = PasswordField(
         "Password",

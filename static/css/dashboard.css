@@ -70,3 +70,52 @@
 .open-positions-card:hover {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
 }
+
+/* ******************** MAIN PAGE ******************** */
+.main-page {
+  display: flex;
+}
+
+.main-page__feed {
+  flex: 2;
+}
+
+.main-page__positions {
+  flex: 1;
+}
+
+/* ********** GLOBAL FEED/MY FEED HEADER ********** */
+.feed-header {
+  margin-top: 4.8rem;
+  display: flex;
+  gap: 2rem;
+}
+
+.feed-header p {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #9696bb;
+}
+
+.feed-header p:hover {
+  color: #000000;
+  cursor: pointer;
+}
+
+/* ********** OVERVIEW/OPEN POSITIONS HEADER ********** */
+.positions-header {
+  display: flex;
+  margin-top: 4.8rem;
+  gap: 2rem;
+}
+
+.positions-header p {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #9696bb;
+}
+
+.positions-header p:hover {
+  color: #000000;
+  cursor: pointer;
+}

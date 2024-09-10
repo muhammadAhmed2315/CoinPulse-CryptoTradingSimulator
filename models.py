@@ -28,13 +28,16 @@ class User(db.Model, UserMixin):
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = db.Column(db.Text, nullable=False, unique=True)
+    username = db.Column(db.Text, unique=True)
     password_hash = db.Column(db.Text, nullable=True)
     provider = db.Column(db.Text, nullable=True)
     provider_id = db.Column(db.Text, nullable=True)
     verified = db.Column(Boolean, default=False, nullable=False)
     wallet = db.Relationship("Wallet", backref="owner", uselist=False)
 
-    def __init__(self, email, password=None, provider=None, provider_id=None):
+    def __init__(
+        self, email, username=None, password=None, provider=None, provider_id=None
+    ):
         """
         Initialises a new User instance.
 
@@ -46,11 +49,16 @@ class User(db.Model, UserMixin):
             provider_id: The OAuth provider's user identifier (if applicable)
         """
         self.email = email
+        if username:
+            self.username = username
         if password:
             self.password_hash = generate_password_hash(password)
         if provider and provider_id:
             self.provider = provider
             self.provider_id = provider_id
+
+    def update_username(self, username):
+        self.username = username
 
     def update_password(self, password):
         if not self.provider and self.provider_id:

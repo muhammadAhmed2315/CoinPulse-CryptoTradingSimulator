@@ -165,7 +165,9 @@ class Transaction(db.Model):
     __tablename__ = "transactions"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    type = db.Column(db.Text, nullable=False)
+    status = db.Column(db.Text, nullable=False)
+    transactionType = db.Column(db.Text, nullable=False)
+    orderType = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.Integer, default=lambda: int(time.time()), nullable=False)
     coin_id = db.Column(db.Text, nullable=False)
     quantity = db.Column(db.Float, nullable=False)
@@ -178,7 +180,9 @@ class Transaction(db.Model):
 
     def __init__(
         self,
-        type,
+        status,
+        transactionType,
+        orderType,
         coin_id,
         quantity,
         price_per_unit,
@@ -186,7 +190,9 @@ class Transaction(db.Model):
         comment,
         balance_before,
     ):
-        self.type = type
+        self.status = status
+        self.transactionType = transactionType
+        self.orderType = orderType
         self.coin_id = coin_id
         self.quantity = quantity
         self.comment = comment
@@ -198,6 +204,3 @@ class Transaction(db.Model):
             self.balance_after = balance_before - (quantity * price_per_unit)
         elif type == "sell":
             self.balance_after = balance_before + (quantity * price_per_unit)
-
-    def __repr__(self):
-        return f"#: {self.id}, {self.timestamp}, {self.type}, {self.coin_id}, {self.quantity}, {self.price_per_unit}, {self.total_value}, {self.comment}"

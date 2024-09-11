@@ -147,7 +147,7 @@ def process_transaction():
     required_fields = {
         "transactionType": False,
         "orderType": False,
-        "orderDetails": False,
+        "quantity": False,
         "coin_id": False,
         "comment": False,
         "price_per_unit": False,
@@ -166,8 +166,8 @@ def process_transaction():
     if any(field not in data for field in required_fields):
         return jsonify({"error": "Missing fields: " + errors}), 400
 
-    if data["orderType"] == "market" and data["transactionType"] == "buy":
-        # Make sure user has enough balance (USD) to make transaction
+    # Make sure user has enough balance (USD) to execute a buy order of any type
+    if data["transactionType"] == "buy":
         if not current_user.wallet.has_enough_balance(
             data["quantity"] * data["price_per_unit"]
         ):
@@ -179,9 +179,8 @@ def process_transaction():
                 ),
                 400,
             )
-
-    elif data["orderType"] == "market" and data["type"] == "sell":
-        # Make sure user is not selling more coins than they own
+    # Make sure user is not selling more coins than they own for any type of sell order
+    elif data["transactionType"] == "sell":
         if not current_user.wallet.has_enough_coins(data["coin_id"], data["quantity"]):
             return (
                 jsonify(
@@ -192,23 +191,25 @@ def process_transaction():
                 400,
             )
 
-    # TODO
-    # Figure out what changes need to be made to the Transaction class
+    # Get status value
+    status = "finished" if data["orderType"] == "market" else "open"
 
     # Save the transaction in the database
     transaction = Transaction(
-        type=data["type"],
-        coin_id=data["coin_id"],
+        status=status,
+        transactionType=data["transactionType"],
+        orderType=data["orderType"],
         quantity=data["quantity"],
+        coin_id=data["coin_id"],
+        comment=data["comment"],
         price_per_unit=data["price_per_unit"],
         wallet_id=current_user.wallet.id,
-        comment=data["comment"],
         balance_before=current_user.wallet.balance,
     )
 
     try:
         user_wallet = current_user.wallet
-        if transaction.type == "buy":
+        if transaction.orderType == "market" and transaction.transactionType == "buy":
             # Update wallet balance
             user_wallet.update_balance_subtract(
                 transaction.quantity * transaction.price_per_unit
@@ -216,8 +217,9 @@ def process_transaction():
 
             # Update wallet assets dictionary
             user_wallet.update_assets_add(transaction.coin_id, transaction.quantity)
-
-        elif transaction.type == "sell":
+        elif (
+            transaction.orderType == "market" and transaction.transactionType == "sell"
+        ):
             # Update wallet balance
             user_wallet.update_balance_add(
                 transaction.quantity * transaction.price_per_unit

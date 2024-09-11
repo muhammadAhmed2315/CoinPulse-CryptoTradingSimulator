@@ -101,18 +101,6 @@ function addNewTradeSidebarSearchEventListeners() {
 
           await getCurrentCoinInfo();
           updateNewTradeCoinInfo();
-
-          // Update amount box (.market-output-box)
-          let input = document
-            .querySelector(".input-box--dollars input")
-            .value.trim();
-
-          let quantity = parseFloat(input) / currentCoin.current_price;
-          quantity = quantity;
-
-          document
-            .querySelector(".input-box--crypto input")
-            .setAttribute("placeholder", quantity);
         }
       } else {
         document.querySelector(".search-box").value = "";
@@ -206,6 +194,18 @@ function updateNewTradeCoinInfo() {
 
   document.querySelector(".stop-order--price input").value =
     currentCoin.current_price;
+
+  document.querySelector(".market-order--amount input").value =
+    currentCoin.current_price *
+    document.querySelector(".market-order--total input").value;
+
+  document.querySelector(".limit-order--total input").value =
+    document.querySelector(".limit-order--amount input").value *
+    document.querySelector(".limit-order--price input").value;
+
+  document.querySelector(".stop-order--total input").value =
+    document.querySelector(".stop-order--amount input").value *
+    document.querySelector(".stop-order--price input").value;
 }
 
 // ////////// PLACE BUY ORDER BUTTON EVENT LISTENER BOX //////////
@@ -219,24 +219,24 @@ function addPlaceBuyOrderButtonEventListener() {
       const coin_id = currentCoin.id;
       const comment = document.querySelector(".nts-comment__input").value;
       const price_per_unit = currentCoin.current_price;
-      let orderDetails = {};
+      let quantity = 0;
 
       if (orderType === "market") {
-        orderDetails["amount"] = parseFloat(
+        quantity = parseFloat(
           document.querySelector(".market-order--amount input").value
         );
       } else if (orderType == "limit") {
-        orderDetails["amount"] = parseFloat(
+        quantity = parseFloat(
           document.querySelector(".limit-order--amount input").value
         );
-        orderDetails["price"] = parseFloat(
+        quantity = parseFloat(
           document.querySelector(".limit-order--price input").value
         );
       } else if (orderType == "stop") {
-        orderDetails["amount"] = parseFloat(
+        quantity = parseFloat(
           document.querySelector(".stop-order--amount input").value
         );
-        orderDetails["price"] = parseFloat(
+        quantity = parseFloat(
           document.querySelector(".stop-order--price input").value
         );
       }
@@ -245,7 +245,7 @@ function addPlaceBuyOrderButtonEventListener() {
         transactionData: {
           transactionType: transactionType,
           orderType: orderType,
-          orderDetails: orderDetails,
+          quantity: quantity,
           coin_id: coin_id,
           comment: comment,
           price_per_unit: price_per_unit,

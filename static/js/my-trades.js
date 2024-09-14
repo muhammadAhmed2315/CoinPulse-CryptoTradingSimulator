@@ -48,7 +48,8 @@ async function getTransactionData(page = 1, sort = "timestamp_desc") {
 function createTableRows(numRows = 25) {
   const markup = `
         <p class="transaction-id">RANDOM</p>
-        <p class="transaction-type">RANDOM</p>
+        <p class="transaction-order-type">RANDOM</p>
+        <p class="transaction-transaction-type">RANDOM</p>
         <p class="transaction-coin-name">RANDOM</p>
         <p class="transaction-quantity">RANDOM</p>
         <p class="transaction-price">RANDOM</p>
@@ -121,8 +122,10 @@ function displayTransactionData() {
 
     // Show the data
     row.querySelector(".transaction-id").textContent = transactionsData[i].id;
-    row.querySelector(".transaction-type").textContent =
-      transactionsData[i].type;
+    row.querySelector(".transaction-order-type").textContent =
+      transactionsData[i].orderType;
+    row.querySelector(".transaction-transaction-type").textContent =
+      transactionsData[i].transactionType;
     row.querySelector(".transaction-coin-name").textContent =
       transactionsData[i].coin_id;
     row.querySelector(".transaction-quantity").textContent =
@@ -201,13 +204,21 @@ function addSortingEventListeners() {
   // Dictionary mapping each sort type to its DOM element and the default text that
   // should be displayed at that heading
   const sortDOMElementDict = {
-    type_asc: [
+    order_type_asc: [
       document.querySelector(".my-trades-table__header-order-type"),
       "Order Type",
     ],
-    type_desc: [
+    order_type_desc: [
       document.querySelector(".my-trades-table__header-order-type"),
       "Order Type",
+    ],
+    transaction_type_asc: [
+      document.querySelector(".my-trades-table__header-transaction-type"),
+      "Transaction Type",
+    ],
+    transaction_type_desc: [
+      document.querySelector(".my-trades-table__header-transaction-type"),
+      "Transaction Type",
     ],
     coin_asc: [document.querySelector(".my-trades-table__header-coin"), "Coin"],
     coin_desc: [
@@ -274,7 +285,12 @@ function addSortingEventListeners() {
   // Array containing the information needed to set up an event listener for each table
   // column header
   const headingInfo = [
-    { cssClass: "order-type", sortName: "type", textLabel: "Order Type" },
+    { cssClass: "order-type", sortName: "order_type", textLabel: "Order Type" },
+    {
+      cssClass: "transaction-type",
+      sortName: "transaction_type",
+      textLabel: "Transaction Type",
+    },
     { cssClass: "coin", sortName: "coin", textLabel: "Coin" },
     { cssClass: "quantity", sortName: "quantity", textLabel: "Quantity" },
     { cssClass: "price", sortName: "price", textLabel: "Price" },

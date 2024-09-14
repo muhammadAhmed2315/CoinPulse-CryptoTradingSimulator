@@ -56,6 +56,10 @@
         <p class="feed-header__global-label">Global feed</p>
         <p class="feed-header__own-label">My feed</p>
       </div>
+
+      <div class="global-feedposts-container"></div>
+
+      <div class="own-feedposts-container"></div>
     </div>
 
     <div class="main-page__positions">
@@ -65,13 +69,22 @@
       </div>
     </div>
   </div>
-  {% endblock %}
-  <!-- prettier-ignore -->
-  {% block js_scripts %}
-  <script>
-    const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
-  </script>
-  <script type="module" src="../../static/js/dashboard.js"></script>
-  <script type="module" src="../../static/js/new-trade.js"></script>
-  {% endblock %}
 </div>
+<div id="page-end" style="height: 20px"></div>
+{% endblock %}
+<!-- prettier-ignore -->
+{% block js_scripts %}
+<script>
+  const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
+</script>
+<script
+  type="module"
+  src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+></script>
+<script
+  nomodule
+  src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+></script>
+<script type="module" src="../../static/js/dashboard.js"></script>
+<script type="module" src="../../static/js/new-trade.js"></script>
+{% endblock %}

@@ -65,7 +65,8 @@ def get_trades_info():
 
         for transaction in transactions:
             temp = {}
-            temp["type"] = transaction.type
+            temp["orderType"] = transaction.orderType
+            temp["transactionType"] = transaction.transactionType
             temp["id"] = transaction.id
             temp["timestamp"] = transaction.timestamp
             temp["coin_id"] = transaction.coin_id
@@ -96,12 +97,72 @@ def get_trades_info():
         )
 
 
+@core.route("/get_feedposts", methods=["POST"])
+@login_required
+def get_feedposts():
+    # TODO add error handling for this function (e.g., user has no transactions)
+    data = request.get_json()
+    type = data["type"]
+    page = data["page"]
+
+    if type == "global":
+        # Get transactions from the database that have public (true) visibility, and
+        # then order by most recent first (timestamp descending)
+        transactions = (
+            Transaction.query.filter_by(visibility=True)
+            .order_by(Transaction.timestamp.desc())
+            .all()
+        )
+    elif type == "own":
+        # Get transactions from the database that belong to the current user,
+        # regardless of their visibility
+        transactions = (
+            Transaction.query.filter_by(wallet_id=current_user.wallet.id)
+            .order_by(Transaction.timestamp.desc())
+            .all()
+        )
+
+    res = []
+
+    for transaction in transactions:
+        temp = {}
+
+        temp["username"] = transaction.wallet.owner.username
+        temp["timestamp"] = transaction.timestamp
+        temp["comment"] = transaction.comment
+        temp["likes"] = transaction.likes
+        temp["coin_id"] = transaction.coin_id
+        temp["quantity"] = transaction.quantity
+        temp["price_per_unit"] = transaction.price_per_unit
+        temp["transaction_type"] = transaction.transactionType
+        temp["order_type"] = transaction.orderType
+        if type == "own":
+            temp["visibility"] = transaction.visibility
+
+        res.append(temp)
+
+    res = res[(page - 1) * 10 : page * 10]
+
+    if res:
+        return jsonify({"success": "Feedposts successfully fetched", "data": res}), 200
+    else:
+        return jsonify({"success": "No feedposts to show"}), 200
+
+
 def sort_transactions(transactions, sort="timestamp_desc"):
     match sort:
-        case "type_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.type)
-        case "type_desc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.type, reverse=True)
+        case "order_type_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.orderType)
+        case "order_type_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.orderType, reverse=True
+            )
+        case "transaction_type_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.transactionType)
+        case "transaction_type_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.transactionType, reverse=True
+            )
         case "coin_asc":
             return sorted(transactions, key=lambda trnsctn: trnsctn.coin_id)
         case "coin_desc":
@@ -151,6 +212,7 @@ def process_transaction():
         "coin_id": False,
         "comment": False,
         "price_per_unit": False,
+        "visibility": False,
     }
 
     for key in data:
@@ -199,12 +261,13 @@ def process_transaction():
         status=status,
         transactionType=data["transactionType"],
         orderType=data["orderType"],
-        quantity=data["quantity"],
         coin_id=data["coin_id"],
-        comment=data["comment"],
+        quantity=data["quantity"],
         price_per_unit=data["price_per_unit"],
         wallet_id=current_user.wallet.id,
+        comment=data["comment"],
         balance_before=current_user.wallet.balance,
+        visibility=data["visibility"],
     )
 
     try:
@@ -301,6 +364,8 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
             data = response.json()
 
             for coin in data:
+                # TODO RESPONSIBLE FOR THE STIRNG INDICES MUST BE INTEGERS, NOT STR
+                # ERROR DO THIS1
                 coin_market_prices[coin["id"]] = coin["current_price"]
 
             # If more than one page of data needs to be fetched from the API, then

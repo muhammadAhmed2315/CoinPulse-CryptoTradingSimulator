@@ -176,6 +176,8 @@ class Transaction(db.Model):
     balance_before = db.Column(db.Float, nullable=False)
     balance_after = db.Column(db.Float, nullable=False)
     total_value = db.Column(db.Float, nullable=False)
+    likes = db.Column(db.Integer, default=0, nullable=False)
+    visibility = db.Column(db.Boolean, nullable=False)
     wallet_id = db.Column(UUID(as_uuid=True), db.ForeignKey("wallets.id"))
 
     def __init__(
@@ -189,7 +191,9 @@ class Transaction(db.Model):
         wallet_id,
         comment,
         balance_before,
+        visibility,
     ):
+        self.visibility = visibility
         self.status = status
         self.transactionType = transactionType
         self.orderType = orderType
@@ -200,7 +204,13 @@ class Transaction(db.Model):
         self.wallet_id = wallet_id
         self.total_value = quantity * price_per_unit
         self.balance_before = balance_before
-        if type == "buy":
+        if transactionType == "buy":
             self.balance_after = balance_before - (quantity * price_per_unit)
-        elif type == "sell":
+        elif transactionType == "sell":
             self.balance_after = balance_before + (quantity * price_per_unit)
+
+    def increment_likes(self):
+        self.likes += 1
+
+    def decrement_likes(self):
+        self.likes -= 1

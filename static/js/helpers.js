@@ -6,6 +6,13 @@ export const COINGECKO_API_OPTIONS = {
   },
 };
 
+export function toTitleCase(str) {
+  return str.replace(
+    /\w\S*/g,
+    (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+  );
+}
+
 // //////////////////// GET DICT OF ALL COIN NAMES + SYMBOLS + IDS ////////////////////
 /**
  * Returns a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]

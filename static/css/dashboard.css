@@ -74,6 +74,7 @@
 /* ******************** MAIN PAGE ******************** */
 .main-page {
   display: flex;
+  gap: 3rem;
 }
 
 .main-page__feed {
@@ -100,6 +101,123 @@
 .feed-header p:hover {
   color: #000000;
   cursor: pointer;
+}
+
+.global-feedposts-container,
+.own-feedposts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* ********** FEED BOX ********** */
+.feedpost {
+  background-color: #ffffff;
+  padding: 2.4rem;
+  border-radius: 8px;
+}
+
+/* ***** FEED BOX HEADER ***** */
+.feedpost-header {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+}
+
+.feedpost-header .profile-img {
+  height: 6rem;
+  border-radius: 50%;
+}
+
+.feedpost-header__first .username {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.feedpost-header__first .timestamp {
+  color: #828282;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.feedpost-header__second {
+  background-color: #f5f5fa;
+  border-radius: 8px;
+  margin-left: auto;
+
+  padding: 1.3rem 1rem;
+  width: 28.5rem;
+}
+
+.feedpost-header__second div {
+  justify-content: end;
+}
+
+.feedpost-header__second div:nth-of-type(1) {
+  color: #828279;
+  font-size: 2.4rem;
+  font-weight: 500;
+  gap: 0.5rem;
+
+  display: flex;
+}
+
+.feedpost-header__second div:nth-of-type(2) {
+  color: #828279;
+  font-size: 1.6rem;
+  font-weight: 400;
+  gap: 0.25rem;
+
+  display: flex;
+}
+
+/* ***** FEEDBOX COMMENTS SECTION ***** */
+.feedpost-comment {
+  color: #cccccc;
+  font-size: 2.6rem;
+  padding: 2.4rem 0;
+
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* ***** FEEDBOX LIKES SECTION ***** */
+.feedpost-likes {
+  display: flex;
+  font-size: 1.8rem;
+  padding: 2.4rem 0 0 0;
+  align-items: center;
+  justify-content: end;
+  gap: 0.25rem;
+}
+
+.like-btn.active {
+  animation: like 0.5s 1;
+  fill: red;
+  stroke: none;
+}
+
+.like-btn {
+  fill: transparent;
+  stroke: black;
+  stroke-width: 30;
+  transition: all 0.5s;
+  font-size: 2rem;
+}
+
+.like-btn:hover {
+  cursor: pointer;
+}
+
+@keyframes like {
+  0% {
+    transform: scale(1);
+  }
+  90% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1.1);
+  }
 }
 
 /* ********** OVERVIEW/OPEN POSITIONS HEADER ********** */

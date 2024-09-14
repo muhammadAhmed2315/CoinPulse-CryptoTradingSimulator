@@ -127,6 +127,7 @@ def get_feedposts():
     for transaction in transactions:
         temp = {}
 
+        temp["id"] = transaction.id
         temp["username"] = transaction.wallet.owner.username
         temp["timestamp"] = transaction.timestamp
         temp["comment"] = transaction.comment
@@ -147,6 +148,34 @@ def get_feedposts():
         return jsonify({"success": "Feedposts successfully fetched", "data": res}), 200
     else:
         return jsonify({"success": "No feedposts to show"}), 200
+
+
+@core.route("/update_likes", methods=["POST"])
+@login_required
+def update_likes():
+    data = request.get_json()
+    is_increment = data["isIncrement"]
+    transaction_id = data["transactionID"]
+
+    # TODO add in error handling for this function (what if id is not found?)
+    # Assuming for now the id is always found
+
+    transaction = Transaction.query.get(transaction_id)
+
+    if is_increment:
+        transaction.increment_likes()
+    else:
+        transaction.decrement_likes()
+
+    db.session.add(transaction)
+    db.session.commit()
+
+    # TODO add in return for if like count was not successfully updated
+
+    return jsonify(
+        {"success": "Like count successfully updated", "currLikes": transaction.likes},
+        200,
+    )
 
 
 def sort_transactions(transactions, sort="timestamp_desc"):

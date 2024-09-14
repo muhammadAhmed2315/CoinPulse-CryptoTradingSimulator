@@ -170,7 +170,52 @@ function renderFeedPosts(type) {
     div.querySelector(".likes-count").textContent = currFeedPost.likes;
 
     // TODO Add like button event listener
+    div.querySelector(".like-btn").addEventListener("click", async function () {
+      if (!this.classList.contains("active")) {
+        console.log("ACTIVE");
+        const response = (await updateLikeCounter(true, currFeedPost.id))[0];
+
+        console.log(response);
+
+        if (response.success) {
+          document.querySelector(".likes-count").textContent =
+            response.currLikes;
+        } else {
+          // TODO show error message popup
+        }
+      } else {
+        console.log("NOT ACTIVE");
+        const response = (await updateLikeCounter(false, currFeedPost.id))[0];
+
+        if (response.success) {
+          document.querySelector(".likes-count").textContent =
+            response.currLikes;
+        } else {
+          // TODO show error message popup
+        }
+      }
+    });
   }
+}
+
+// isIncrement = true (+1 like), else -1 like
+async function updateLikeCounter(isIncrement, transactionID) {
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      isIncrement: isIncrement,
+      transactionID: transactionID,
+    }),
+  };
+
+  const response = await fetch("/update_likes", fetchOptions);
+  const data = await response.json();
+
+  // TODO add error handling for if /update_likes doesn't return a success
+  return data;
 }
 
 function handleIntersect(entries) {

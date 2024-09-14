@@ -176,7 +176,7 @@ class Transaction(db.Model):
     balance_before = db.Column(db.Float, nullable=False)
     balance_after = db.Column(db.Float, nullable=False)
     total_value = db.Column(db.Float, nullable=False)
-    likes = db.Column(db.Integer, default=0, nullable=False)
+    likes = db.relationship("TransactionLikes", backref="transaction", uselist=False)
     visibility = db.Column(db.Boolean, nullable=False)
     wallet_id = db.Column(UUID(as_uuid=True), db.ForeignKey("wallets.id"))
 
@@ -209,8 +209,33 @@ class Transaction(db.Model):
         elif transactionType == "sell":
             self.balance_after = balance_before + (quantity * price_per_unit)
 
-    def increment_likes(self):
-        self.likes += 1
+    def add_like(self, user_id):
+        self.likes.add_user_like(user_id)
 
-    def decrement_likes(self):
-        self.likes -= 1
+    def remove_like(self, user_id):
+        self.likes.remove_user_like(user_id)
+
+    def get_number_of_likes(self):
+        return len(self.likes.liked_by_user_ids)
+
+
+class TransactionLikes(db.Model):
+    __tablename__ = "transaction_likes"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    liked_by_user_ids = db.Column(
+        MutableList.as_mutable(ARRAY(UUID(as_uuid=True))),
+        default=lambda: [],
+    )
+    transaction_id = db.Column(UUID(as_uuid=True), db.ForeignKey("transactions.id"))
+
+    def __init__(self, transaction_id):
+        self.transaction_id = transaction_id
+
+    def add_user_like(self, user_id):
+        if user_id not in self.liked_by_user_ids:
+            self.liked_by_user_ids.append(user_id)
+
+    def remove_user_like(self, user_id):
+        if user_id in self.liked_by_user_ids:
+            self.liked_by_user_ids.remove(user_id)

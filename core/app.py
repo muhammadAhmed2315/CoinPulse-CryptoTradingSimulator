@@ -3,7 +3,7 @@ import time
 import time
 from flask import render_template, request, Blueprint, jsonify, session
 from flask_login import current_user, login_required
-from models import User, Wallet, Transaction
+from models import User, Wallet, Transaction, TransactionLikes
 from constants import COINGECKO_API_KEY
 from extensions import db
 import time
@@ -14,6 +14,13 @@ core = Blueprint("core", __name__)
 @core.route("/dashboard")
 @login_required
 def dashboard():
+    """
+    Route to display the dashboard page for logged-in users.
+
+    Returns:
+        A rendered HTML template for the dashboard page, with the COINGECKO_API_KEY
+        available for use in the template.
+    """
     return render_template(
         "core/dashboard.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,
@@ -23,6 +30,18 @@ def dashboard():
 @core.route("/top_coins")
 @login_required
 def top_coins():
+    """
+    Route to display the top 100 coins available on the market (default = market cap
+    descending).
+
+    User can view the 100 top coins and information about them, sorted by market cap
+    ascending and descending, andvolume ascending and descending. Coins are shown in a
+    pagination component, with 10 coins per page.
+
+    Returns:
+        A rendered HTML template for the top coins page, with the COINGECKO_API_KEY
+        available for use in the template.
+    """
     return render_template(
         "core/top-coins.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,
@@ -32,6 +51,22 @@ def top_coins():
 @core.route("/my_trades")
 @login_required
 def my_trades():
+    """
+    Route to display the user's trade history page.
+
+
+    Since the CoinGecko API only updates coin prices every 45 seconds, this function
+    only triggers a background update of the user's wallet ValueHistory attribute if
+    the user has not visited the page within the last 45 seconds. If it has been more
+    than 45 seconds since the user's last visit, it triggers a background update of the
+    user's wallet ValueHistory attribute using the CoinGecko API. The last visit
+    timestamp is stored in the session and updated upon each visit.
+
+    Returns:
+        A rendered template of the "my-trades.html" page with the necessary context,
+        including the CoinGecko API key for front-end API calls.
+    """
+
     # Since the CoinGecko API only updates coin prices every 45 seconds, only call the
     # update wallet history function if this page was accessed 45 seconds or more ago
     last_visited = session.get("last_visited")
@@ -49,6 +84,32 @@ def my_trades():
 @core.route("/get_trades_info", methods=["POST"])
 @login_required
 def get_trades_info():
+    """
+    Fetches the transaction history for the currently logged-in user and returns (as a
+    JSON response) a paginated list of transactions sorted according to the specified
+    criteria.
+
+    Each page contains up to 25 transactions, and if a user has no transactions an
+    empty list is returned. The response also includes the total number of pages based
+    on the number of transactions.
+
+    The possible types of sorts are specified in the sort_transactions() function.
+
+    Args:
+        None. Expects JSON data in the request body with the following keys:
+        - page (int): The page number of the transactions to fetch.
+        - sort (str): The sorting criteria for the transactions.
+
+    Returns:
+        Response (JSON): A JSON object containing:
+        - success (str): A message indicating the success of the operation.
+        - data (list): A list of transaction details, or an empty list if no
+                       transactions exist for the current user.
+        - maxPages (int): The total number of pages for pagination.
+
+    Raises:
+        KeyError: If the 'page' or 'sort' keys are not found in the request data.
+    """
     data = request.get_json()
     page = data["page"]
     sort = data["sort"]
@@ -97,88 +158,23 @@ def get_trades_info():
         )
 
 
-@core.route("/get_feedposts", methods=["POST"])
-@login_required
-def get_feedposts():
-    # TODO add error handling for this function (e.g., user has no transactions)
-    data = request.get_json()
-    type = data["type"]
-    page = data["page"]
-
-    if type == "global":
-        # Get transactions from the database that have public (true) visibility, and
-        # then order by most recent first (timestamp descending)
-        transactions = (
-            Transaction.query.filter_by(visibility=True)
-            .order_by(Transaction.timestamp.desc())
-            .all()
-        )
-    elif type == "own":
-        # Get transactions from the database that belong to the current user,
-        # regardless of their visibility
-        transactions = (
-            Transaction.query.filter_by(wallet_id=current_user.wallet.id)
-            .order_by(Transaction.timestamp.desc())
-            .all()
-        )
-
-    res = []
-
-    for transaction in transactions:
-        temp = {}
-
-        temp["id"] = transaction.id
-        temp["username"] = transaction.wallet.owner.username
-        temp["timestamp"] = transaction.timestamp
-        temp["comment"] = transaction.comment
-        temp["likes"] = transaction.likes
-        temp["coin_id"] = transaction.coin_id
-        temp["quantity"] = transaction.quantity
-        temp["price_per_unit"] = transaction.price_per_unit
-        temp["transaction_type"] = transaction.transactionType
-        temp["order_type"] = transaction.orderType
-        if type == "own":
-            temp["visibility"] = transaction.visibility
-
-        res.append(temp)
-
-    res = res[(page - 1) * 10 : page * 10]
-
-    if res:
-        return jsonify({"success": "Feedposts successfully fetched", "data": res}), 200
-    else:
-        return jsonify({"success": "No feedposts to show"}), 200
-
-
-@core.route("/update_likes", methods=["POST"])
-@login_required
-def update_likes():
-    data = request.get_json()
-    is_increment = data["isIncrement"]
-    transaction_id = data["transactionID"]
-
-    # TODO add in error handling for this function (what if id is not found?)
-    # Assuming for now the id is always found
-
-    transaction = Transaction.query.get(transaction_id)
-
-    if is_increment:
-        transaction.increment_likes()
-    else:
-        transaction.decrement_likes()
-
-    db.session.add(transaction)
-    db.session.commit()
-
-    # TODO add in return for if like count was not successfully updated
-
-    return jsonify(
-        {"success": "Like count successfully updated", "currLikes": transaction.likes},
-        200,
-    )
-
-
 def sort_transactions(transactions, sort="timestamp_desc"):
+    """
+    Sorts a list of transactions based on the specified sorting criteria.
+
+    This function takes a list of transactions and sorts them according to the provided
+    `sort` argument. The sorting can be done on various transaction fields, such as
+    order type, transaction type, coin ID, quantity, price per unit, total value, and
+    timestamp. If no sorting argument is provided, it defaults to sorting by timestamp
+    in descending order.
+
+    Args:
+        transactions (list): A list of transaction objects to be sorted.
+        sort (str, optional): A string that specifies the sorting criteria.
+
+    Returns:
+        list: A sorted list of transactions based on the specified criteria.
+    """
     match sort:
         case "order_type_asc":
             return sorted(transactions, key=lambda trnsctn: trnsctn.orderType)
@@ -222,6 +218,111 @@ def sort_transactions(transactions, sort="timestamp_desc"):
             return sorted(
                 transactions, key=lambda trnsctn: trnsctn.timestamp, reverse=True
             )
+
+
+@core.route("/get_feedposts", methods=["POST"])
+@login_required
+def get_feedposts():
+    # TODO add error handling for this function (e.g., user has no transactions)
+    data = request.get_json()
+    type = data["type"]
+    page = data["page"]
+
+    if type == "global":
+        # Get transactions from the database that have public (true) visibility, and
+        # then order by most recent first (timestamp descending)
+        transactions = (
+            Transaction.query.filter_by(visibility=True)
+            .order_by(Transaction.timestamp.desc())
+            .all()
+        )
+    elif type == "own":
+        # Get transactions from the database that belong to the current user,
+        # regardless of their visibility
+        transactions = (
+            Transaction.query.filter_by(wallet_id=current_user.wallet.id)
+            .order_by(Transaction.timestamp.desc())
+            .all()
+        )
+
+    res = []
+
+    for transaction in transactions:
+        temp = {}
+
+        temp["id"] = transaction.id
+        temp["username"] = transaction.wallet.owner.username
+        temp["timestamp"] = transaction.timestamp
+        temp["comment"] = transaction.comment
+        temp["likes"] = transaction.get_number_of_likes()
+        temp["coin_id"] = transaction.coin_id
+        temp["quantity"] = transaction.quantity
+        temp["price_per_unit"] = transaction.price_per_unit
+        temp["transaction_type"] = transaction.transactionType
+        temp["order_type"] = transaction.orderType
+        if type == "own":
+            temp["visibility"] = transaction.visibility
+
+        # Has user liked the current transaction
+        if current_user.id in transaction.likes.liked_by_user_ids:
+            temp["curr_user_liked"] = True
+        else:
+            temp["curr_user_liked"] = False
+
+        res.append(temp)
+
+    res = res[(page - 1) * 10 : page * 10]
+
+    if res:
+        return jsonify({"success": "Feedposts successfully fetched", "data": res}), 200
+    else:
+        return jsonify({"success": "No feedposts to show"}), 200
+
+
+@core.route("/update_likes", methods=["POST"])
+@login_required
+def update_likes():
+    """
+    Updates the like count for a specific transaction.
+
+    Given a transaction ID and a boolean flag indicating whether to add or remove a
+    like from the transaction, the function adds or removes the current user from the
+    transaction's TransactionLikes.liked_by_user_ids list.
+
+    TODO:
+        - Add error handling for cases where the transaction ID is not found.
+        - Add return for cases where like count was not successfully updated.
+
+    Raises:
+        Exception: If any error occurs during the update process.
+    """
+    data = request.get_json()
+    is_increment = data["isIncrement"]
+    transaction_id = data["transactionID"]
+
+    # TODO add in error handling for this function (what if id is not found?)
+    # Assuming for now the id is always found
+
+    transaction = Transaction.query.get(transaction_id)
+
+    if is_increment:
+        transaction.add_like(current_user.id)
+    else:
+        transaction.remove_like(current_user.id)
+
+    db.session.add(transaction)
+    db.session.add(transaction.likes)
+    db.session.commit()
+
+    # TODO add in return for if like count was not successfully updated
+
+    return jsonify(
+        {
+            "success": "Like count successfully updated",
+            "currLikes": transaction.get_number_of_likes(),
+        },
+        200,
+    )
 
 
 @core.route("/process_transaction", methods=["POST"])
@@ -322,8 +423,14 @@ def process_transaction():
                 transaction.coin_id, transaction.quantity
             )
 
+        # Add transaction and update user_wallet in the database
         db.session.add(transaction)
         db.session.add(user_wallet)
+        db.session.commit()
+
+        # Create a TransactionLikes object for the transaction
+        transaction_likes = TransactionLikes(transaction_id=transaction.id)
+        db.session.add(transaction_likes)
         db.session.commit()
 
         update_user_wallet_value_in_background(user_wallet.id)
@@ -340,6 +447,18 @@ def process_transaction():
 @core.route("/get_wallet_history", methods=["POST"])
 @login_required
 def get_wallet_history():
+    """
+    Retrieves the wallet value history for the currently logged-in user.
+
+    This function, upon a successful request, returns a JSON response containing the
+    wallet value history, including balance, assets value, total value, and timestamps.
+
+    If the wallet value history could not be fetched from the database for any reason,
+    the function returns an error JSON response.
+
+    Raises:
+        Exception: If any error occurs during the retrieval process.
+    """
     try:
         wallet_history = current_user.wallet.value_history
 
@@ -362,6 +481,30 @@ def get_wallet_history():
 
 
 def update_user_wallet_value_in_background(current_wallet_id=None):
+    """
+    Updates the value of user wallets in the background by fetching the latest market
+    prices of owned cryptocurrencies from the CoinGecko API and recalculating the total
+    asset values for each wallet. If a specific wallet ID is provided, only that
+    wallet's value is updated; otherwise, the function updates all wallets in the
+    database.
+
+    - Retrieves a list of all unique cryptocurrency coins owned by all registered
+      users.
+    - Fetches the current market prices for these coins from the CoinGecko API, in
+      batches of up to 250 coins at a time to adhere to the API rate limits.
+    - Updates the balance value history, assets value history, total value history,
+      total current value, and timestamp for each wallet.
+    - If more than 250 coins need to be fetched, the function sleeps for 25 seconds
+      between API calls to avoid rate-limiting.
+    - If no wallet ID is provided (i.e., the function is updating the wallet value
+      history for all wallets in the database), the function sleeps for 30 minutes
+      (1800 seconds) before executing again, in order to control the frequency of
+      updates.
+
+    Args:
+        current_wallet_id (UUID, optional): The ID of a specific wallet to update.
+                                           If None, all wallets are updated.
+    """
     from app import app
 
     with app.app_context():
@@ -428,6 +571,18 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
 @core.route("/coin_info")
 @login_required
 def coin_info():
+    """
+    Renders the coin information page for the logged-in user. This page allows the user
+    to search for a coin by name and then provides detailed information about the coin
+    such as its current price, market cap, historical graphs, etc.
+
+    This function passes the CoinGecko API key to the template so that the front-end
+    can make API requests to fetch coin data.
+
+    Returns:
+        HTML: Renders the 'core/coin-info.html' template with the CoinGecko API key passed
+        as context for use in the front-end JavaScript.
+    """
     return render_template(
         "core/coin-info.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,

@@ -171,7 +171,7 @@ function displayCoins(pageNum) {
       i
     ].price_change_24h.toFixed(2)}%`;
     row.querySelector(".coin-price-change").style.color =
-      dataToShow[i].price_change_24h >= 0 ? "#EB5757" : "#17C671";
+      dataToShow[i].price_change_24h >= 0 ? "#17C671" : "#EB5757";
 
     row.querySelector(".coin-volume").textContent = `${dataToShow[
       i

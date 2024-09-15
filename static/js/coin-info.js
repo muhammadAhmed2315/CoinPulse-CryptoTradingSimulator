@@ -572,6 +572,10 @@ function renderNewsArticles() {
     .appendChild(seeMoreNewsButton);
 
   seeMoreNewsButton.addEventListener("click", function () {
+    console.log("BUTTON CLICKED");
+    this.textContent = "";
+    this.classList.toggle("button--loading");
+
     getAndRenderNewsArticles();
   });
 }

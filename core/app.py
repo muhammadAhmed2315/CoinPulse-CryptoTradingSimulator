@@ -7,7 +7,8 @@ from models import User, Wallet, Transaction, TransactionLikes
 from constants import COINGECKO_API_KEY
 from extensions import db
 import time
-from GNewsScraper import GNewsScraper, NewsArticle
+from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
+from YahooNewsScraper.NewsArticle import NewsArticle
 
 core = Blueprint("core", __name__)
 
@@ -587,4 +588,33 @@ def coin_info():
     return render_template(
         "core/coin-info.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,
+    )
+
+
+@core.route("/get_news", methods=["POST"])
+@login_required
+def get_news():
+    data = request.get_json()
+    query = data["query"]
+    page = data["page"]
+
+    # Create YahooNewsScraper object
+    scraper = YahooNewsScaper()
+
+    # Search for news articles
+    articles = scraper.search(query, page)
+
+    res = []
+
+    for article in articles:
+        temp = {}
+        temp["title"] = article.title
+        temp["url"] = article.url
+        temp["timestamp"] = article.timestamp
+        temp["description"] = article.description
+        temp["publisher"] = article.publisher
+        res.append(temp)
+
+    return jsonify(
+        {"success": "News articles successfully fetched", "articles": res}, 200
     )

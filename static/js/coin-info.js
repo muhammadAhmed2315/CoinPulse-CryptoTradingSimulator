@@ -14,7 +14,8 @@ let currentCoinHistoricalData = {
   market_caps: [],
   total_volumes: [],
 };
-let currentGNewsCountry = "United Kingdom";
+let newsArticlesToRender = [];
+let newsArticlesCurrentPage = 1;
 
 /**
  * Caches a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]
@@ -508,46 +509,82 @@ function updateCoinInfo() {
   ).textContent = `Recent ${currentCoin.name} News`;
 }
 
-function addCountryNewsDropdownEventListener() {
-  window.onclick = function (e) {
-    if (
-      !e.target.classList.contains("dropdown__btn") &&
-      !e.target.classList.contains("dropdown__btn--image") &&
-      !e.target.classList.contains("dropdown__btn--label")
-    ) {
-      const results = document.querySelector(".dropdown__content");
-
-      if (results.classList.contains("show")) {
-        results.classList.remove("show");
-      }
-    }
+async function getNewsArticles(query, page) {
+  // TODO add error handling to this function
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ page: page, query: query }),
   };
 
-  document
-    .querySelector(".dropdown__btn")
-    .addEventListener("click", function () {
-      document.querySelector(".dropdown__content").classList.toggle("show");
-    });
-
-  // Use event delegation to handle the click event on the dropdown items
-  document
-    .querySelector(".dropdown__content")
-    .addEventListener("click", function (e) {
-      if (e.target.classList.contains("dropdown__item")) {
-        // Hide dropdown
-        document.querySelector(".dropdown__content").classList.toggle("show");
-
-        // Update the dropdown button text
-        document.querySelector(
-          ".dropdown__btn img"
-        ).src = `../../static/img/flags/${e.target.textContent}.svg`;
-        document.querySelector(".dropdown__btn p").textContent =
-          e.target.textContent;
-      }
-    });
+  const response = await fetch("/get_news", fetchOptions);
+  const data = await response.json();
+  return data[0].articles;
 }
 
-async function fetchNews() {}
+function renderNewsArticles() {
+  // Delete "See more" button if it exists
+  let seeMoreNewsButton = document.querySelector(".see-more-btn--news");
+  if (seeMoreNewsButton) seeMoreNewsButton.remove();
+
+  for (const article of newsArticlesToRender) {
+    const markup = `
+    <div class="timeline-circle"></div>
+      <p class="news-post__timestamp">24 minutes ago</p>
+      <a class="news-post__title" href="">
+        Miners ditch Bitcoin for AI as enery costs surge
+      </a>
+      <p class="news-post__description">
+        Bitcoin miners are bailing on the crypto grind, switching gears to
+        artificial intelligence (AI) as rising energy costs make it...
+      </p>
+    <p class="news-post__author">Cryptopolitan</p>
+        `;
+
+    const newsPost = document.createElement("div");
+    newsPost.classList.add("news-post");
+    newsPost.innerHTML = markup;
+
+    // Change content of news post
+    // Update timestamp
+    newsPost.querySelector(".news-post__timestamp").textContent =
+      article.timestamp;
+
+    // Update title
+    newsPost.querySelector(".news-post__title").textContent = article.title;
+    newsPost.querySelector(".news-post__title").href = article.url;
+
+    // Update article description
+    newsPost.querySelector(".news-post__description").textContent =
+      article.description;
+
+    document.querySelector(".news-container").appendChild(newsPost);
+  }
+
+  // Add in "See more" button at the end
+  seeMoreNewsButton = document.createElement("div");
+  seeMoreNewsButton.classList.add("see-more-btn--news");
+  seeMoreNewsButton.textContent = "See more";
+  document
+    .querySelector(".see-more-btn--news__container")
+    .appendChild(seeMoreNewsButton);
+
+  seeMoreNewsButton.addEventListener("click", function () {
+    getAndRenderNewsArticles();
+  });
+}
+
+async function getAndRenderNewsArticles() {
+  newsArticlesToRender = await getNewsArticles(
+    currentCoin.name,
+    newsArticlesCurrentPage
+  );
+
+  renderNewsArticles();
+  newsArticlesCurrentPage++;
+}
 
 async function main() {
   await cacheCoinNamesInSession();
@@ -560,7 +597,8 @@ async function main() {
   drawOHLCChart();
 
   await addSecondNavButtonEventListeners();
-  addCountryNewsDropdownEventListener();
+
+  await getAndRenderNewsArticles();
 }
 
 main();

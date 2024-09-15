@@ -7,6 +7,7 @@ from models import User, Wallet, Transaction, TransactionLikes
 from constants import COINGECKO_API_KEY
 from extensions import db
 import time
+from GNewsScraper import GNewsScraper, NewsArticle
 
 core = Blueprint("core", __name__)
 

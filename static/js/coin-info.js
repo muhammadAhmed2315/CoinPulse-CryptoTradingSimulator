@@ -14,6 +14,7 @@ let currentCoinHistoricalData = {
   market_caps: [],
   total_volumes: [],
 };
+let currentGNewsCountry = "United Kingdom";
 
 /**
  * Caches a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]
@@ -399,9 +400,12 @@ function updateCoinInfo() {
     currentCoin.symbol;
 
   // Update coin price
-  document.querySelector(".coin-price").textContent = currentCoin.current_price
-    .toFixed(2)
-    .toLocaleString();
+  document.querySelector(".coin-price").textContent =
+    "$" +
+    new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(currentCoin.current_price);
 
   // Update coin price changes
   if (currentCoin.price_change_percentage_24h >= 0) {
@@ -497,7 +501,53 @@ function updateCoinInfo() {
     .toLocaleString()}`;
   document.querySelector(".coin-atl .timestamp").textContent =
     currentCoin.atl_date;
+
+  // Recent Coin News Heading
+  document.querySelector(
+    ".recent-news__title"
+  ).textContent = `Recent ${currentCoin.name} News`;
 }
+
+function addCountryNewsDropdownEventListener() {
+  window.onclick = function (e) {
+    if (
+      !e.target.classList.contains("dropdown__btn") &&
+      !e.target.classList.contains("dropdown__btn--image") &&
+      !e.target.classList.contains("dropdown__btn--label")
+    ) {
+      const results = document.querySelector(".dropdown__content");
+
+      if (results.classList.contains("show")) {
+        results.classList.remove("show");
+      }
+    }
+  };
+
+  document
+    .querySelector(".dropdown__btn")
+    .addEventListener("click", function () {
+      document.querySelector(".dropdown__content").classList.toggle("show");
+    });
+
+  // Use event delegation to handle the click event on the dropdown items
+  document
+    .querySelector(".dropdown__content")
+    .addEventListener("click", function (e) {
+      if (e.target.classList.contains("dropdown__item")) {
+        // Hide dropdown
+        document.querySelector(".dropdown__content").classList.toggle("show");
+
+        // Update the dropdown button text
+        document.querySelector(
+          ".dropdown__btn img"
+        ).src = `../../static/img/flags/${e.target.textContent}.svg`;
+        document.querySelector(".dropdown__btn p").textContent =
+          e.target.textContent;
+      }
+    });
+}
+
+async function fetchNews() {}
 
 async function main() {
   await cacheCoinNamesInSession();
@@ -510,6 +560,7 @@ async function main() {
   drawOHLCChart();
 
   await addSecondNavButtonEventListeners();
+  addCountryNewsDropdownEventListener();
 }
 
 main();

@@ -4,8 +4,8 @@ from typing import List
 from goose3 import Goose
 from bs4 import BeautifulSoup
 from datetime import datetime
-from constants import COUNTRY_CODES
-from NewsArticle import NewsArticle
+from .constants import COUNTRY_CODES
+from .NewsArticle import NewsArticle
 
 
 class GNewsScraper:

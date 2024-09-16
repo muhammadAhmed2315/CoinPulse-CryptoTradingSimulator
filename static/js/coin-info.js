@@ -108,9 +108,15 @@ function addSearchBarEventListeners() {
           await getCurrentCoinOHLC();
           drawOHLCChart();
 
+          resetNewsArticles();
+          await getAndRenderNewsArticles();
+
+          resetRedditPosts();
+          await getAndRenderRedditPosts();
+
           // Click the "OHLC Chart" button so that the OHLC chart is the one that is
           // shown
-          document.querySelector(".sn-btn--ohlc").click();
+          document.document.querySelector(".sn-btn--ohlc").click();
         }
       } else {
         document.querySelector(".search-box").value = "";
@@ -483,8 +489,10 @@ function updateCoinInfo() {
     currentCoin.total_supply.toLocaleString();
 
   // Max supply
-  document.querySelector(".coin-max-supply .value").textContent =
-    currentCoin.max_supply.toLocaleString();
+  const max_supply = currentCoin.max_supply
+    ? currentCoin.max_supply.toLocaleString()
+    : "∞";
+  document.querySelector(".coin-max-supply .value").textContent = max_supply;
 
   // Fully diluted market cap
   document.querySelector(
@@ -602,6 +610,17 @@ async function getAndRenderNewsArticles() {
 
   renderNewsArticles();
   newsArticlesCurrentPage++;
+}
+
+function resetNewsArticles() {
+  newsArticlesToRender = [];
+  newsArticlesCurrentPage = 1;
+  document.querySelector(".news-container").innerHTML = "";
+}
+
+function resetRedditPosts() {
+  redditPostsToRender = [];
+  document.querySelector(".reddit-posts-container").innerHTML = "";
 }
 
 async function getRedditPosts(query, after) {

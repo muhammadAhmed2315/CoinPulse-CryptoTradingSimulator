@@ -206,12 +206,14 @@
 
 /* ***** GRAPH ***** */
 
-/* ***** RECENT NEWS ***** */
-.coin-info-recent-news {
+/* ***** RECENT NEWS + REDDIT POSTS ***** */
+.coin-info-recent-news,
+.coin-info-reddit {
   margin-top: 4rem;
 }
 
-.recent-news__title {
+.recent-news__title,
+.reddit-posts__title {
   font-size: 2.4rem;
   font-weight: 700;
 }
@@ -222,8 +224,8 @@
 }
 
 .news-post {
-  height: 150px;
-  width: 735px;
+  height: 15rem;
+  width: 73.5rem;
   padding: 0 0 5px 15px;
   position: relative;
 
@@ -269,7 +271,7 @@
   font-weight: 700;
 }
 
-.timeline-circle {
+.news-timeline-circle {
   position: absolute;
 
   background-color: #d7dadd;
@@ -279,16 +281,18 @@
 
   top: 0;
   left: 0;
-  transform: translateX(-50%);
+  transform: translate(-50%, 15%);
 }
 
-/* ***** "SEE MORE" NEWS BUTTON ***** */
-.see-more-btn--news__container {
+/* ***** "SEE MORE" NEWS AND REDDIT BUTTONS ***** */
+.see-more-btn--news__container,
+.see-more-btn--reddit__container {
   display: flex;
   justify-content: center;
 }
 
-.see-more-btn--news {
+.see-more-btn--news,
+.see-more-btn--reddit {
   position: relative;
   background-color: #bfc2c4;
   font-size: 1.4rem;
@@ -302,7 +306,8 @@
   justify-content: center;
 }
 
-.see-more-btn--news:hover {
+.see-more-btn--news:hover,
+.see-more-btn--reddit:hover {
   cursor: pointer;
 }
 
@@ -330,4 +335,37 @@
   to {
     transform: rotate(1turn);
   }
+}
+
+/* ***** REDDIT POSTS ***** */
+.reddit-post,
+.reddit-post__main .last {
+  display: flex;
+  align-items: center;
+}
+
+.reddit-post {
+  height: 15rem;
+  width: 73.5rem;
+  padding-left: 1.5rem;
+
+  position: relative;
+  border-left: 1px solid #d7dadd;
+}
+
+.reddit-post:last-of-type {
+  border-left: none;
+}
+
+.reddit-timeline-circle {
+  position: absolute;
+
+  background-color: #d7dadd;
+  height: 1.2rem;
+  width: 1.2rem;
+  border-radius: 50px;
+
+  top: 0;
+  left: 0;
+  transform: translate(-50%, 15%);
 }

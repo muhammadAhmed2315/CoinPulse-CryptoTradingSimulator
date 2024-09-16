@@ -1,21 +1,21 @@
 import requests
-from RedditPost import RedditPost
-from RedditSub import RedditSub
-from RedditComment import RedditComment
+from .RedditPost import RedditPost
+from .RedditSub import RedditSub
+from .RedditComment import RedditComment
 from typing import List
+from constants import (
+    REDDIT_CLIENT_ID,
+    REDDIT_SECRET_KEY,
+    REDDIT_USERNAME,
+    REDDIT_PASSWORD,
+    REDDIT_USER_AGENT,
+)
 
 
 class RedditScraper:
     """Class for scraping posts, comments, subreddits, etc. from Reddit"""
 
-    def __init__(
-        self,
-        client_id: str,
-        secret_key: str,
-        username: str,
-        password: str,
-        user_agent: str,
-    ):
+    def __init__(self):
         """
         Initialises an instance of the RedditScraper class with the necessary
         authentication details for accessing the Reddit API. This constructor sets up
@@ -32,17 +32,17 @@ class RedditScraper:
         """
         # Creates an authentication object, which is used to securely pass user
         # credentials to API services
-        self.auth = requests.auth.HTTPBasicAuth(client_id, secret_key)
+        self.auth = requests.auth.HTTPBasicAuth(REDDIT_CLIENT_ID, REDDIT_SECRET_KEY)
 
         # Info needed to login to the Reddit API
         self.data = {
             "grant_type": "password",
-            "username": username,
-            "password": password,
+            "username": REDDIT_USERNAME,
+            "password": REDDIT_PASSWORD,
         }
 
         # Name + version of application making the request
-        self.headers = {"User-Agent": user_agent}
+        self.headers = {"User-Agent": REDDIT_USER_AGENT}
 
         # Requests access token from Reddit API
         access_token = requests.post(
@@ -98,12 +98,16 @@ class RedditScraper:
             posts.append(
                 RedditPost(
                     title=post["title"],
+                    thumbnail=(
+                        post["thumbnail"] if post["thumbnail"] != "self" else None
+                    ),
                     content=post["selftext"],
                     subreddit=post["subreddit_name_prefixed"],
                     score=post["ups"],
                     comment_count=post["num_comments"],
                     id=post["id"],
                     url=post["url"],
+                    timestamp=post["created_utc"],
                 )
             )
 
@@ -158,19 +162,26 @@ class RedditScraper:
             posts.append(
                 RedditPost(
                     title=post["title"],
+                    thumbnail=post["thumbnail"],
                     content=post["selftext"],
                     subreddit=post["subreddit_name_prefixed"],
                     score=post["ups"],
                     comment_count=post["num_comments"],
                     id=post["id"],
                     url=post["url"],
+                    timestamp=post["created_utc"],
                 )
             )
 
         return posts
 
     def search_keyword_in_reddit(
-        self, sort: str, keyword: str, time: str = "", limit: int = 10
+        self,
+        sort: str,
+        keyword: str,
+        time: str = "",
+        limit: int = 10,
+        after: str = "",
     ) -> List[RedditPost]:
         """Returns posts most relevant to a keyword in all of Reddit
 
@@ -182,6 +193,8 @@ class RedditScraper:
                   "year", or "all") (ONLY REQUIRED IF sort in ["relevance", "top",
                   "comments"])
             limit: Number of posts to return
+            after: The full name of the last post from the previous page (used by the
+                   Reddit API for pagination)
 
         Returns:
             A list of RedditPosts
@@ -198,12 +211,12 @@ class RedditScraper:
         if sort in ["relevance", "top", "comments"]:
             RedditScraper.validate_params(time=time)
             res = requests.get(
-                f"https://oauth.reddit.com/search.json?q={keyword}&limit={limit}&t={time}&sort={sort}",
+                f"https://oauth.reddit.com/search.json?q={keyword}&limit={limit}&t={time}&sort={sort}&after={after}",
                 headers=self.headers,
             ).json()
         else:
             res = requests.get(
-                f"https://oauth.reddit.com/search.json?q={keyword}&limit={limit}&sort={sort}",
+                f"https://oauth.reddit.com/search.json?q={keyword}&limit={limit}&sort={sort}&after={after}",
                 headers=self.headers,
             ).json()
 
@@ -214,12 +227,15 @@ class RedditScraper:
             posts.append(
                 RedditPost(
                     title=post["title"],
+                    thumbnail=post["thumbnail"],
                     content=post["selftext"],
                     subreddit=post["subreddit_name_prefixed"],
                     score=post["ups"],
                     comment_count=post["num_comments"],
                     id=post["id"],
                     url=post["url"],
+                    fullname=post["name"],
+                    timestamp=post["created_utc"],
                 )
             )
 
@@ -365,12 +381,3 @@ class RedditScraper:
             else:
                 if sort[0] not in allowed_sorts[sort[1]]:
                     raise ValueError("Invalid sort")
-
-
-redditScraper = RedditScraper(
-    "DgXAnMfXLGnryIPt4wbVXw",
-    "Ajgvgvb7oJ4YlGYf68xcyl2lkl8xiA",
-    "Spiritual_Echo_3761",
-    "BrieflyAI2024/",
-    "ExperimentAPI/0.0.1",
-)

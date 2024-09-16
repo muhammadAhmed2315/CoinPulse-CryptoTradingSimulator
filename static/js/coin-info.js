@@ -16,6 +16,7 @@ let currentCoinHistoricalData = {
 };
 let newsArticlesToRender = [];
 let newsArticlesCurrentPage = 1;
+let redditPostsToRender = [];
 
 /**
  * Caches a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]
@@ -367,15 +368,28 @@ async function addSecondNavButtonEventListeners() {
   document
     .querySelector(".sn-btn--news")
     .addEventListener("click", async function () {
-      // TODO
+      scrollToSection(event, "#recent-news-section", 90);
     });
 
   // "Reddit" Button Event Listener
   document
     .querySelector(".sn-btn--reddit")
     .addEventListener("click", async function () {
-      // TODO
+      scrollToSection(event, "#reddit-section", 90);
     });
+}
+
+function scrollToSection(event, sectionId, offset) {
+  event.preventDefault(); // Prevent the default jump to anchor behavior
+
+  const target = document.querySelector(sectionId);
+  const elementPosition = target.getBoundingClientRect().top + window.scrollY;
+  const offsetPosition = elementPosition - offset;
+
+  window.scrollTo({
+    top: offsetPosition,
+    behavior: "smooth", // Optional smooth scrolling
+  });
 }
 
 /**
@@ -531,7 +545,7 @@ function renderNewsArticles() {
 
   for (const article of newsArticlesToRender) {
     const markup = `
-    <div class="timeline-circle"></div>
+      <div class="news-timeline-circle"></div>
       <p class="news-post__timestamp">24 minutes ago</p>
       <a class="news-post__title" href="">
         Miners ditch Bitcoin for AI as enery costs surge
@@ -540,7 +554,7 @@ function renderNewsArticles() {
         Bitcoin miners are bailing on the crypto grind, switching gears to
         artificial intelligence (AI) as rising energy costs make it...
       </p>
-    <p class="news-post__author">Cryptopolitan</p>
+      <p class="news-post__author">Cryptopolitan</p>
         `;
 
     const newsPost = document.createElement("div");
@@ -590,6 +604,111 @@ async function getAndRenderNewsArticles() {
   newsArticlesCurrentPage++;
 }
 
+async function getRedditPosts(query, after) {
+  // TODO add error handling to this function
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: query, after: after }),
+  };
+
+  const response = await fetch("/get_reddit_posts", fetchOptions);
+  const data = await response.json();
+
+  return data[0].posts;
+}
+
+function renderRedditPosts() {
+  // Delete "See more" button if it exists
+  let seeMoreRedditButton = document.querySelector(".see-more-btn--reddit");
+  if (seeMoreRedditButton) seeMoreRedditButton.remove();
+
+  const markup = `
+    <div class="reddit-timeline-circle"></div>
+    <div class="reddit-post__main">
+      <p class="timestamp">4d ago</p>
+
+      <p class="subreddit">r/CryptoCurrency</p>
+      <a class="title" href="">
+        Bitcoin could soon hit six figures regardless of who wins U.S.
+        election, investors say
+      </a>
+
+      <p class="content">
+        Bitcoin (BTC) may soon kick off a significant bull run as it nears a
+        pivotal price point, according...
+      </p>
+
+      <div class="last">
+        <p class="score">495 votes</p>
+        <p>·</p>
+        <p class="comment-count">295 comments</p>
+      </div>
+    </div>
+    <img
+      class="reddit-post__thumbnail" loading="lazy"
+      src="https://b.thumbs.redditmedia.com/eQzJHUaDCQofnouZQAAPJqsYgbhSpgt5tE84pYwzBUM.jpg"
+    />
+  `;
+
+  for (const post of redditPostsToRender) {
+    const newDiv = document.createElement("div");
+    newDiv.classList.add("reddit-post");
+    newDiv.innerHTML = markup;
+
+    // Update content of reddit post
+    // Update timestamp
+    newDiv.querySelector(".timestamp").textContent = post.timestamp;
+
+    // Update subreddit
+    newDiv.querySelector(".subreddit").textConten = post.subreddit;
+
+    // Update title
+    newDiv.querySelector(".title").textContent = post.title;
+    newDiv.querySelector(".title").href = post.url;
+
+    // Update content
+    newDiv.querySelector(".content").textContent = post.content;
+
+    // Update score
+    newDiv.querySelector(".score").textContent = post.score + " votes";
+
+    // Update comment count
+    newDiv.querySelector(".comment-count").textContent = post.comment_count;
+
+    // Update thumbnail
+    newDiv.querySelector(".reddit-post__thumbnail").src = post.thumbnail;
+
+    document.querySelector(".reddit-posts-container").appendChild(newDiv);
+  }
+
+  // Add in "See more" button at the end
+  seeMoreRedditButton = document.createElement("div");
+  seeMoreRedditButton.classList.add("see-more-btn--reddit");
+  seeMoreRedditButton.textContent = "See more";
+  document
+    .querySelector(".see-more-btn--reddit__container")
+    .appendChild(seeMoreRedditButton);
+
+  seeMoreRedditButton.addEventListener("click", function () {
+    this.textContent = "";
+    this.classList.toggle("button--loading");
+
+    getAndRenderRedditPosts();
+  });
+}
+
+async function getAndRenderRedditPosts() {
+  const afterPost =
+    redditPostsToRender.length > 0 ? redditPostsToRender.at(-1).fullname : "";
+
+  redditPostsToRender = await getRedditPosts(currentCoin.name, afterPost);
+
+  renderRedditPosts();
+}
+
 async function main() {
   await cacheCoinNamesInSession();
 
@@ -603,6 +722,7 @@ async function main() {
   await addSecondNavButtonEventListeners();
 
   await getAndRenderNewsArticles();
+  await getAndRenderRedditPosts();
 }
 
 main();

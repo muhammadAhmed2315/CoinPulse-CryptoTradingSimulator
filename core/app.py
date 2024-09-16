@@ -9,6 +9,9 @@ from extensions import db
 import time
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 from YahooNewsScraper.NewsArticle import NewsArticle
+from RedditScraper.RedditScraper import RedditScraper
+from RedditScraper.RedditPost import RedditPost
+from datetime import datetime, timedelta
 
 core = Blueprint("core", __name__)
 
@@ -618,3 +621,57 @@ def get_news():
     return jsonify(
         {"success": "News articles successfully fetched", "articles": res}, 200
     )
+
+
+@core.route("/get_reddit_posts", methods=["POST"])
+@login_required
+def get_reddit_posts():
+    data = request.get_json()
+    query = data["query"]
+    after = data["after"]
+
+    # Create a RedditScraper object
+    scraper = RedditScraper()
+
+    # Search for Reddit posts
+    posts = scraper.search_keyword_in_reddit(
+        sort="relevance", keyword=query, time="week", limit=10, after=after
+    )
+
+    res = []
+
+    for post in posts:
+        temp = {}
+        temp["title"] = post.title
+        temp["thumbnail"] = post.thumbnail if post.thumbnail != "self" else ""
+        temp["content"] = post.content
+        temp["subreddit"] = post.subreddit
+        temp["score"] = post.score
+        temp["comment_count"] = post.comment_count
+        temp["id"] = post.id
+        temp["url"] = post.url
+        temp["fullname"] = post.fullname
+        temp["timestamp"] = time_ago(post.timestamp)
+        res.append(temp)
+
+    return jsonify({"success": "Reddit posts successfully fetched", "posts": res}, 200)
+
+
+def time_ago(unix_timestamp):
+    now = datetime.now()
+    past_time = datetime.fromtimestamp(unix_timestamp)
+    difference = now - past_time
+
+    seconds = difference.total_seconds()
+
+    if seconds < 60:
+        return "Just now"
+    elif seconds < 3600:
+        minutes = int(seconds // 60)
+        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+    elif seconds < 86400:
+        hours = int(seconds // 3600)
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    else:
+        days = int(seconds // 86400)
+        return f"{days} day{'s' if days > 1 else ''} ago"

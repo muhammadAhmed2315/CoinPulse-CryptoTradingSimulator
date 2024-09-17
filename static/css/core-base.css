@@ -83,17 +83,6 @@ body {
   font-weight: 700;
 }
 
-.portfolio-container__value-diff {
-  color: #17c671;
-  font-size: 1.44rem;
-  font-weight: 700;
-}
-
-.portfolio-container__diff-arrow {
-  height: 1.44rem;
-  width: 1.44rem;
-}
-
 /* ******************** MAIN PAGE CONTENT ******************** */
 
 .main-content {

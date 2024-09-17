@@ -72,14 +72,13 @@ def my_trades():
         A rendered template of the "my-trades.html" page with the necessary context,
         including the CoinGecko API key for front-end API calls.
     """
-
     # Since the CoinGecko API only updates coin prices every 45 seconds, only call the
     # update wallet history function if this page was accessed 45 seconds or more ago
-    last_visited = session.get("last_visited")
-    if last_visited is not None:
-        if int(time.time()) - last_visited >= 45:
+    last_visit = session.get("my_trades_last_visited")
+    if last_visit is not None:
+        if int(time.time()) - last_visit >= 45:
             update_user_wallet_value_in_background(current_user.wallet.id)
-    session["last_visited"] = int(time.time())
+    session["my_trades_last_visited"] = int(time.time())
 
     return render_template(
         "core/my-trades.html",
@@ -488,6 +487,53 @@ def get_wallet_history():
         )
 
 
+@core.route("/get_wallet_total_current_value", methods=["GET"])
+@login_required
+def get_wallet_total_current_value():
+    """
+    Retrieves the current total value of the current user's wallet (i.e., returns
+    wallet.get_wallet_total_current_value, which represents the total value of all
+    coins the user owns, plus their balance in USD).
+
+    This function, upon a successful request, returns a JSON response containing the
+    wallet total current value.
+
+    If the wallet value history could not be fetched from the database for any reason,
+    the function returns an error JSON response.
+
+    Raises:
+        Exception: If any error occurs during the retrieval process.
+    """
+    # Since the CoinGecko API only updates coin prices every 45 seconds, only call the
+    # update wallet history function if this page was accessed 45 seconds or more ago
+    last_visit = session.get("get_wallet_total_current_value_last_visited")
+    if last_visit is not None:
+        if int(time.time()) - last_visit >= 45:
+            update_user_wallet_value_in_background(current_user.wallet.id)
+    session["get_wallet_total_current_value_last_visited"] = int(time.time())
+
+    try:
+        current_total_value = current_user.wallet.total_current_value
+        return (
+            jsonify(
+                {"success": "Data successfully retrieved", "data": current_total_value}
+            ),
+            200,
+        )
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": (
+                        "An error occurred while retrieving the wallet's current total value from the database. "
+                        f"Reason: {str(e)}"
+                    )
+                }
+            ),
+            500,
+        )
+
+
 @core.route("/coin_info")
 @login_required
 def coin_info():
@@ -674,11 +720,15 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                     wallet.balance, curr_assets_value, current_time
                 )
 
+                wallet.total_current_value = wallet.balance + curr_assets_value
+
                 db.session.add(wallet)
             db.session.commit()
 
         if not current_wallet_id:
             time.sleep(1800)
+        else:
+            break
 
 
 def update_open_trades_in_background():
@@ -706,7 +756,6 @@ def update_open_trades_in_background():
         db.session.add(transaction.wallet)
 
     while True:
-        print("RUNNING")
         from app import app
 
         with app.app_context():
@@ -716,7 +765,9 @@ def update_open_trades_in_background():
             # Get list of all open trades (market and limit) in the database
             open_transactions = Transaction.query.filter(
                 or_(
-                    and_(Transaction.orderType == "limit", Transaction.status == "open"),
+                    and_(
+                        Transaction.orderType == "limit", Transaction.status == "open"
+                    ),
                     and_(Transaction.orderType == "stop", Transaction.status == "open"),
                 )
             ).all()
@@ -751,7 +802,8 @@ def update_open_trades_in_background():
                     ):
                         # If user has enough balance to execute the trade, execute it
                         if transaction.wallet.has_enough_balance(
-                            transaction.quantity * coin_market_prices[transaction.coin_id]
+                            transaction.quantity
+                            * coin_market_prices[transaction.coin_id]
                         ):
                             # Execute the order
                             print("JUST EXECUTED A LIMIT BUY ORDER")
@@ -787,7 +839,8 @@ def update_open_trades_in_background():
                         print("USER HAS ENOUGH BALANCE")
                         # If user has enough balance to execute the trade, execute it
                         if transaction.wallet.has_enough_balance(
-                            transaction.quantity * coin_market_prices[transaction.coin_id]
+                            transaction.quantity
+                            * coin_market_prices[transaction.coin_id]
                         ):
                             # Execute the order
                             print("JUST EXECUTED A STOP BUY ORDER")
@@ -810,5 +863,8 @@ def update_open_trades_in_background():
                         else:
                             # If user doesn't have enough coins to execute the trade, cancel it
                             cancel_open_order(transaction)
+
+            # Commit all changes to the database
+            db.session.commit()
 
         time.sleep(60)

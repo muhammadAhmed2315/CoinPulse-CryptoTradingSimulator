@@ -363,6 +363,7 @@ function addFeedMenuButtonEventListeners() {
   const ownFeedContainer = document.querySelector(".own-feedposts-container");
 
   globalFeedBtn.addEventListener("click", function () {
+    console.log("Global feed button clicked");
     // Hide both feedposts sections
     globalFeedContainer.style.display = "flex";
     ownFeedContainer.style.display = "none";
@@ -371,6 +372,7 @@ function addFeedMenuButtonEventListeners() {
   });
 
   ownFeedBtn.addEventListener("click", function () {
+    console.log("Own feed button clicked");
     ownFeedContainer.style.display = "flex";
     globalFeedContainer.style.display = "none";
 

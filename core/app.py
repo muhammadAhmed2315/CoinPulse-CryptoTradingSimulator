@@ -12,6 +12,7 @@ from YahooNewsScraper.NewsArticle import NewsArticle
 from RedditScraper.RedditScraper import RedditScraper
 from RedditScraper.RedditPost import RedditPost
 from datetime import datetime, timedelta
+from sqlalchemy import or_, and_
 
 core = Blueprint("core", __name__)
 
@@ -339,6 +340,8 @@ def process_transaction():
 
     data = request.json["transactionData"]
 
+    print(data)
+
     # Check data contains all required fields
     required_fields = {
         "transactionType": False,
@@ -485,94 +488,6 @@ def get_wallet_history():
         )
 
 
-def update_user_wallet_value_in_background(current_wallet_id=None):
-    """
-    Updates the value of user wallets in the background by fetching the latest market
-    prices of owned cryptocurrencies from the CoinGecko API and recalculating the total
-    asset values for each wallet. If a specific wallet ID is provided, only that
-    wallet's value is updated; otherwise, the function updates all wallets in the
-    database.
-
-    - Retrieves a list of all unique cryptocurrency coins owned by all registered
-      users.
-    - Fetches the current market prices for these coins from the CoinGecko API, in
-      batches of up to 250 coins at a time to adhere to the API rate limits.
-    - Updates the balance value history, assets value history, total value history,
-      total current value, and timestamp for each wallet.
-    - If more than 250 coins need to be fetched, the function sleeps for 25 seconds
-      between API calls to avoid rate-limiting.
-    - If no wallet ID is provided (i.e., the function is updating the wallet value
-      history for all wallets in the database), the function sleeps for 30 minutes
-      (1800 seconds) before executing again, in order to control the frequency of
-      updates.
-
-    Args:
-        current_wallet_id (UUID, optional): The ID of a specific wallet to update.
-                                           If None, all wallets are updated.
-    """
-    from app import app
-
-    with app.app_context():
-        coins = set()
-        coin_market_prices = {}
-
-        if current_wallet_id:
-            all_wallets = [db.session.query(Wallet).get(current_wallet_id)]
-        else:
-            # Get list of all coins currently owned by users
-            all_wallets = Wallet.query.all()
-
-        for wallet in all_wallets:
-            coins.update(set(wallet.assets.keys()))
-
-        coins = list(coins)
-
-        # Iterate over 250 coins at a time, getting their market data
-        # 250 because the CoinGecko API only allows fetching market data of 250 coins
-        # at a time
-        current_time = int(time.time())
-        for i in range(0, len(coins), 250):
-            current_batch = coins[i : i + 250]
-            current_batch = ",".join(current_batch)
-
-            url = "https://api.coingecko.com/api/v3/coins/markets"
-            params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
-            response = requests.get(url, params=params)
-            data = response.json()
-
-            for coin in data:
-                # TODO RESPONSIBLE FOR THE STIRNG INDICES MUST BE INTEGERS, NOT STR
-                # ERROR DO THIS1
-                coin_market_prices[coin["id"]] = coin["current_price"]
-
-            # If more than one page of data needs to be fetched from the API, then
-            # sleep for 25 seconds before making another request so that we don't get
-            # rate-limited by the API
-            if len(coins) > 250:
-                time.sleep(25)
-
-        # Update the following fields for each wallet:
-        # - balance_value_history
-        # - assets_value_history
-        # - total_value_history
-        # - total_current_value
-        for wallet in all_wallets:
-            # Get current total value of assets
-            curr_assets_value = 0
-            for key in wallet.assets:
-                curr_assets_value += wallet.assets[key] * coin_market_prices[key]
-
-            wallet.value_history.updateValueHistory(
-                wallet.balance, curr_assets_value, current_time
-            )
-
-            db.session.add(wallet)
-        db.session.commit()
-
-    if not current_wallet_id:
-        time.sleep(1800)
-
-
 @core.route("/coin_info")
 @login_required
 def coin_info():
@@ -675,3 +590,225 @@ def time_ago(unix_timestamp):
     else:
         days = int(seconds // 86400)
         return f"{days} day{'s' if days > 1 else ''} ago"
+
+
+def update_user_wallet_value_in_background(current_wallet_id=None):
+    """
+    Updates the value of user wallets in the background by fetching the latest market
+    prices of owned cryptocurrencies from the CoinGecko API and recalculating the total
+    asset values for each wallet. If a specific wallet ID is provided, only that
+    wallet's value is updated; otherwise, the function updates all wallets in the
+    database.
+
+    - Retrieves a list of all unique cryptocurrency coins owned by all registered
+      users.
+    - Fetches the current market prices for these coins from the CoinGecko API, in
+      batches of up to 250 coins at a time to adhere to the API rate limits.
+    - Updates the balance value history, assets value history, total value history,
+      total current value, and timestamp for each wallet.
+    - If more than 250 coins need to be fetched, the function sleeps for 25 seconds
+      between API calls to avoid rate-limiting.
+    - If no wallet ID is provided (i.e., the function is updating the wallet value
+      history for all wallets in the database), the function sleeps for 30 minutes
+      (1800 seconds) before executing again, in order to control the frequency of
+      updates.
+
+    Args:
+        current_wallet_id (UUID, optional): The ID of a specific wallet to update.
+                                           If None, all wallets are updated.
+    """
+    while True:
+        from app import app
+
+        with app.app_context():
+            coins = set()
+            coin_market_prices = {}
+
+            if current_wallet_id:
+                all_wallets = [db.session.query(Wallet).get(current_wallet_id)]
+            else:
+                # Get list of all coins currently owned by users
+                all_wallets = Wallet.query.all()
+
+            for wallet in all_wallets:
+                coins.update(set(wallet.assets.keys()))
+
+            coins = list(coins)
+
+            # Iterate over 250 coins at a time, getting their market data
+            # 250 because the CoinGecko API only allows fetching market data of 250 coins
+            # at a time
+            current_time = int(time.time())
+            for i in range(0, len(coins), 250):
+                current_batch = coins[i : i + 250]
+                current_batch = ",".join(current_batch)
+
+                url = "https://api.coingecko.com/api/v3/coins/markets"
+                params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
+                response = requests.get(url, params=params)
+                data = response.json()
+
+                for coin in data:
+                    # TODO RESPONSIBLE FOR THE STIRNG INDICES MUST BE INTEGERS, NOT STR
+                    # ERROR DO THIS1
+                    coin_market_prices[coin["id"]] = coin["current_price"]
+
+                # If more than one page of data needs to be fetched from the API, then
+                # sleep for 25 seconds before making another request so that we don't get
+                # rate-limited by the API
+                if len(coins) > 250:
+                    time.sleep(25)
+
+            # Update the following fields for each wallet:
+            # - balance_value_history
+            # - assets_value_history
+            # - total_value_history
+            # - total_current_value
+            for wallet in all_wallets:
+                # Get current total value of assets
+                curr_assets_value = 0
+                for key in wallet.assets:
+                    curr_assets_value += wallet.assets[key] * coin_market_prices[key]
+
+                wallet.value_history.updateValueHistory(
+                    wallet.balance, curr_assets_value, current_time
+                )
+
+                db.session.add(wallet)
+            db.session.commit()
+
+        if not current_wallet_id:
+            time.sleep(1800)
+
+
+def update_open_trades_in_background():
+    def cancel_open_order(transaction):
+        transaction.cancel_open_order(coin_market_prices[transaction.coin_id])
+        db.session.add(transaction)
+
+    def execute_open_order(transaction, is_buy):
+        transaction.execute_open_order(coin_market_prices[transaction.coin_id])
+        if is_buy:
+            transaction.wallet.update_balance_subtract(
+                transaction.quantity * coin_market_prices[transaction.coin_id]
+            )
+            transaction.wallet.update_assets_add(
+                transaction.coin_id, transaction.quantity
+            )
+        else:
+            transaction.wallet.update_balance_add(
+                transaction.quantity * coin_market_prices[transaction.coin_id]
+            )
+            transaction.wallet.update_assets_subtract(
+                transaction.coin_id, transaction.quantity
+            )
+        db.session.add(transaction)
+        db.session.add(transaction.wallet)
+
+    while True:
+        print("RUNNING")
+        from app import app
+
+        with app.app_context():
+            coins = set()
+            coin_market_prices = {}
+
+            # Get list of all open trades (market and limit) in the database
+            open_transactions = Transaction.query.filter(
+                or_(
+                    and_(Transaction.orderType == "limit", Transaction.status == "open"),
+                    and_(Transaction.orderType == "stop", Transaction.status == "open"),
+                )
+            ).all()
+
+            # Get all unique coins involved in open trades
+            for transaction in open_transactions:
+                coins.add(transaction.coin_id)
+
+            # Get market prices for all coins involved in open trades, iterating through
+            # 250 coins at a time to adhere to CoinGecko API rate limits
+            coins, coin_market_prices = list(coins), {}
+
+            for i in range(0, len(coins), 250):
+                current_batch = coins[i : i + 250]
+                current_batch = ",".join(current_batch)
+
+                url = "https://api.coingecko.com/api/v3/coins/markets"
+                params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
+                response = requests.get(url, params=params)
+                data = response.json()
+
+                for coin in data:
+                    coin_market_prices[coin["id"]] = coin["current_price"]
+
+            # Update each open trade, seeing if it can be closed
+            for transaction in open_transactions:
+                if transaction.orderType == "limit":
+                    if (
+                        transaction.transactionType == "buy"
+                        and coin_market_prices[transaction.coin_id]
+                        <= transaction.price_per_unit
+                    ):
+                        # If user has enough balance to execute the trade, execute it
+                        if transaction.wallet.has_enough_balance(
+                            transaction.quantity * coin_market_prices[transaction.coin_id]
+                        ):
+                            # Execute the order
+                            print("JUST EXECUTED A LIMIT BUY ORDER")
+                            execute_open_order(transaction, True)
+                        else:
+                            # If user doesn't have enough balance to execute the trade, cancel it
+                            cancel_open_order(transaction)
+                    elif (
+                        transaction.transactionType == "sell"
+                        and coin_market_prices[transaction.coin_id]
+                        >= transaction.price_per_unit
+                    ):
+                        # If the user has enough coins to execute the trade, execute it
+                        if transaction.wallet.has_enough_coins(
+                            transaction.coin_id, transaction.quantity
+                        ):
+                            # Execute the order
+                            print("JUST EXECUTED A LIMIT SELL ORDER")
+                            execute_open_order(transaction, False)
+                        else:
+                            # If user doesn't have enough coins to execute the trade, cancel it
+                            cancel_open_order(transaction)
+                elif transaction.orderType == "stop":
+                    print("STOP ORDER")
+                    print("FIRST >= SECOND")
+                    print(coin_market_prices[transaction.coin_id])
+                    print(transaction.price_per_unit)
+                    if (
+                        transaction.transactionType == "buy"
+                        and coin_market_prices[transaction.coin_id]
+                        >= transaction.price_per_unit
+                    ):
+                        print("USER HAS ENOUGH BALANCE")
+                        # If user has enough balance to execute the trade, execute it
+                        if transaction.wallet.has_enough_balance(
+                            transaction.quantity * coin_market_prices[transaction.coin_id]
+                        ):
+                            # Execute the order
+                            print("JUST EXECUTED A STOP BUY ORDER")
+                            execute_open_order(transaction, True)
+                        else:
+                            # If user doesn't have enough balance to execute the trade, cancel it
+                            cancel_open_order(transaction)
+                    elif (
+                        transaction.transactionType == "sell"
+                        and coin_market_prices[transaction.coin_id]
+                        <= transaction.price_per_unit
+                    ):
+                        # If the user has enough coins to execute the trade, execute it
+                        if transaction.wallet.has_enough_coins(
+                            transaction.coin_id, transaction.quantity
+                        ):
+                            # Execute the order
+                            print("JUST EXECUTED A STOP SELL ORDER")
+                            execute_open_order(transaction, False)
+                        else:
+                            # If user doesn't have enough coins to execute the trade, cancel it
+                            cancel_open_order(transaction)
+
+        time.sleep(60)

@@ -268,7 +268,7 @@ function addPlaceBuyOrderButtonEventListener() {
       const orderType = currentOrderType;
       const coin_id = currentCoin.id;
       const comment = document.querySelector(".nts-comment__input").value;
-      const price_per_unit = currentCoin.current_price;
+      let price_per_unit = currentCoin.current_price;
       let quantity = 0;
 
       if (orderType === "market") {
@@ -279,14 +279,14 @@ function addPlaceBuyOrderButtonEventListener() {
         quantity = parseFloat(
           document.querySelector(".limit-order--amount input").value
         );
-        quantity = parseFloat(
+        price_per_unit = parseFloat(
           document.querySelector(".limit-order--price input").value
         );
       } else if (orderType == "stop") {
         quantity = parseFloat(
           document.querySelector(".stop-order--amount input").value
         );
-        quantity = parseFloat(
+        price_per_unit = parseFloat(
           document.querySelector(".stop-order--price input").value
         );
       }

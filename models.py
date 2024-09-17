@@ -33,7 +33,7 @@ class User(db.Model, UserMixin):
     provider = db.Column(db.Text, nullable=True)
     provider_id = db.Column(db.Text, nullable=True)
     verified = db.Column(Boolean, default=False, nullable=False)
-    wallet = db.Relationship("Wallet", backref="owner", uselist=False)
+    wallet = db.relationship("Wallet", backref="owner", uselist=False)
 
     def __init__(
         self, email, username=None, password=None, provider=None, provider_id=None
@@ -162,6 +162,10 @@ class ValueHistory(db.Model):
 
 
 class Transaction(db.Model):
+    """
+    status = "open" | "finished" | "cancelled"
+    """
+
     __tablename__ = "transactions"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -172,9 +176,10 @@ class Transaction(db.Model):
     coin_id = db.Column(db.Text, nullable=False)
     quantity = db.Column(db.Float, nullable=False)
     price_per_unit = db.Column(db.Float, nullable=False)
+    price_per_unit_at_execution = db.Column(db.Float)
     comment = db.Column(db.Text)
     balance_before = db.Column(db.Float, nullable=False)
-    balance_after = db.Column(db.Float, nullable=False)
+    balance_after = db.Column(db.Float)
     total_value = db.Column(db.Float, nullable=False)
     likes = db.relationship("TransactionLikes", backref="transaction", uselist=False)
     visibility = db.Column(db.Boolean, nullable=False)
@@ -192,6 +197,7 @@ class Transaction(db.Model):
         comment,
         balance_before,
         visibility,
+        price_per_unit_at_execution=None,
     ):
         self.visibility = visibility
         self.status = status
@@ -204,10 +210,16 @@ class Transaction(db.Model):
         self.wallet_id = wallet_id
         self.total_value = quantity * price_per_unit
         self.balance_before = balance_before
-        if transactionType == "buy":
-            self.balance_after = balance_before - (quantity * price_per_unit)
-        elif transactionType == "sell":
-            self.balance_after = balance_before + (quantity * price_per_unit)
+
+        if orderType == "market":
+            self.price_per_unit_at_execution = price_per_unit
+            if transactionType == "buy":
+                self.balance_after = balance_before - (quantity * price_per_unit)
+            elif transactionType == "sell":
+                self.balance_after = balance_before + (quantity * price_per_unit)
+        elif orderType == "limit" or orderType == "stop":
+            self.price_per_unit_at_execution = None
+            self.balance_after = None
 
     def add_like(self, user_id):
         self.likes.add_user_like(user_id)
@@ -217,6 +229,24 @@ class Transaction(db.Model):
 
     def get_number_of_likes(self):
         return len(self.likes.liked_by_user_ids)
+
+    def execute_open_order(self, price_per_unit_at_execution):
+        self.price_per_unit_at_execution = price_per_unit_at_execution
+
+        if self.transactionType == "buy":
+            self.balance_after = self.balance_before - (
+                self.quantity * price_per_unit_at_execution
+            )
+        elif self.transactionType == "sell":
+            self.balance_after = self.balance_before + (
+                self.quantity * price_per_unit_at_execution
+            )
+        self.status = "finished"
+
+    def cancel_open_order(self, price_per_unit_at_execution):
+        self.price_per_unit_at_execution = price_per_unit_at_execution
+        self.balance_after = self.balance_before
+        self.status = "cancelled"
 
 
 class TransactionLikes(db.Model):

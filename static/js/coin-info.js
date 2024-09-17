@@ -531,6 +531,19 @@ function updateCoinInfo() {
   ).textContent = `Recent ${currentCoin.name} News`;
 }
 
+/**
+ * Fetches news articles based on a search query (supposed to be the id of the current
+ * coin) and page number.
+ * Sends a POST request to the "/get_news" endpoint with the specified query and page.
+ * Returns an array of objects, with each object containing information about each
+ * article.
+ *
+ * @async
+ * @function getNewsArticles
+ * @param {string} query - The search query for fetching news articles
+ * @param {number} page - The page number of the results to fetch
+ * @returns {Promise<Object[]>} - A promise that resolves to an array of article objects
+ */
 async function getNewsArticles(query, page) {
   // TODO add error handling to this function
   const fetchOptions = {
@@ -546,6 +559,18 @@ async function getNewsArticles(query, page) {
   return data[0].articles;
 }
 
+/**
+ * Dynamically renders news articles into the DOM by creating and updating HTML elements.
+ * Uses data stored in the global variable `newsArticlesToRender` to render the articles.
+ *
+ * - Removes the "See more" button if it exists
+ * - Creates and appends a news article for each article object in `newsArticlesToRender`
+ * - Adds a new "See more" button at the end of the news articles
+ * - Adds a click event listener to the "See more" button to fetch and render more articles
+ *
+ * @function renderNewsArticles
+ * @returns {void}
+ */
 function renderNewsArticles() {
   // Delete "See more" button if it exists
   let seeMoreNewsButton = document.querySelector(".see-more-btn--news");
@@ -602,6 +627,15 @@ function renderNewsArticles() {
   });
 }
 
+/**
+ * Fetches news articles for the current coin and page, then renders them in the DOM.
+ * Increments the page number after rendering the articles.
+ *
+ * @async
+ * @function getAndRenderNewsArticles
+ * @returns {Promise<void>} - A promise that resolves when the news articles have been
+ *                            fetched and rendered.
+ */
 async function getAndRenderNewsArticles() {
   newsArticlesToRender = await getNewsArticles(
     currentCoin.name,
@@ -612,17 +646,44 @@ async function getAndRenderNewsArticles() {
   newsArticlesCurrentPage++;
 }
 
+/**
+ * Resets the news articles by clearing the array of articles to render, resetting the
+ * page number to 1, and clearing the HTML content of the news articles container.
+ *
+ * @function resetNewsArticles
+ * @returns {void}
+ */
 function resetNewsArticles() {
   newsArticlesToRender = [];
   newsArticlesCurrentPage = 1;
   document.querySelector(".news-container").innerHTML = "";
 }
 
+/**
+ * Resets the reddit posts by clearing the array of reddit posts to render, and
+ * clearing the HTML content of the news articles container.
+ *
+ * @function resetNewsArticles
+ * @returns {void}
+ */
 function resetRedditPosts() {
   redditPostsToRender = [];
   document.querySelector(".reddit-posts-container").innerHTML = "";
 }
 
+/**
+ * Fetches Reddit posts based on a search query and pagination cursor.
+ * Sends a POST request to the "/get_reddit_posts" endpoint with the specified query
+ * and after parameter.
+ *
+ * @async
+ * @function getRedditPosts
+ * @param {string} query - The search query for fetching Reddit posts.
+ * @param {string} after - The pagination cursor for fetching posts after a specific
+ *                         point.
+ * @returns {Promise<Object[]>} -  A promise that resolves to an array of Reddit post
+ *                                 objects.
+ */
 async function getRedditPosts(query, after) {
   // TODO add error handling to this function
   const fetchOptions = {
@@ -639,6 +700,18 @@ async function getRedditPosts(query, after) {
   return data[0].posts;
 }
 
+/**
+ * Dynamically renders Reddit posts into the DOM by creating and updating HTML elements.
+ * Uses data stored in the global variable `redditPostsToRender` to render the posts.
+ *
+ * - Removes the "See more" button if it exists
+ * - Creates and appends a Reddit post for each post object in `redditPostsToRender`
+ * - Adds a new "See more" button at the end of the Reddit posts
+ * - Adds a click event listener to the "See more" button to fetch and render more posts
+ *
+ * @function renderRedditPosts
+ * @returns {void}
+ */
 function renderRedditPosts() {
   // Delete "See more" button if it exists
   let seeMoreRedditButton = document.querySelector(".see-more-btn--reddit");
@@ -719,6 +792,16 @@ function renderRedditPosts() {
   });
 }
 
+/**
+ * Fetches Reddit posts for the current coin and renders them in the DOM.
+ * If there are already posts rendered, it fetches the next batch using the "fullname"
+ * attribute of the last post for pagination (as required by the Reddit API)
+ *
+ * @async
+ * @function getAndRenderRedditPosts
+ * @returns {Promise<void>} - A promise that resolves when the Reddit posts have been
+ *                            fetched and rendered.
+ */
 async function getAndRenderRedditPosts() {
   const afterPost =
     redditPostsToRender.length > 0 ? redditPostsToRender.at(-1).fullname : "";

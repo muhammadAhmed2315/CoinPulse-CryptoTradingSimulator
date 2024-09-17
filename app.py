@@ -89,11 +89,20 @@ app, mail_server = create_app()
 
 if __name__ == "__main__":
     # Create the background task thread
-    from core.app import update_user_wallet_value_in_background
+    from core.app import (
+        update_user_wallet_value_in_background,
+        update_open_trades_in_background,
+    )
 
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        thread = threading.Thread(target=update_user_wallet_value_in_background)
-        thread.daemon = True
-        thread.start()
+        threadOne = threading.Thread(target=update_user_wallet_value_in_background)
+        threadOne.daemon = True
+        threadOne.start()
 
-    app.run(debug=True)
+        threadTwo = threading.Thread(target=update_open_trades_in_background)
+        threadTwo.daemon = True
+        threadTwo.start()
+
+    # NOTE: debug=True is only for development purposes. Do not use in production, else
+    # the background threads will run twice.
+    app.run(debug=False)

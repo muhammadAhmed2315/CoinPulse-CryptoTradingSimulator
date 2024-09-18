@@ -74,7 +74,8 @@
 /* ******************** MAIN PAGE ******************** */
 .main-page {
   display: flex;
-  gap: 3rem;
+  gap: 5rem;
+  padding-left: 4.8rem;
 }
 
 .main-page__feed {
@@ -87,7 +88,6 @@
 
 /* ********** GLOBAL FEED/MY FEED HEADER ********** */
 .feed-header {
-  margin-top: 4.8rem;
   display: flex;
   gap: 2rem;
 }
@@ -223,7 +223,6 @@
 /* ********** OVERVIEW/OPEN POSITIONS HEADER ********** */
 .positions-header {
   display: flex;
-  margin-top: 4.8rem;
   gap: 2rem;
 }
 
@@ -236,4 +235,51 @@
 .positions-header p:hover {
   color: #000000;
   cursor: pointer;
+}
+
+/* ********** PORTFOLIO OVERVIEW CARD ********** */
+.portfolio-overview-card {
+  background-color: #ffffff;
+  width: 42rem;
+  padding: 2rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.portfolio-overview-card .title {
+  color: #212529;
+  font-size: 1.6rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.portfolio-overview-card table th {
+  color: #cccccc;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.holdings-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amount-data {
+  text-align: center;
+}
+
+.holdings-data p,
+.amount-data {
+  color: #212529;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+/* TODO is this needed? */
+td img {
+  height: 2.4rem;
+  width: 2.4rem;
 }

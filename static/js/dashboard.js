@@ -380,6 +380,126 @@ function addFeedMenuButtonEventListeners() {
   });
 }
 
+async function getWalletAssets() {
+  const fetchOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  const response = await fetch("/get_wallet_assets", fetchOptions);
+
+  if (!response.ok) {
+    // Handle HTTP errors
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (data.success) {
+    // TODO what to actually return? perhaps only return data.assets and data.balance
+    return data;
+  }
+}
+
+async function getWalletAssetsDataFromAPI(coin_ids) {
+  // TODO do 250 at a time
+  const api_coin_ids = coin_ids.join(",");
+
+  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
+  const params = {
+    vs_currency: "usd",
+    ids: api_coin_ids,
+  };
+  Object.keys(params).forEach((key) =>
+    url.searchParams.append(key, params[key])
+  );
+
+  try {
+    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error:", error);
+    return []; // Return an empty array in case of error
+  }
+}
+
+function getWalletAssetsDataForDisplay(coin_info, coin_quantities) {
+  const res = {};
+
+  for (const coin of coin_info) {
+    res[coin.id] = {
+      name: coin.name,
+      img: coin.image,
+      quantity: coin_quantities[coin.id],
+    };
+  }
+
+  return res;
+}
+
+async function renderWalletAssets(assets, balance) {
+  // Update USD balance in portfolio-overview-card
+  document.querySelector(".portfolio-overview-card .amount-data").textContent =
+    "$" +
+    balance.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  // Add in a new table row for every coin in the wallet
+  const markup = `
+    <td class="holdings-data">
+      <img src="../../static/img/dollar_symbol.svg" />
+      <p>Play USD</p>
+    </td>
+    <td class="amount-data">$95,514.63</td>
+    `;
+
+  for (const coin in assets) {
+    const newTableRow = document.createElement("tr");
+    newTableRow.innerHTML = markup;
+
+    // Update coin image
+    newTableRow.querySelector(".holdings-data img").src = assets[coin].img;
+
+    // Update coin name
+    newTableRow.querySelector(".holdings-data p").textContent =
+      assets[coin].name;
+
+    // Update coin quantity
+    newTableRow.querySelector(".amount-data").textContent = assets[
+      coin
+    ].quantity.toLocaleString("en-US", {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4,
+    });
+
+    document
+      .querySelector(".portfolio-overview-card__table")
+      .appendChild(newTableRow);
+  }
+}
+
+async function updatePortfolioOverviewCard() {
+  // let temp = Object.keys((await getWalletAssets()).assets);
+  const data = await getWalletAssets();
+  const balance = data["balance"];
+  const assets = data["assets"];
+
+  const ownedCoinsList = Object.keys(assets);
+  const ownedCoinsData = await getWalletAssetsDataFromAPI(ownedCoinsList);
+  const ownedCoinsNecessaryData = getWalletAssetsDataForDisplay(
+    ownedCoinsData,
+    assets
+  );
+
+  renderWalletAssets(ownedCoinsNecessaryData, balance);
+}
+
 async function main() {
   addMessagePopupCloseEventListener();
   await fetchFeedPosts("global", 1);
@@ -388,6 +508,8 @@ async function main() {
   setupObserver();
 
   addFeedMenuButtonEventListeners();
+
+  await updatePortfolioOverviewCard();
 }
 
 main();

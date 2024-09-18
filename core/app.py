@@ -868,3 +868,21 @@ def update_open_trades_in_background():
             db.session.commit()
 
         time.sleep(60)
+
+
+@core.route("/get_wallet_assets", methods=["GET"])
+@login_required
+def get_wallet_assets():
+    # TODO add error handling for this function (e.g., user has no transactions)
+    current_assets = current_user.wallet.assets
+
+    return (
+        jsonify(
+            {
+                "success": "Data successfully retrieved",
+                "assets": current_assets,
+                "balance": current_user.wallet.balance,
+            }
+        ),
+        200,
+    )

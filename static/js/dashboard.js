@@ -363,7 +363,6 @@ function addFeedMenuButtonEventListeners() {
   const ownFeedContainer = document.querySelector(".own-feedposts-container");
 
   globalFeedBtn.addEventListener("click", function () {
-    console.log("Global feed button clicked");
     // Hide both feedposts sections
     globalFeedContainer.style.display = "flex";
     ownFeedContainer.style.display = "none";
@@ -372,7 +371,6 @@ function addFeedMenuButtonEventListeners() {
   });
 
   ownFeedBtn.addEventListener("click", function () {
-    console.log("Own feed button clicked");
     ownFeedContainer.style.display = "flex";
     globalFeedContainer.style.display = "none";
 
@@ -500,6 +498,228 @@ async function updatePortfolioOverviewCard() {
   renderWalletAssets(ownedCoinsNecessaryData, balance);
 }
 
+async function getTrendingCoinsData() {
+  // TODO add error handling
+  const url = new URL("https://api.coingecko.com/api/v3/search/trending");
+
+  const response = await fetch(url, COINGECKO_API_OPTIONS);
+  const data = (await response.json()).coins;
+
+  const res = data.map((coin) => coin.item);
+  return res;
+}
+
+async function renderTrendingCoins(coinsData) {
+  const markup = `
+    <div class="trending-coins-card__header">
+      <img
+        class="img--first"
+        src=""
+        draggable="false"
+      />
+      <img
+        class="img--second"
+        src="../../static/img/dollar_symbol.svg"
+        draggable="false"
+      />
+      <p class="coin-name"></p>
+      <p class="coin-symbol"></p>
+    </div>
+
+    <div class="trending-coins-card__main">
+      <p class="coin-price-change"></p>
+      <img
+        class="img--third"
+        src=""
+        draggable="false"
+      />
+      <img
+        class="img--fourth"
+        src="../../static/img/dollar_symbol.svg"
+        draggable="false"
+      />
+    </div>
+
+    <div class="trending-coins-card__footer">
+      <p class="coin-price"></p>
+    </div>
+  `;
+
+  for (const coin of coinsData) {
+    const newCard = document.createElement("div");
+    newCard.classList.add("trending-coins-card");
+    newCard.innerHTML = markup;
+
+    // Update card content
+    // Update coin images
+    newCard.querySelector(".trending-coins-card__header .img--first").src =
+      coin.large;
+    newCard.querySelector(".trending-coins-card__main .img--third").src =
+      coin.large;
+
+    // Update coin name and symbol
+    newCard.querySelector(
+      ".trending-coins-card__header .coin-name"
+    ).textContent = coin.name;
+    newCard.querySelector(
+      ".trending-coins-card__header .coin-symbol"
+    ).textContent = `(${coin.symbol})`;
+
+    // Update coin price change and colour
+    newCard.querySelector(
+      ".trending-coins-card__main .coin-price-change"
+    ).textContent = coin.data.price_change_percentage_24h.usd.toFixed(2) + "%";
+
+    if (coin.data.price_change_percentage_24h.usd >= 0) {
+      newCard.querySelector(
+        ".trending-coins-card__main .coin-price-change"
+      ).style.color = "#17c671";
+    } else {
+      newCard.querySelector(
+        ".trending-coins-card__main .coin-price-change"
+      ).style.color = "#EB5757";
+    }
+
+    // Update coin price
+    newCard.querySelector(
+      ".trending-coins-card__footer .coin-price"
+    ).textContent =
+      "$" +
+      coin.data.price.toLocaleString("en-US", {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      });
+
+    document.querySelector(".trending-coins-cards").appendChild(newCard);
+  }
+}
+
+async function getAndRenderTrendingCoins() {
+  const trendingCoinsData = await getTrendingCoinsData();
+  console.log(trendingCoinsData[0]);
+  renderTrendingCoins(trendingCoinsData);
+}
+
+function addTrendingCoinsDraggableEventListener() {
+  const slider = document.querySelector(".trending-coins-cards");
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+  let lastMoveTime = 0;
+  let lastMoveX = 0;
+  let velocity = 0;
+  let animationFrameId;
+
+  // Parameters for inertia
+  const friction = 0.95; // Deceleration factor
+  const minVelocity = 0.5; // Minimum velocity before stopping
+
+  slider.addEventListener("mousedown", (e) => {
+    isDown = true;
+    slider.classList.add("active");
+    startX = e.pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+    velocity = 0; // Reset velocity
+    cancelMomentumScrolling(); // Stop any ongoing momentum
+    lastMoveTime = Date.now();
+    lastMoveX = e.pageX;
+  });
+
+  slider.addEventListener("mouseleave", () => {
+    if (isDown) {
+      isDown = false;
+      slider.classList.remove("active");
+      beginMomentumScrolling();
+    }
+  });
+
+  slider.addEventListener("mouseup", () => {
+    if (isDown) {
+      isDown = false;
+      slider.classList.remove("active");
+      beginMomentumScrolling();
+    }
+  });
+
+  slider.addEventListener("mousemove", (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1; // Adjust scroll speed by changing the multiplier
+    slider.scrollLeft = scrollLeft - walk;
+
+    const now = Date.now();
+    const deltaTime = now - lastMoveTime;
+    if (deltaTime > 0) {
+      velocity = (e.pageX - lastMoveX) / deltaTime;
+      lastMoveTime = now;
+      lastMoveX = e.pageX;
+    }
+  });
+
+  // Touch Events for Mobile
+  slider.addEventListener("touchstart", (e) => {
+    isDown = true;
+    slider.classList.add("active");
+    startX = e.touches[0].pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+    velocity = 0; // Reset velocity
+    cancelMomentumScrolling(); // Stop any ongoing momentum
+    lastMoveTime = Date.now();
+    lastMoveX = e.touches[0].pageX;
+  });
+
+  slider.addEventListener("touchend", () => {
+    if (isDown) {
+      isDown = false;
+      slider.classList.remove("active");
+      beginMomentumScrolling();
+    }
+  });
+
+  slider.addEventListener("touchmove", (e) => {
+    if (!isDown) return;
+    const x = e.touches[0].pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1;
+    slider.scrollLeft = scrollLeft - walk;
+
+    const now = Date.now();
+    const deltaTime = now - lastMoveTime;
+    if (deltaTime > 0) {
+      velocity = (e.touches[0].pageX - lastMoveX) / deltaTime;
+      lastMoveTime = now;
+      lastMoveX = e.touches[0].pageX;
+    }
+  });
+
+  // Function to begin momentum scrolling
+  function beginMomentumScrolling() {
+    // Multiply velocity by a factor to increase scrolling speed
+    velocity *= 1000; // Convert to pixels per second
+
+    const momentum = () => {
+      slider.scrollLeft -= velocity * 0.016; // Assuming ~60fps, so 16ms per frame
+
+      // Apply friction
+      velocity *= friction;
+
+      // Stop if velocity is below threshold
+      if (Math.abs(velocity) > minVelocity) {
+        animationFrameId = requestAnimationFrame(momentum);
+      } else {
+        cancelMomentumScrolling();
+      }
+    };
+
+    momentum();
+  }
+
+  // Function to cancel ongoing momentum scrolling
+  function cancelMomentumScrolling() {
+    cancelAnimationFrame(animationFrameId);
+  }
+}
+
 async function main() {
   addMessagePopupCloseEventListener();
   await fetchFeedPosts("global", 1);
@@ -510,6 +730,9 @@ async function main() {
   addFeedMenuButtonEventListeners();
 
   await updatePortfolioOverviewCard();
+  await getAndRenderTrendingCoins();
+
+  addTrendingCoinsDraggableEventListener();
 }
 
 main();

@@ -19,19 +19,19 @@
 }
 
 /* ******************** OPEN POSITIONS SECTION ******************** */
-.open-positions-container {
-  padding: 4.8rem;
+.trending-coins-container {
+  /* padding: 4.8rem 4.8rem 2.4rem 4.8rem; */
+  padding: 2.4rem 4.8rem;
 }
 
-.open-positions-header {
+.trending-coins-header {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 4.8rem;
-  margin-bottom: 2.4rem;
 }
 
-.open-positions-header-title {
+.trending-coins-header-title {
   font-size: 2rem;
   font-weight: 500;
   color: #212529;
@@ -53,22 +53,99 @@
   cursor: pointer;
 }
 
-.open-positions-cards {
+.trending-coins-cards {
   display: flex;
   flex-direction: row;
   gap: 3rem;
+  padding: 2rem;
+  height: 16rem;
+  overflow: auto;
+
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer and Edge */
 }
 
-.open-positions-card {
-  height: 10rem;
-  width: 25.4rem;
+.trending-coins-cards::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari, and Opera */
+}
+
+.trending-coins-card {
+  flex: 0 0 auto;
+  height: 12rem;
+  width: 22rem;
   background-color: #ffffff;
   border-radius: 10px;
   padding: 1.6rem;
 }
 
-.open-positions-card:hover {
+.trending-coins-card:hover {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+}
+
+.trending-coins-card__header {
+  display: flex;
+  align-items: center;
+}
+
+.img--first,
+.img--second {
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
+.img--first {
+  z-index: 1;
+  border-radius: 50%;
+}
+
+.img--second {
+  margin-left: -0.7rem;
+}
+
+.coin-name {
+  margin-left: 0.8rem;
+}
+
+.coin-symbol {
+  margin-left: 0.24rem;
+}
+
+.trending-coins-card__main {
+  display: flex;
+  justify-content: space-between;
+}
+
+.trending-coins-card__main .coin-price-change {
+  font-size: 3.2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.img--third,
+.img--fourth {
+  height: 4.5rem;
+  width: 4.5rem;
+
+  filter: grayscale(100%);
+}
+
+.img--third {
+  margin-right: -12.5rem;
+  z-index: 1;
+  opacity: 0.5;
+  border-radius: 50%;
+}
+
+.img--fourth {
+  opacity: 0.25;
+}
+
+.coin-price {
+  color: #828282;
+  font-size: 1.6rem;
+  font-weight: 400;
+
+  margin: 0;
 }
 
 /* ******************** MAIN PAGE ******************** */

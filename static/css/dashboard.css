@@ -56,7 +56,7 @@
 .trending-coins-cards {
   display: flex;
   flex-direction: row;
-  gap: 3rem;
+  gap: 4rem;
   padding: 2rem;
   height: 16rem;
   overflow: auto;
@@ -80,6 +80,7 @@
 
 .trending-coins-card:hover {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .trending-coins-card__header {

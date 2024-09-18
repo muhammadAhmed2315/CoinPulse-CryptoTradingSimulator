@@ -691,6 +691,13 @@ function addShareOnTimelineToggleEventListener() {
     });
 }
 
+export async function showNewTradeSidebarForSpecificCoin(coinId) {
+  currentCoin = { id: coinId };
+  await getCurrentCoinInfo();
+  updateNewTradeCoinInfo();
+  showNewTradeSidebar();
+}
+
 async function main() {
   await cacheCoinNamesInSession();
 

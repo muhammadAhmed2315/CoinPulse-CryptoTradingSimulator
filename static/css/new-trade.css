@@ -42,7 +42,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
   display: none; /* Hidden initially */
-  z-index: 1; /* Below the sidebar but above other content */
+  z-index: 15; /* Below the sidebar but above other content */
 }
 
 /* *************** SEARCH BAR *************** */

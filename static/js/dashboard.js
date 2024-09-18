@@ -5,6 +5,7 @@ import {
   toTitleCase,
   addMessagePopupCloseEventListener,
 } from "../js/helpers.js";
+import { showNewTradeSidebarForSpecificCoin } from "../js/new-trade.js";
 
 let globalFeedPosts = [];
 let ownFeedPosts = [];
@@ -516,11 +517,13 @@ async function renderTrendingCoins(coinsData) {
         class="img--first"
         src=""
         draggable="false"
+        loading="lazy"
       />
       <img
         class="img--second"
         src="../../static/img/dollar_symbol.svg"
         draggable="false"
+        loading="lazy"
       />
       <p class="coin-name"></p>
       <p class="coin-symbol"></p>
@@ -532,11 +535,13 @@ async function renderTrendingCoins(coinsData) {
         class="img--third"
         src=""
         draggable="false"
+        loading="lazy"
       />
       <img
         class="img--fourth"
         src="../../static/img/dollar_symbol.svg"
         draggable="false"
+        loading="lazy"
       />
     </div>
 
@@ -591,6 +596,13 @@ async function renderTrendingCoins(coinsData) {
       });
 
     document.querySelector(".trending-coins-cards").appendChild(newCard);
+
+    // Add event listener to each card
+    newCard.addEventListener("click", async function () {
+      // TRUMP
+
+      await showNewTradeSidebarForSpecificCoin(coin.id);
+    });
   }
 }
 

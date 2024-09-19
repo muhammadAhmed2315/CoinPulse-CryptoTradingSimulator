@@ -790,6 +790,8 @@ def update_open_trades_in_background():
                 data = response.json()
 
                 for coin in data:
+                    # TODO some error here to do with string indices must be integers,
+                    # not "str"
                     coin_market_prices[coin["id"]] = coin["current_price"]
 
             # Update each open trade, seeing if it can be closed
@@ -886,3 +888,44 @@ def get_wallet_assets():
         ),
         200,
     )
+
+
+@core.route("/get_open_trades", methods=["GET"])
+@login_required
+def get_open_trades():
+    # TODO add error handling for this function (e.g., user has no transactions)
+    open_transactions = Transaction.query.filter_by(
+        wallet_id=current_user.wallet.id, status="open"
+    ).all()
+
+    res = []
+
+    for transaction in open_transactions:
+        temp = {}
+        temp["id"] = transaction.id
+        temp["coin_id"] = transaction.coin_id
+        temp["quantity"] = transaction.quantity
+        temp["price_per_unit"] = transaction.price_per_unit
+        temp["transaction_type"] = transaction.transactionType
+        temp["order_type"] = transaction.orderType
+        res.append(temp)
+
+    return jsonify({"success": "Open orders successfully fetched", "data": res}), 200
+
+
+@core.route("/cancel_open_trade", methods=["POST"])
+@login_required
+def cancel_open_trade():
+    # TODO add error handling for this function (e.g., transaction ID not found)
+    data = request.get_json()
+    transaction_id = data["transaction_id"]
+    coin_current_price = data["coin_current_price"]
+
+    transaction = Transaction.query.get(transaction_id)
+
+    transaction.cancel_open_order(coin_current_price)
+
+    db.session.add(transaction)
+    db.session.commit()
+
+    return jsonify({"success": "Transaction successfully cancelled"}), 200

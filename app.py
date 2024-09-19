@@ -11,6 +11,7 @@ import uuid
 from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
 from flask_apscheduler import APScheduler
 import threading
+from flask_cors import CORS
 
 # Configure logging
 log = logging.getLogger("werkzeug")
@@ -29,6 +30,7 @@ def create_app():
     """
     # Initialize Flask app
     app = Flask(__name__)
+    CORS(app)
 
     # Configure app
     app.config["SECRET_KEY"] = "mysecretkey"

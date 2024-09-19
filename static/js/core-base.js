@@ -1,3 +1,5 @@
+import { formatFloatToUSD } from "../js/helpers.js";
+
 let currentPortfolioTotalValue = 0;
 
 async function fetchPortfolioBalance() {
@@ -27,11 +29,7 @@ function updatePortfolioTotalValueElement() {
     ".portfolio-container__total-value"
   );
   portfolioTotalValueElement.textContent =
-    "$" +
-    currentPortfolioTotalValue.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    "$" + formatFloatToUSD(currentPortfolioTotalValue, 2);
 }
 
 async function main() {

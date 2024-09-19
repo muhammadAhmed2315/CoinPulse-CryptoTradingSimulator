@@ -13,6 +13,13 @@ export function toTitleCase(str) {
   );
 }
 
+export function formatFloatToUSD(float, decimals) {
+  return float.toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
 // //////////////////// GET DICT OF ALL COIN NAMES + SYMBOLS + IDS ////////////////////
 /**
  * Returns a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]

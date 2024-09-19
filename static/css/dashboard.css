@@ -18,7 +18,7 @@
   padding-right: 10px;
 }
 
-/* ******************** OPEN POSITIONS SECTION ******************** */
+/* ******************** TRENDING COINS SECTION ******************** */
 .trending-coins-container {
   /* padding: 4.8rem 4.8rem 2.4rem 4.8rem; */
   padding: 2.4rem 4.8rem;
@@ -360,4 +360,68 @@
 td img {
   height: 2.4rem;
   width: 2.4rem;
+}
+
+/* ********** OPEN POSITIONS CARD ********** */
+.open-positions-card {
+  background-color: #ffffff;
+}
+
+.title--limit-buy,
+.title--limit-sell,
+.title--stop-buy,
+.title--stop-sell {
+  color: #9696bb;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.open-order-container {
+  background-color: #f5f5fa;
+  display: flex;
+}
+
+.order-price-info {
+  display: flex;
+  align-items: center;
+}
+
+.order-price-info p {
+  color: #545490;
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.order-price-info p:first-of-type,
+.order-price-info p:last-of-type {
+  color: #212529;
+  font-weight: 700;
+}
+
+.current-price-info {
+  display: flex;
+
+  color: #545490;
+  font-size: 1.28rem;
+  font-weight: 400;
+}
+
+.open-order-container img {
+  height: 2rem;
+  width: 2rem;
+}
+
+.open-order-container .second img {
+  height: 2.8rem;
+  width: 2.8rem;
+}
+
+.open-order-container .second p {
+  color: #545490;
+  font-size: 1.28rem;
+  font-weight: 400;
+}
+
+.open-order-container .second:hover {
+  cursor: pointer;
 }

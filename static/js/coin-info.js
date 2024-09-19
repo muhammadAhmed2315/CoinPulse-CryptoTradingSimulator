@@ -4,6 +4,7 @@ import {
   hideMessagePopup,
   addMessagePopupCloseEventListener,
   getAllCoinNamesDict,
+  formatFloatToUSD,
 } from "../js/helpers.js";
 
 let currentCoin = { id: "bitcoin", name: "Bitcoin" };
@@ -422,11 +423,7 @@ function updateCoinInfo() {
 
   // Update coin price
   document.querySelector(".coin-price").textContent =
-    "$" +
-    new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(currentCoin.current_price);
+    "$" + formatFloatToUSD(currentCoin.current_price, 2);
 
   // Update coin price changes
   if (currentCoin.price_change_percentage_24h >= 0) {

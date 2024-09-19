@@ -197,7 +197,6 @@ class Transaction(db.Model):
         comment,
         balance_before,
         visibility,
-        price_per_unit_at_execution=None,
     ):
         self.visibility = visibility
         self.status = status

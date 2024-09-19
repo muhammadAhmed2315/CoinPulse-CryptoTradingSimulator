@@ -3,6 +3,7 @@ import {
   showMessagePopup,
   hideMessagePopup,
   toTitleCase,
+  formatFloatToUSD,
   addMessagePopupCloseEventListener,
 } from "../js/helpers.js";
 import { showNewTradeSidebarForSpecificCoin } from "../js/new-trade.js";
@@ -402,7 +403,7 @@ async function getWalletAssets() {
   }
 }
 
-async function getWalletAssetsDataFromAPI(coin_ids) {
+async function getCoinDataFromAPI(coin_ids) {
   // TODO do 250 at a time
   const api_coin_ids = coin_ids.join(",");
 
@@ -443,11 +444,7 @@ function getWalletAssetsDataForDisplay(coin_info, coin_quantities) {
 async function renderWalletAssets(assets, balance) {
   // Update USD balance in portfolio-overview-card
   document.querySelector(".portfolio-overview-card .amount-data").textContent =
-    "$" +
-    balance.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    "$" + formatFloatToUSD(balance, 2);
 
   // Add in a new table row for every coin in the wallet
   const markup = `
@@ -470,12 +467,10 @@ async function renderWalletAssets(assets, balance) {
       assets[coin].name;
 
     // Update coin quantity
-    newTableRow.querySelector(".amount-data").textContent = assets[
-      coin
-    ].quantity.toLocaleString("en-US", {
-      minimumFractionDigits: 4,
-      maximumFractionDigits: 4,
-    });
+    newTableRow.querySelector(".amount-data").textContent = formatFloatToUSD(
+      assets[coin].quantity,
+      4
+    );
 
     document
       .querySelector(".portfolio-overview-card__table")
@@ -490,7 +485,7 @@ async function updatePortfolioOverviewCard() {
   const assets = data["assets"];
 
   const ownedCoinsList = Object.keys(assets);
-  const ownedCoinsData = await getWalletAssetsDataFromAPI(ownedCoinsList);
+  const ownedCoinsData = await getCoinDataFromAPI(ownedCoinsList);
   const ownedCoinsNecessaryData = getWalletAssetsDataForDisplay(
     ownedCoinsData,
     assets
@@ -588,19 +583,12 @@ async function renderTrendingCoins(coinsData) {
     // Update coin price
     newCard.querySelector(
       ".trending-coins-card__footer .coin-price"
-    ).textContent =
-      "$" +
-      coin.data.price.toLocaleString("en-US", {
-        minimumFractionDigits: 4,
-        maximumFractionDigits: 4,
-      });
+    ).textContent = "$" + formatFloatToUSD(coin.data.price, 4);
 
     document.querySelector(".trending-coins-cards").appendChild(newCard);
 
     // Add event listener to each card
     newCard.addEventListener("click", async function () {
-      // TRUMP
-
       await showNewTradeSidebarForSpecificCoin(coin.id);
     });
   }
@@ -608,7 +596,6 @@ async function renderTrendingCoins(coinsData) {
 
 async function getAndRenderTrendingCoins() {
   const trendingCoinsData = await getTrendingCoinsData();
-  console.log(trendingCoinsData[0]);
   renderTrendingCoins(trendingCoinsData);
 }
 
@@ -732,8 +719,280 @@ function addTrendingCoinsDraggableEventListener() {
   }
 }
 
+function addOverviewOpenButtonsEventListeners() {
+  const overviewBtn = document.querySelector(
+    ".positions-header__overview-label"
+  );
+  const openPositionsBtn = document.querySelector(
+    ".positions-header__open-positions-label"
+  );
+
+  const overviewCard = document.querySelector(".portfolio-overview-card");
+  const openPositionsCard = document.querySelector(".open-positions-card");
+
+  // Open Positions card should not initially be visible
+  openPositionsCard.style.display = "none";
+
+  overviewBtn.addEventListener("click", function () {
+    overviewCard.style.display = "flex";
+    openPositionsCard.style.display = "none";
+  });
+
+  openPositionsBtn.addEventListener("click", function () {
+    overviewCard.style.display = "none";
+    openPositionsCard.style.display = "block";
+  });
+}
+
+async function getOpenTradesData() {
+  const fetchOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  const response = await fetch("/get_open_trades", fetchOptions);
+
+  if (!response.ok) {
+    // Handle HTTP errors
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (data.success) {
+    // TODO what to actually return? perhaps only return data.assets and data.balance
+    return data.data;
+  }
+}
+
+function splitOpenTradesData(data) {
+  const res = {
+    limitBuy: [],
+    limitSell: [],
+    stopBuy: [],
+    stopSell: [],
+  };
+
+  for (const trade of data) {
+    if (trade.order_type === "limit" && trade.transaction_type === "buy") {
+      res.limitBuy.push(trade);
+    } else if (
+      trade.order_type === "limit" &&
+      trade.transaction_type === "sell"
+    ) {
+      res.limitSell.push(trade);
+    } else if (
+      trade.order_type === "stop" &&
+      trade.transaction_type === "buy"
+    ) {
+      res.stopBuy.push(trade);
+    } else if (
+      trade.order_type === "stop" &&
+      trade.transaction_type === "sell"
+    ) {
+      res.stopSell.push(trade);
+    }
+  }
+
+  return res;
+}
+
+function getUniqueCoins(trades) {
+  const uniqueCoins = new Set();
+
+  for (const tradeType in trades) {
+    for (const trade of trades[tradeType]) {
+      uniqueCoins.add(trade.coin_id);
+    }
+  }
+  return Array.from(uniqueCoins);
+}
+
+function getOpenTradesMarkup() {
+  return `
+  <div class="first">
+    <div class="order-price-info">
+      <img
+        src="https://cryptoparrot.com/assets/images/crypto-icons/color/eth.svg"
+      />
+      <p>1.000</p>
+      <p>at</p>
+      <img
+        src="https://cryptoparrot.com/assets/images/crypto-icons/color/usd.svg"
+      />
+      <p>1000</p>
+    </div>
+
+    <div class="current-price-info">
+      <p>Current Price: $2331.2</p>
+      <p>|</p>
+      <p>Spread: $1331.2</p>
+    </div>
+  </div>
+  <div class="second">
+    <img
+      src="https://raw.githubusercontent.com/ant-design/ant-design-icons/91b720521ac8969aebcd6ddc484624915d76010c/packages/icons-svg/svg/outlined/close-circle.svg"
+    />
+    <p>Cancel</p>
+  </div>
+`;
+}
+
+function renderOpenTrades(trades, coinData) {
+  const markup = getOpenTradesMarkup();
+
+  for (const orderType in trades) {
+    if (trades[orderType].length == 0) {
+      const noTradesDiv = document.createElement("div");
+      noTradesDiv.classList.add("no-open-trades-to-show");
+      noTradesDiv.textContent = "You currently have no trade of this type";
+
+      // Append to correct div
+      if (orderType === "limitBuy") {
+        document
+          .querySelector(".limit-buy-orders-container")
+          .appendChild(noTradesDiv);
+      } else if (orderType === "limitSell") {
+        document
+          .querySelector(".limit-sell-orders-container")
+          .appendChild(noTradesDiv);
+      } else if (orderType === "stopBuy") {
+        document
+          .querySelector(".stop-buy-orders-container")
+          .appendChild(noTradesDiv);
+      } else if (orderType === "stopSell") {
+        document
+          .querySelector(".stop-sell-orders-container")
+          .appendChild(noTradesDiv);
+      }
+    }
+
+    for (const trade of trades[orderType]) {
+      const tradeInfoDiv = document.createElement("div");
+      tradeInfoDiv.classList.add("open-order-container");
+      tradeInfoDiv.innerHTML = markup;
+
+      // Update order content
+      // Update coin image
+      tradeInfoDiv.querySelector(".order-price-info img:first-of-type").src =
+        coinData[trade.coin_id].img;
+
+      // Update coin quantity
+      tradeInfoDiv.querySelector(
+        ".order-price-info p:first-of-type"
+      ).textContent = formatFloatToUSD(trade.quantity, 4);
+
+      // Update coin desired price
+      tradeInfoDiv.querySelector(
+        ".order-price-info p:last-of-type"
+      ).textContent = formatFloatToUSD(trade.price_per_unit, 2);
+
+      // Update coin current price
+      tradeInfoDiv.querySelector(
+        ".current-price-info p:first-of-type"
+      ).textContent =
+        "Current Price: $" +
+        formatFloatToUSD(coinData[trade.coin_id].current_price, 2);
+
+      // Update spread
+      tradeInfoDiv.querySelector(
+        ".current-price-info p:last-of-type"
+      ).textContent =
+        "Spread: $" +
+        formatFloatToUSD(
+          Math.abs(
+            coinData[trade.coin_id].current_price - trade.price_per_unit
+          ),
+          2
+        );
+
+      // Add cancel trade event listener
+      tradeInfoDiv
+        .querySelector(".open-order-container .second")
+        .addEventListener("click", async function () {
+          const success = await requestOpenTradeCancellation(
+            trade.id,
+            coinData[trade.coin_id].current_price
+          );
+
+          if (success) {
+            tradeInfoDiv.querySelector(".second").innerHTML = "Cancelled";
+          } else {
+            // TODO error handling
+          }
+        });
+
+      // Append to correct div
+      if (orderType === "limitBuy") {
+        document
+          .querySelector(".limit-buy-orders-container")
+          .appendChild(tradeInfoDiv);
+      } else if (orderType === "limitSell") {
+        document
+          .querySelector(".limit-sell-orders-container")
+          .appendChild(tradeInfoDiv);
+      } else if (orderType === "stopBuy") {
+        document
+          .querySelector(".stop-buy-orders-container")
+          .appendChild(tradeInfoDiv);
+      } else if (orderType === "stopSell") {
+        document
+          .querySelector(".stop-sell-orders-container")
+          .appendChild(tradeInfoDiv);
+      }
+    }
+  }
+}
+
+async function requestOpenTradeCancellation(
+  transaction_id,
+  coin_current_price
+) {
+  // TODO add error handling
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      transaction_id: transaction_id,
+      coin_current_price: coin_current_price,
+    }),
+  };
+
+  const response = await fetch("/cancel_open_trade", fetchOptions);
+  const data = await response.json();
+
+  if (data.success) {
+    return true;
+  } else if (data.error) {
+    return false;
+  }
+}
+
+async function getAndRenderOpenTradesData() {
+  let openTradesData = await getOpenTradesData();
+  openTradesData = splitOpenTradesData(openTradesData);
+  const uniqueCoins = getUniqueCoins(openTradesData);
+  let coinData = await getCoinDataFromAPI(uniqueCoins);
+
+  const res = {};
+  for (const coin of coinData) {
+    res[coin.id] = {
+      name: coin.name,
+      img: coin.image,
+      current_price: coin.current_price,
+    };
+  }
+
+  renderOpenTrades(openTradesData, res);
+}
+
 async function main() {
   addMessagePopupCloseEventListener();
+  addOverviewOpenButtonsEventListeners();
   await fetchFeedPosts("global", 1);
 
   renderFeedPosts("global");
@@ -745,6 +1004,8 @@ async function main() {
   await getAndRenderTrendingCoins();
 
   addTrendingCoinsDraggableEventListener();
+
+  await getAndRenderOpenTradesData();
 }
 
 main();

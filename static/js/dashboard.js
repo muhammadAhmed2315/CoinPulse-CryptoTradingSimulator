@@ -14,9 +14,9 @@ let globalPageCount = 1;
 let ownPageCount = 0;
 let currFeed = "global";
 
-// type can be one of "global" or "own"
-// page is 1-indexed
-
+// ************************************************************
+// ******************** FEEDPOST FUNCTIONS ********************
+// ************************************************************
 /**
  * Fetches feed posts from the server based on the specified feed type and page number
  *
@@ -100,7 +100,6 @@ async function fetchFeedPosts(type, page) {
  *
  * @returns {void}
  */
-
 function renderFeedPosts(type) {
   const markup = `
     <div class="feedpost-header">
@@ -343,157 +342,22 @@ function setupObserver() {
   observer.observe(target);
 }
 
+// ******************************************************************
+// ******************** TRENDING COINS FUNCTIONS ********************
+// ******************************************************************
 /**
- * Adds event listeners to the "Global feed" and "Own feed" buttons for switching
- * between what feed type is currently visible.
+ * Fetches trending coin data (for 15 coins) from the CoinGecko API.
  *
- * @function addFeedMenuButtonEventListeners
+ * This function makes an asynchronous request to the CoinGecko API to retrieve
+ * data about trending coins. It processes the response to return an array of
+ * coin objects, each representing a trending cryptocurrency.
  *
- * This function attaches click event listeners to the "Global feed" and "Own feed" #
- * menu buttons. When the user clicks on one of the buttons:
- * - The corresponding feed posts container is displayed.
- * - The other feed posts container is hidden.
- * - The `currFeed` variable is updated to reflect the current feed type ("global" or
- *   "own").
+ * @async
+ * @function getTrendingCoinsData
+ * @returns {Promise<Object[]>} A promise that resolves to an array of coin items,
+ *                              each representing a trending cryptocurrency.
+ * @throws {Error} Throws an error if the API call fails or if the response is invalid.
  */
-function addFeedMenuButtonEventListeners() {
-  const globalFeedBtn = document.querySelector(".feed-header__global-label");
-  const ownFeedBtn = document.querySelector(".feed-header__own-label");
-  const globalFeedContainer = document.querySelector(
-    ".global-feedposts-container"
-  );
-  const ownFeedContainer = document.querySelector(".own-feedposts-container");
-
-  globalFeedBtn.addEventListener("click", function () {
-    // Hide both feedposts sections
-    globalFeedContainer.style.display = "flex";
-    ownFeedContainer.style.display = "none";
-
-    currFeed = "global";
-  });
-
-  ownFeedBtn.addEventListener("click", function () {
-    ownFeedContainer.style.display = "flex";
-    globalFeedContainer.style.display = "none";
-
-    currFeed = "own";
-  });
-}
-
-async function getWalletAssets() {
-  const fetchOptions = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-
-  const response = await fetch("/get_wallet_assets", fetchOptions);
-
-  if (!response.ok) {
-    // Handle HTTP errors
-    throw new Error(`HTTP error! Status: ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  if (data.success) {
-    // TODO what to actually return? perhaps only return data.assets and data.balance
-    return data;
-  }
-}
-
-async function getCoinDataFromAPI(coin_ids) {
-  // TODO do 250 at a time
-  const api_coin_ids = coin_ids.join(",");
-
-  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
-  const params = {
-    vs_currency: "usd",
-    ids: api_coin_ids,
-  };
-  Object.keys(params).forEach((key) =>
-    url.searchParams.append(key, params[key])
-  );
-
-  try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
-    const data = await response.json();
-
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    return []; // Return an empty array in case of error
-  }
-}
-
-function getWalletAssetsDataForDisplay(coin_info, coin_quantities) {
-  const res = {};
-
-  for (const coin of coin_info) {
-    res[coin.id] = {
-      name: coin.name,
-      img: coin.image,
-      quantity: coin_quantities[coin.id],
-    };
-  }
-
-  return res;
-}
-
-async function renderWalletAssets(assets, balance) {
-  // Update USD balance in portfolio-overview-card
-  document.querySelector(".portfolio-overview-card .amount-data").textContent =
-    "$" + formatFloatToUSD(balance, 2);
-
-  // Add in a new table row for every coin in the wallet
-  const markup = `
-    <td class="holdings-data">
-      <img src="../../static/img/dollar_symbol.svg" />
-      <p>Play USD</p>
-    </td>
-    <td class="amount-data">$95,514.63</td>
-    `;
-
-  for (const coin in assets) {
-    const newTableRow = document.createElement("tr");
-    newTableRow.innerHTML = markup;
-
-    // Update coin image
-    newTableRow.querySelector(".holdings-data img").src = assets[coin].img;
-
-    // Update coin name
-    newTableRow.querySelector(".holdings-data p").textContent =
-      assets[coin].name;
-
-    // Update coin quantity
-    newTableRow.querySelector(".amount-data").textContent = formatFloatToUSD(
-      assets[coin].quantity,
-      4
-    );
-
-    document
-      .querySelector(".portfolio-overview-card__table")
-      .appendChild(newTableRow);
-  }
-}
-
-async function updatePortfolioOverviewCard() {
-  // let temp = Object.keys((await getWalletAssets()).assets);
-  const data = await getWalletAssets();
-  const balance = data["balance"];
-  const assets = data["assets"];
-
-  const ownedCoinsList = Object.keys(assets);
-  const ownedCoinsData = await getCoinDataFromAPI(ownedCoinsList);
-  const ownedCoinsNecessaryData = getWalletAssetsDataForDisplay(
-    ownedCoinsData,
-    assets
-  );
-
-  renderWalletAssets(ownedCoinsNecessaryData, balance);
-}
-
 async function getTrendingCoinsData() {
   // TODO add error handling
   const url = new URL("https://api.coingecko.com/api/v3/search/trending");
@@ -505,6 +369,21 @@ async function getTrendingCoinsData() {
   return res;
 }
 
+/**
+ * Renders trending coin cards to the DOM.
+ *
+ * This function takes an array of trending coin data and generates HTML elements
+ * to display each coin's information, including images, name, symbol, price change,
+ * and price. The function also adds a click event listener to each card, which
+ * results in the "New Trade" sidebar being opened and showing information about the
+ * coin that was clicked.
+ *
+ * @async
+ * @function renderTrendingCoins
+ * @param {Object[]} coinsData - Array of coin data objects, each containing details
+ *                               about a trending cryptocurrency.
+ * @returns {Promise<void>} A promise that resolves when all the coin cards are rendered.
+ */
 async function renderTrendingCoins(coinsData) {
   const markup = `
     <div class="trending-coins-card__header">
@@ -546,6 +425,7 @@ async function renderTrendingCoins(coinsData) {
   `;
 
   for (const coin of coinsData) {
+    // Create a div (card) for each coin
     const newCard = document.createElement("div");
     newCard.classList.add("trending-coins-card");
     newCard.innerHTML = markup;
@@ -594,11 +474,582 @@ async function renderTrendingCoins(coinsData) {
   }
 }
 
+/**
+ * Fetches data about the top 15 trending coins from the CoinGecko API, and then
+ * renders a card for each coin. The card displays information about each coin.
+ *
+ * This function first retrieves trending cryptocurrency data from the CoinGecko API
+ * by calling `getTrendingCoinsData()`, then passes the data to `renderTrendingCoins()`
+ * to generate and display the coin cards on the webpage.
+ *
+ * @async
+ * @function getAndRenderTrendingCoins
+ * @returns {Promise<void>} A promise that resolves when the coin data is fetched
+ *                          and rendered to the DOM.
+ */
 async function getAndRenderTrendingCoins() {
   const trendingCoinsData = await getTrendingCoinsData();
   renderTrendingCoins(trendingCoinsData);
 }
 
+// *******************************************************************
+// ******************** WALLET OVERVIEW FUNCTIONS ********************
+// *******************************************************************
+/**
+ * Fetches the wallet assets dictionary from the Flask server.
+ *
+ * Makes a GET request to the '/get_wallet_assets' endpoint, expecting a response
+ * containing the wallet's assets and balance in JSON format.
+ *
+ * @async
+ * @function getWalletAssets
+ * @returns {Promise<Object>} - A promise that resolves to an object containing the
+ *                              wallet assets and balance.
+ * @throws {Error} - If the fetch request fails or if the response status is not OK
+ *                   (HTTP status code other than 200).
+ */
+async function getWalletAssets() {
+  const fetchOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  const response = await fetch("/get_wallet_assets", fetchOptions);
+
+  if (!response.ok) {
+    // Handle HTTP errors
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (data.success) {
+    // TODO what to actually return? perhaps only return data.assets and data.balance
+    return data;
+  }
+}
+
+/**
+ * Formats and combines coin information with coin quantities for display purposes.
+ *
+ * This function takes an array of coin information objects and an object containing
+ * the quantities of each coin, then returns a new object where each coin's ID serves
+ * as the key. The object contains the coin's name, image, and the corresponding
+ * quantity owned by the user.
+ *
+ * @function formatWalletAssetsData
+ * @param {Array<Object>} coin_info - An array of objects representing coin data. This
+ *                                    is data that has been returned from the CoinGecko
+ *                                    API.
+ * @param {Object} coin_quantities - An object where the keys are coin IDs and the
+ *                                   values are the quantities of those coins owned by
+ *                                   the user.
+ * @returns {Object} - An object where the keys are the coin IDs and the values are
+ *                     objects containing:
+ *                     - {string} name: The name of the coin.
+ *                     - {string} img: The URL of the coin's image.
+ *                     - {number} quantity: The quantity of the coin.
+ */
+function formatWalletAssetsData(coin_info, coin_quantities) {
+  const res = {};
+
+  for (const coin of coin_info) {
+    res[coin.id] = {
+      name: coin.name,
+      img: coin.image,
+      quantity: coin_quantities[coin.id],
+    };
+  }
+
+  return res;
+}
+
+/**
+ * Renders wallet balance and quantity of each coin the user owns to the "Portfolio
+ * Overview" section
+ *
+ * This function updates the user's wallet balance in USD and dynamically creates table
+ * rows for each coin that the user owns, displaying the coin's image, name, and
+ * quantity in a table.
+ *
+ * @async
+ * @function renderWalletAssets
+ * @param {Object} assets - An object containing wallet assets, where the keys are coin
+ *                          IDs and the values are:
+ *                          - {string} name: The name of the coin.
+ *                          - {string} img: A URL to the image of the coin.
+ *                          - {number} quantity: The quantity of the coin.
+ * @param {number} balance - The user's total wallet balance in USD.
+ */
+async function renderWalletAssets(assets, balance) {
+  console.log(balance);
+  console.log(assets);
+
+  // Update USD balance in portfolio-overview-card
+  document.querySelector(".portfolio-overview-card .amount-data").textContent =
+    "$" + formatFloatToUSD(balance, 2);
+
+  // Add in a new table row for every coin in the wallet
+  const markup = `
+    <td class="holdings-data">
+      <img src="../../static/img/dollar_symbol.svg" />
+      <p>Play USD</p>
+    </td>
+    <td class="amount-data">$95,514.63</td>
+    `;
+
+  for (const coin in assets) {
+    const newTableRow = document.createElement("tr");
+    newTableRow.innerHTML = markup;
+
+    // Update coin image
+    newTableRow.querySelector(".holdings-data img").src = assets[coin].img;
+
+    // Update coin name
+    newTableRow.querySelector(".holdings-data p").textContent =
+      assets[coin].name;
+
+    // Update coin quantity
+    newTableRow.querySelector(".amount-data").textContent = formatFloatToUSD(
+      assets[coin].quantity,
+      4
+    );
+
+    document
+      .querySelector(".portfolio-overview-card__table")
+      .appendChild(newTableRow);
+  }
+}
+
+/**
+ * Updates the "Portfolio Overview" card with the user's wallet balance and the coin
+ * each users owns (as well as its corresponding quantity)
+ *
+ * This function fetches the wallet assets and balance, retrieves additional coin data
+ * from an API, combines the two data sets into a single dataset, and then renders the
+ * wallet assets in the "Portfolio Overview" card using that dataset.
+ *
+ * @async
+ * @function getAndRenderWalletAssetsData
+ * @returns {Promise<void>} - A promise that resolves when the portfolio overview card
+ *                            has been updated.
+ */
+async function getAndRenderWalletAssetsData() {
+  const data = await getWalletAssets();
+  const balance = data["balance"];
+  const assets = data["assets"];
+
+  const ownedCoinsList = Object.keys(assets);
+  const ownedCoinsData = await getCoinDataFromAPI(ownedCoinsList);
+  const ownedCoinsNecessaryData = formatWalletAssetsData(
+    ownedCoinsData,
+    assets
+  );
+
+  renderWalletAssets(ownedCoinsNecessaryData, balance);
+}
+
+// ***************************************************************
+// ******************** OPEN TRADES FUNCTIONS ********************
+// ***************************************************************
+/**
+ * Fetches information about all open/active trades that the current user has.
+ *
+ * This asynchronous function sends a GET request to the `/get_open_trades` endpoint
+ * and retrieves data related to the user's open trades. It expects a JSON response
+ * and will throw an error if the request is not successful.
+ *
+ * @async
+ * @function getOpenTradesData
+ * @throws {Error} - If the HTTP request fails or the response is not successful.
+ * @returns {Promise<Object>}-  A promise that resolves with the open trades data.
+ *                            The exact structure of the returned data is TBD,
+ *                            but it may include `data.assets` and `data.balance`.
+ */
+
+async function getOpenTradesData() {
+  const fetchOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  const response = await fetch("/get_open_trades", fetchOptions);
+
+  if (!response.ok) {
+    // Handle HTTP errors
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (data.success) {
+    // TODO what to actually return? perhaps only return data.assets and data.balance
+    return data.data;
+  }
+}
+
+/**
+ * Splits/formats the open trades data into categories based on order and transaction
+ * types.
+ *
+ * This function processes an array of trade data and organizes it into separate arrays
+ * for limit buy, limit sell, stop buy, and stop sell orders. It returns an object
+ * containing these categorized trades.
+ *
+ * @function splitOpenTradesData
+ * @param {Array<Object>} data - An array of trade objects to be categorized.
+ *                               Each object should contain `order_type` and `transaction_type`.
+ * @returns {Object} An object containing four arrays:
+ *                   - `limitBuy`: Trades with order type 'limit' and transaction type 'buy'
+ *                   - `limitSell`: Trades with order type 'limit' and transaction type 'sell'
+ *                   - `stopBuy`: Trades with order type 'stop' and transaction type 'buy'
+ *                   - `stopSell`: Trades with order type 'stop' and transaction type 'sell'
+ */
+function formatOpenTradesData(data) {
+  const res = {
+    limitBuy: [],
+    limitSell: [],
+    stopBuy: [],
+    stopSell: [],
+  };
+
+  for (const trade of data) {
+    if (trade.order_type === "limit" && trade.transaction_type === "buy") {
+      res.limitBuy.push(trade);
+    } else if (
+      trade.order_type === "limit" &&
+      trade.transaction_type === "sell"
+    ) {
+      res.limitSell.push(trade);
+    } else if (
+      trade.order_type === "stop" &&
+      trade.transaction_type === "buy"
+    ) {
+      res.stopBuy.push(trade);
+    } else if (
+      trade.order_type === "stop" &&
+      trade.transaction_type === "sell"
+    ) {
+      res.stopSell.push(trade);
+    }
+  }
+
+  return res;
+}
+
+/**
+ * Returns a list of unique coin IDs from the provided trades data.
+ *
+ * This function iterates over the categorized trades and collects unique coin IDs
+ * from all trade types. The result is returned as an array of unique coin IDs.
+ *
+ * @function getUniqueCoins
+ * @param {Object} trades - An object containing categorized trades,
+ *                          where each key is a trade type and each value is an array of trades.
+ *                          Each trade object should contain a `coin_id` property.
+ * @returns {Array<string>} An array of unique coin IDs found in the trades data.
+ */
+function getUniqueCoins(trades) {
+  const uniqueCoins = new Set();
+
+  for (const tradeType in trades) {
+    for (const trade of trades[tradeType]) {
+      uniqueCoins.add(trade.coin_id);
+    }
+  }
+  return Array.from(uniqueCoins);
+}
+
+/**
+ * Generates the HTML markup for each open trade info section in the "Open Positions"
+ * section.
+ *
+ * This function returns a string of HTML that represents the structure of the open trades,
+ * including details like the order price, current price, spread, and a cancel button.
+ * It includes placeholder values for icons, prices, and coin amounts, which should be dynamically replaced.
+ *
+ * @function getOpenTradesMarkup
+ * @returns {string} A string containing the HTML markup for open trades display.
+ */
+function getOpenTradesMarkup() {
+  return `
+  <div class="first">
+    <div class="order-price-info">
+      <img
+        src="https://cryptoparrot.com/assets/images/crypto-icons/color/eth.svg"
+      />
+      <p>1.000</p>
+      <p>at</p>
+      <img
+        src="https://cryptoparrot.com/assets/images/crypto-icons/color/usd.svg"
+      />
+      <p>1000</p>
+    </div>
+
+    <div class="current-price-info">
+      <p>Current Price: $2331.2</p>
+      <p>|</p>
+      <p>Spread: $1331.2</p>
+    </div>
+  </div>
+  <div class="second">
+    <img
+      src="https://raw.githubusercontent.com/ant-design/ant-design-icons/91b720521ac8969aebcd6ddc484624915d76010c/packages/icons-svg/svg/outlined/close-circle.svg"
+    />
+    <p>Cancel</p>
+  </div>
+`;
+}
+
+/**
+ * Renders the open trades on the page based on the provided trade data and coin data.
+ *
+ * This function iterates over the four transactionType categories. If there are no
+ * open trades for that transactionType category, a message is rendered on the DOM to
+ * reflect this. Else, information about each trade of that category is rendered onto
+ * the DOM. An event listener is also added next to each trade, which allows the user
+ * to cancel an open trade by calling the `requestOpenTradeCancellation` function.
+ *
+ * @function renderOpenTrades
+ * @param {Object} trades - An object containing categorized trades, where each key is a trade
+ *                          type and each value is an array of trades.
+ *                          Each trade object should contain `coin_id`, `quantity`, `price_per_unit`,
+ *                          and `id`.
+ * @param {Object} coinData - An object containing data for each coin, keyed by `coin_id`,
+ *                            including `img` (the URL of the coin's image) and `current_price`.
+ */
+function renderOpenTrades(trades, coinData) {
+  const markup = getOpenTradesMarkup();
+
+  for (const orderType in trades) {
+    if (trades[orderType].length == 0) {
+      const noTradesDiv = document.createElement("div");
+      noTradesDiv.classList.add("no-open-trades-to-show");
+      noTradesDiv.textContent = "You currently have no trade of this type";
+
+      // Append to correct div
+      if (orderType === "limitBuy") {
+        document
+          .querySelector(".limit-buy-orders-container")
+          .appendChild(noTradesDiv);
+      } else if (orderType === "limitSell") {
+        document
+          .querySelector(".limit-sell-orders-container")
+          .appendChild(noTradesDiv);
+      } else if (orderType === "stopBuy") {
+        document
+          .querySelector(".stop-buy-orders-container")
+          .appendChild(noTradesDiv);
+      } else if (orderType === "stopSell") {
+        document
+          .querySelector(".stop-sell-orders-container")
+          .appendChild(noTradesDiv);
+      }
+    }
+
+    for (const trade of trades[orderType]) {
+      const tradeInfoDiv = document.createElement("div");
+      tradeInfoDiv.classList.add("open-order-container");
+      tradeInfoDiv.innerHTML = markup;
+
+      // Update order content
+      // Update coin image
+      tradeInfoDiv.querySelector(".order-price-info img:first-of-type").src =
+        coinData[trade.coin_id].img;
+
+      // Update coin quantity
+      tradeInfoDiv.querySelector(
+        ".order-price-info p:first-of-type"
+      ).textContent = formatFloatToUSD(trade.quantity, 4);
+
+      // Update coin desired price
+      tradeInfoDiv.querySelector(
+        ".order-price-info p:last-of-type"
+      ).textContent = formatFloatToUSD(trade.price_per_unit, 2);
+
+      // Update coin current price
+      tradeInfoDiv.querySelector(
+        ".current-price-info p:first-of-type"
+      ).textContent =
+        "Current Price: $" +
+        formatFloatToUSD(coinData[trade.coin_id].current_price, 2);
+
+      // Update spread
+      tradeInfoDiv.querySelector(
+        ".current-price-info p:last-of-type"
+      ).textContent =
+        "Spread: $" +
+        formatFloatToUSD(
+          Math.abs(
+            coinData[trade.coin_id].current_price - trade.price_per_unit
+          ),
+          2
+        );
+
+      // Add cancel trade event listener
+      tradeInfoDiv
+        .querySelector(".open-order-container .second")
+        .addEventListener("click", async function () {
+          const success = await requestOpenTradeCancellation(
+            trade.id,
+            coinData[trade.coin_id].current_price
+          );
+
+          if (success) {
+            tradeInfoDiv.querySelector(".second").innerHTML = "Cancelled";
+          } else {
+            // TODO error handling
+          }
+        });
+
+      // Append to correct div
+      if (orderType === "limitBuy") {
+        document
+          .querySelector(".limit-buy-orders-container")
+          .appendChild(tradeInfoDiv);
+      } else if (orderType === "limitSell") {
+        document
+          .querySelector(".limit-sell-orders-container")
+          .appendChild(tradeInfoDiv);
+      } else if (orderType === "stopBuy") {
+        document
+          .querySelector(".stop-buy-orders-container")
+          .appendChild(tradeInfoDiv);
+      } else if (orderType === "stopSell") {
+        document
+          .querySelector(".stop-sell-orders-container")
+          .appendChild(tradeInfoDiv);
+      }
+    }
+  }
+}
+
+/**
+ * Sends a request to the Flask server to cancel a given open transaction.
+ *
+ * This asynchronous function sends a POST request to the `/cancel_open_trade` endpoint
+ * with the transaction ID and the current coin price. It handles the server response
+ * and returns a boolean which reflects whether the cancellation was successful or not.
+ *
+ * @async
+ * @function requestOpenTradeCancellation
+ * @param {number} transaction_id - The ID of the transaction to be canceled.
+ * @param {number} coin_current_price - The current price of the coin associated with the transaction.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the cancellation was successful,
+ *                             or `false` if there was an error.
+ */
+async function requestOpenTradeCancellation(
+  transaction_id,
+  coin_current_price
+) {
+  // TODO add error handling
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      transaction_id: transaction_id,
+      coin_current_price: coin_current_price,
+    }),
+  };
+
+  const response = await fetch("/cancel_open_trade", fetchOptions);
+  const data = await response.json();
+
+  if (data.success) {
+    return true;
+  } else if (data.error) {
+    return false;
+  }
+}
+
+/**
+ * Fetches, processes, and renders data about all open trades the current user has.
+ *
+ * This asynchronous function retrieves open trades data, formats it, and fetches the
+ * relevant coin data for the trades from an external API. After preparing the
+ * necessary data, it renders the open trades on the page using the `renderOpenTrades`
+ * function.
+ *
+ * @async
+ * @function getAndRenderOpenTradesData
+ * @returns {Promise<void>} A promise that resolves when the open trades data is fetched, processed,
+ *                          and rendered.
+ */
+async function getAndRenderOpenTradesData() {
+  let openTradesData = await getOpenTradesData();
+  openTradesData = formatOpenTradesData(openTradesData);
+  const uniqueCoins = getUniqueCoins(openTradesData);
+  let coinData = await getCoinDataFromAPI(uniqueCoins);
+
+  const res = {};
+  for (const coin of coinData) {
+    res[coin.id] = {
+      name: coin.name,
+      img: coin.image,
+      current_price: coin.current_price,
+    };
+  }
+
+  renderOpenTrades(openTradesData, res);
+}
+
+// ***************************************************************
+// ******************** GENERAL UI FUNCTIONS *********************
+// ***************************************************************
+/**
+ * Adds event listeners to the "Global feed" and "Own feed" buttons for switching
+ * between what feed type is currently visible.
+ *
+ * @function addFeedMenuButtonEventListeners
+ *
+ * This function attaches click event listeners to the "Global feed" and "Own feed" #
+ * menu buttons. When the user clicks on one of the buttons:
+ * - The corresponding feed posts container is displayed.
+ * - The other feed posts container is hidden.
+ * - The `currFeed` variable is updated to reflect the current feed type ("global" or
+ *   "own").
+ */
+function addFeedMenuButtonEventListeners() {
+  const globalFeedBtn = document.querySelector(".feed-header__global-label");
+  const ownFeedBtn = document.querySelector(".feed-header__own-label");
+  const globalFeedContainer = document.querySelector(
+    ".global-feedposts-container"
+  );
+  const ownFeedContainer = document.querySelector(".own-feedposts-container");
+
+  globalFeedBtn.addEventListener("click", function () {
+    // Hide both feedposts sections
+    globalFeedContainer.style.display = "flex";
+    ownFeedContainer.style.display = "none";
+
+    currFeed = "global";
+  });
+
+  ownFeedBtn.addEventListener("click", function () {
+    ownFeedContainer.style.display = "flex";
+    globalFeedContainer.style.display = "none";
+
+    currFeed = "own";
+  });
+}
+
+/**
+ * Adds draggable and momentum-based scrolling functionality to the trending coins
+ * container.
+ *
+ * This function enables mouse and touch drag scrolling on a slider element with class
+ * `trending-coins-cards`. It calculates scrolling velocity and applies inertia-based
+ * momentum after dragging. The scrolling speed gradually decreases due to a friction
+ * factor. Mobile touch events are also handled.
+ *
+ * @function addTrendingCoinsDraggableEventListener
+ */
 function addTrendingCoinsDraggableEventListener() {
   const slider = document.querySelector(".trending-coins-cards");
   let isDown = false;
@@ -719,6 +1170,18 @@ function addTrendingCoinsDraggableEventListener() {
   }
 }
 
+/**
+ * Adds event listeners to toggle between the portfolio overview and open positions
+ * views.
+ *
+ * This function handles click events for two buttons: one for displaying the portfolio
+ * overview and another for displaying the open positions. It toggles the visibility of
+ * the respective cards, showing either the portfolio overview or open positions based
+ * on the button clicked. Also makes it so that initially, only the portfolio overview
+ * card is visible.
+ *
+ * @function addOverviewOpenButtonsEventListeners
+ */
 function addOverviewOpenButtonsEventListeners() {
   const overviewBtn = document.querySelector(
     ".positions-header__overview-label"
@@ -744,252 +1207,50 @@ function addOverviewOpenButtonsEventListeners() {
   });
 }
 
-async function getOpenTradesData() {
-  const fetchOptions = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+// **************************************************************************
+// ******************** GET COIN DATA FROM API FUNCTION *********************
+// **************************************************************************
+/**
+ * Fetches coin data from the CoinGecko API for a list of given coin ids.
+ *
+ * This asynchronous function retrieves market data for a list of coin IDs from the
+ * CoinGecko API. It currently fetches data for all provided coin IDs at once, but is
+ * intended to handle up to 250 coins at a time. In case of an error, it logs the error
+ * and returns an empty array.
+ *
+ * @async
+ * @function getCoinDataFromAPI
+ * @param {Array<string>} coin_ids - An array of coin IDs to fetch data for.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of coin data objects,
+ *                                   or an empty array if an error occurs.
+ */
+async function getCoinDataFromAPI(coin_ids) {
+  // TODO do 250 at a time
+  const api_coin_ids = coin_ids.join(",");
+
+  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
+  const params = {
+    vs_currency: "usd",
+    ids: api_coin_ids,
   };
+  Object.keys(params).forEach((key) =>
+    url.searchParams.append(key, params[key])
+  );
 
-  const response = await fetch("/get_open_trades", fetchOptions);
+  try {
+    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const data = await response.json();
 
-  if (!response.ok) {
-    // Handle HTTP errors
-    throw new Error(`HTTP error! Status: ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  if (data.success) {
-    // TODO what to actually return? perhaps only return data.assets and data.balance
-    return data.data;
-  }
-}
-
-function splitOpenTradesData(data) {
-  const res = {
-    limitBuy: [],
-    limitSell: [],
-    stopBuy: [],
-    stopSell: [],
-  };
-
-  for (const trade of data) {
-    if (trade.order_type === "limit" && trade.transaction_type === "buy") {
-      res.limitBuy.push(trade);
-    } else if (
-      trade.order_type === "limit" &&
-      trade.transaction_type === "sell"
-    ) {
-      res.limitSell.push(trade);
-    } else if (
-      trade.order_type === "stop" &&
-      trade.transaction_type === "buy"
-    ) {
-      res.stopBuy.push(trade);
-    } else if (
-      trade.order_type === "stop" &&
-      trade.transaction_type === "sell"
-    ) {
-      res.stopSell.push(trade);
-    }
-  }
-
-  return res;
-}
-
-function getUniqueCoins(trades) {
-  const uniqueCoins = new Set();
-
-  for (const tradeType in trades) {
-    for (const trade of trades[tradeType]) {
-      uniqueCoins.add(trade.coin_id);
-    }
-  }
-  return Array.from(uniqueCoins);
-}
-
-function getOpenTradesMarkup() {
-  return `
-  <div class="first">
-    <div class="order-price-info">
-      <img
-        src="https://cryptoparrot.com/assets/images/crypto-icons/color/eth.svg"
-      />
-      <p>1.000</p>
-      <p>at</p>
-      <img
-        src="https://cryptoparrot.com/assets/images/crypto-icons/color/usd.svg"
-      />
-      <p>1000</p>
-    </div>
-
-    <div class="current-price-info">
-      <p>Current Price: $2331.2</p>
-      <p>|</p>
-      <p>Spread: $1331.2</p>
-    </div>
-  </div>
-  <div class="second">
-    <img
-      src="https://raw.githubusercontent.com/ant-design/ant-design-icons/91b720521ac8969aebcd6ddc484624915d76010c/packages/icons-svg/svg/outlined/close-circle.svg"
-    />
-    <p>Cancel</p>
-  </div>
-`;
-}
-
-function renderOpenTrades(trades, coinData) {
-  const markup = getOpenTradesMarkup();
-
-  for (const orderType in trades) {
-    if (trades[orderType].length == 0) {
-      const noTradesDiv = document.createElement("div");
-      noTradesDiv.classList.add("no-open-trades-to-show");
-      noTradesDiv.textContent = "You currently have no trade of this type";
-
-      // Append to correct div
-      if (orderType === "limitBuy") {
-        document
-          .querySelector(".limit-buy-orders-container")
-          .appendChild(noTradesDiv);
-      } else if (orderType === "limitSell") {
-        document
-          .querySelector(".limit-sell-orders-container")
-          .appendChild(noTradesDiv);
-      } else if (orderType === "stopBuy") {
-        document
-          .querySelector(".stop-buy-orders-container")
-          .appendChild(noTradesDiv);
-      } else if (orderType === "stopSell") {
-        document
-          .querySelector(".stop-sell-orders-container")
-          .appendChild(noTradesDiv);
-      }
-    }
-
-    for (const trade of trades[orderType]) {
-      const tradeInfoDiv = document.createElement("div");
-      tradeInfoDiv.classList.add("open-order-container");
-      tradeInfoDiv.innerHTML = markup;
-
-      // Update order content
-      // Update coin image
-      tradeInfoDiv.querySelector(".order-price-info img:first-of-type").src =
-        coinData[trade.coin_id].img;
-
-      // Update coin quantity
-      tradeInfoDiv.querySelector(
-        ".order-price-info p:first-of-type"
-      ).textContent = formatFloatToUSD(trade.quantity, 4);
-
-      // Update coin desired price
-      tradeInfoDiv.querySelector(
-        ".order-price-info p:last-of-type"
-      ).textContent = formatFloatToUSD(trade.price_per_unit, 2);
-
-      // Update coin current price
-      tradeInfoDiv.querySelector(
-        ".current-price-info p:first-of-type"
-      ).textContent =
-        "Current Price: $" +
-        formatFloatToUSD(coinData[trade.coin_id].current_price, 2);
-
-      // Update spread
-      tradeInfoDiv.querySelector(
-        ".current-price-info p:last-of-type"
-      ).textContent =
-        "Spread: $" +
-        formatFloatToUSD(
-          Math.abs(
-            coinData[trade.coin_id].current_price - trade.price_per_unit
-          ),
-          2
-        );
-
-      // Add cancel trade event listener
-      tradeInfoDiv
-        .querySelector(".open-order-container .second")
-        .addEventListener("click", async function () {
-          const success = await requestOpenTradeCancellation(
-            trade.id,
-            coinData[trade.coin_id].current_price
-          );
-
-          if (success) {
-            tradeInfoDiv.querySelector(".second").innerHTML = "Cancelled";
-          } else {
-            // TODO error handling
-          }
-        });
-
-      // Append to correct div
-      if (orderType === "limitBuy") {
-        document
-          .querySelector(".limit-buy-orders-container")
-          .appendChild(tradeInfoDiv);
-      } else if (orderType === "limitSell") {
-        document
-          .querySelector(".limit-sell-orders-container")
-          .appendChild(tradeInfoDiv);
-      } else if (orderType === "stopBuy") {
-        document
-          .querySelector(".stop-buy-orders-container")
-          .appendChild(tradeInfoDiv);
-      } else if (orderType === "stopSell") {
-        document
-          .querySelector(".stop-sell-orders-container")
-          .appendChild(tradeInfoDiv);
-      }
-    }
+    return data;
+  } catch (error) {
+    console.error("Error:", error);
+    return []; // Return an empty array in case of error
   }
 }
 
-async function requestOpenTradeCancellation(
-  transaction_id,
-  coin_current_price
-) {
-  // TODO add error handling
-  const fetchOptions = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      transaction_id: transaction_id,
-      coin_current_price: coin_current_price,
-    }),
-  };
-
-  const response = await fetch("/cancel_open_trade", fetchOptions);
-  const data = await response.json();
-
-  if (data.success) {
-    return true;
-  } else if (data.error) {
-    return false;
-  }
-}
-
-async function getAndRenderOpenTradesData() {
-  let openTradesData = await getOpenTradesData();
-  openTradesData = splitOpenTradesData(openTradesData);
-  const uniqueCoins = getUniqueCoins(openTradesData);
-  let coinData = await getCoinDataFromAPI(uniqueCoins);
-
-  const res = {};
-  for (const coin of coinData) {
-    res[coin.id] = {
-      name: coin.name,
-      img: coin.image,
-      current_price: coin.current_price,
-    };
-  }
-
-  renderOpenTrades(openTradesData, res);
-}
-
+// ********************************************************
+// ******************** MAIN FUNCTION *********************
+// ********************************************************
 async function main() {
   addMessagePopupCloseEventListener();
   addOverviewOpenButtonsEventListeners();
@@ -1000,7 +1261,7 @@ async function main() {
 
   addFeedMenuButtonEventListeners();
 
-  await updatePortfolioOverviewCard();
+  await getAndRenderWalletAssetsData();
   await getAndRenderTrendingCoins();
 
   addTrendingCoinsDraggableEventListener();

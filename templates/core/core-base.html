@@ -35,7 +35,10 @@
       </a>
 
       <!-- MY TRADES LINK -->
-      <a class="nav-container-item" href="{{ url_for('core.my_trades') }}">
+      <a
+        class="nav-container-item"
+        href="{{ url_for('core.my_trades') }}#my-trades-section"
+      >
         <img
           class="nav-container-icon"
           src="../../static/img/icons/sliders.svg"
@@ -52,28 +55,22 @@
         <p class="nav-container-text">Top Coins</p>
       </a>
 
-      <!-- NEWS LINK -->
+      <!-- COIN INFO LINK -->
       <a class="nav-container-item" href="{{ url_for('core.coin_info') }}">
-        <img class="nav-container-icon" src="../../static/img/icons/fire.svg" />
+        <img
+          class="nav-container-icon"
+          src="../../static/img/icons/info-circle.svg"
+        />
         <p class="nav-container-text">Coin Info</p>
       </a>
 
-      <!-- REVIEWS LINK -->
-      <a class="nav-container-item" href="#">
+      <!-- PORTFOLIO ANALYTICS LINK -->
+      <a class="nav-container-item" href="{{ url_for('core.my_trades') }}">
         <img
           class="nav-container-icon"
-          src="../../static/img/icons/thunderbolt.svg"
+          src="../../static/img/icons/bar-chart.svg"
         />
-        <p class="nav-container-text">Reviews</p>
-      </a>
-
-      <!-- GUIDES LINK -->
-      <a class="nav-container-item" href="#">
-        <img
-          class="nav-container-icon"
-          src="../../static/img/icons/experiment.svg"
-        />
-        <p class="nav-container-text">Guides</p>
+        <p class="nav-container-text">Portfolio Analytics</p>
       </a>
 
       <!-- PORTFOLIO VALUE HEADER -->

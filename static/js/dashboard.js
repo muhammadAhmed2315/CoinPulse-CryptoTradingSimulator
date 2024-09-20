@@ -894,10 +894,7 @@ function renderOpenTrades(trades, coinData) {
       tradeInfoDiv
         .querySelector(".open-order-container .second")
         .addEventListener("click", async function () {
-          const success = await requestOpenTradeCancellation(
-            trade.id,
-            coinData[trade.coin_id].current_price
-          );
+          const success = await requestOpenTradeCancellation(trade.id);
 
           if (success) {
             tradeInfoDiv.querySelector(".second").innerHTML = "Cancelled";
@@ -938,14 +935,10 @@ function renderOpenTrades(trades, coinData) {
  * @async
  * @function requestOpenTradeCancellation
  * @param {number} transaction_id - The ID of the transaction to be canceled.
- * @param {number} coin_current_price - The current price of the coin associated with the transaction.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the cancellation was successful,
  *                             or `false` if there was an error.
  */
-async function requestOpenTradeCancellation(
-  transaction_id,
-  coin_current_price
-) {
+async function requestOpenTradeCancellation(transaction_id) {
   // TODO add error handling
   const fetchOptions = {
     method: "POST",
@@ -954,7 +947,6 @@ async function requestOpenTradeCancellation(
     },
     body: JSON.stringify({
       transaction_id: transaction_id,
-      coin_current_price: coin_current_price,
     }),
   };
 
@@ -1248,10 +1240,24 @@ async function getCoinDataFromAPI(coin_ids) {
   }
 }
 
+function showNewTradeSidebarOnLoad() {
+  document.addEventListener("DOMContentLoaded", function () {
+    // Check if there's a hash in the URL
+    if (window.location.hash) {
+      console.log(window.location.hash);
+      // Wait for the dynamically generated content to load
+      setTimeout(function () {
+        showNewTradeSidebarForSpecificCoin("bitcoin");
+      }, 500); // Adjust the delay to match your content loading time
+    }
+  });
+}
+
 // ********************************************************
 // ******************** MAIN FUNCTION *********************
 // ********************************************************
 async function main() {
+  showNewTradeSidebarOnLoad();
   addMessagePopupCloseEventListener();
   addOverviewOpenButtonsEventListeners();
   await fetchFeedPosts("global", 1);

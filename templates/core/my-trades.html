@@ -9,8 +9,12 @@
 <!-- OPEN POSITIONS SECTION -->
 <div class="my-trades-container">
   <div class="header">
-    <p class="header__title">My Trades</p>
-    <a href="" class="header__new-trade-btn">New Trade</a>
+    <p class="header__title">Portfolio Analytics</p>
+    <a
+      href="{{ url_for('core.dashboard')}}#show-new-trade "
+      class="header__new-trade-btn"
+      >New Trade</a
+    >
   </div>
 
   <div class="chart-buttons">
@@ -21,19 +25,55 @@
 
   <div id="wallet-history-chart" height="125%"></div>
 
-  <div class="my-trades-table">
-    <div class="my-trades-table__header">
-      <p>#</p>
-      <p class="my-trades-table__header-order-type">Order Type</p>
-      <p class="my-trades-table__header-transaction-type">Transaction Type</p>
-      <p class="my-trades-table__header-coin">Coin</p>
-      <p class="my-trades-table__header-quantity">Quantity</p>
-      <p class="my-trades-table__header-price">Price</p>
-      <p class="my-trades-table__header-time">Time ↓</p>
-      <p class="my-trades-table__header-total-value">Total Value</p>
-      <p class="my-trades-table__header-comment">Comment</p>
-    </div>
+  <p class="my-trades-title" id="my-trades-section">My Trades</p>
+
+  <div class="transaction-status-key">
+    <div class="open-key-symbol"></div>
+    <p class="open-key-label">Active/Open</p>
+
+    <div class="finished-key-symbol"></div>
+    <p class="finished-key-label">Finished</p>
+
+    <div class="cancelled-key-symbol"></div>
+    <p class="cancelled-key-label">Cancelled</p>
   </div>
+
+  <table class="my-trades-table">
+    <colgroup>
+      <col class="id" />
+      <col class="status" />
+      <col class="order-type" />
+      <col class="transaction-type" />
+      <col class="coin" />
+      <col class="quantity" />
+      <col class="price" />
+      <col class="price-at-execution" />
+      <col class="time" />
+      <col class="action" />
+      <col class="comment" />
+    </colgroup>
+    <thead>
+      <tr class="my-trades-table__header">
+        <td class="my-trades-table__header-id"><p>#</p></td>
+        <td class="my-trades-table__header-status"><p>STATUS</p></td>
+        <td class="my-trades-table__header-order-type"><p>ORDER TYPE</p></td>
+        <td class="my-trades-table__header-transaction-type">
+          <p>BUY/SELL</p>
+        </td>
+        <td class="my-trades-table__header-coin"><p>COIN</p></td>
+        <td class="my-trades-table__header-quantity"><p>QUANTITY</p></td>
+        <td class="my-trades-table__header-price"><p>PRICE</p></td>
+        <td class="my-trades-table__header-price-at-execution">
+          <p>EXECUTION PRICE</p>
+        </td>
+        <td class="my-trades-table__header-time"><p>TIME PLACED ↓</p></td>
+        <td class="my-trades-table__header-action"><p>ACTION</p></td>
+        <td class="my-trades-table__header-comment"><p>COMMENT</p></td>
+      </tr>
+    </thead>
+
+    <tbody></tbody>
+  </table>
 
   <div class="pagination-buttons">
     <p class="pagination-btn pagination-btn--previous hidden">PREVIOUS</p>

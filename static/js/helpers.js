@@ -20,6 +20,26 @@ export function formatFloatToUSD(float, decimals) {
   });
 }
 
+export function formatUNIXTimestamp(timestamp) {
+  const date = new Date(timestamp * 1000); // Convert to milliseconds
+
+  // Convert to a string in the user's local timezone and return
+  return date.toLocaleString();
+}
+
+export function scrollToSection(event, sectionId, offset) {
+  event.preventDefault(); // Prevent the default jump to anchor behavior
+
+  const target = document.querySelector(sectionId);
+  const elementPosition = target.getBoundingClientRect().top + window.scrollY;
+  const offsetPosition = elementPosition - offset;
+
+  window.scrollTo({
+    top: offsetPosition,
+    behavior: "smooth", // Optional smooth scrolling
+  });
+}
+
 // //////////////////// GET DICT OF ALL COIN NAMES + SYMBOLS + IDS ////////////////////
 /**
  * Returns a dictionary of the form "Coin Name": ["Coin Ticker", "Coin API Specific ID"]

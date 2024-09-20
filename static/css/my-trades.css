@@ -40,13 +40,17 @@
 .chart-buttons {
   display: flex;
   gap: 2rem;
-  justify-content: center;
+  justify-content: start;
+  margin-bottom: 1.2rem;
 }
 
 .chart-btn {
   color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 500;
   background-color: #17c671;
   padding: 0.5rem 1rem;
+  border-radius: 5px;
 }
 
 .chart-btn:hover {
@@ -62,8 +66,122 @@
 .wallet-history-chart {
 }
 
+/* ******************** MY TRADES HEADING + KEY ******************** */
+.my-trades-title {
+  color: #212529;
+  font-size: 2rem;
+  font-weight: 500;
+  margin-top: 3.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.transaction-status-key {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.open-key-symbol,
+.finished-key-symbol,
+.cancelled-key-symbol {
+  height: 1.2rem;
+  width: 1.2rem;
+  border-radius: 50%;
+  margin-right: 0.8rem;
+}
+
+.open-key-symbol {
+  background-color: #17c671;
+}
+
+.finished-key-symbol {
+  background-color: #758ad4;
+}
+
+.cancelled-key-symbol {
+  background-color: #eb5757;
+}
+
+.open-key-label,
+.finished-key-label,
+.cancelled-key-label {
+  color: #828282;
+  font-size: 1.28rem;
+  font-weight: 500;
+  padding-right: 2.4rem;
+}
+
 /* ******************** ACTUAL TRADES TABLE ******************** */
 .my-trades-table {
+  width: 100%;
+  table-layout: fixed;
+  margin-bottom: 0.8rem;
+}
+
+td {
+  padding: 1rem 0.25rem;
+}
+
+table,
+th,
+td {
+  /* border: 1px solid black; */
+}
+
+/* Set column widths */
+.my-trades-table colgroup .id {
+  width: 4%;
+}
+
+.my-trades-table colgroup .status {
+  width: 4.5%;
+}
+
+.my-trades-table colgroup .order-type {
+  width: 7%;
+}
+
+.my-trades-table colgroup .transaction-type {
+  width: 6%;
+}
+
+.my-trades-table colgroup .coin {
+  width: 6%;
+}
+
+.my-trades-table colgroup .quantity {
+  width: 6%;
+}
+
+.my-trades-table colgroup .price {
+  width: 6%;
+}
+
+.my-trades-table colgroup .price-at-execution {
+  width: 9%;
+}
+
+.my-trades-table colgroup .time {
+  width: 9.5%;
+}
+
+.my-trades-table colgroup .action {
+  width: 4%;
+}
+
+.my-trades-table colgroup .comment {
+  width: 10%;
+}
+
+.transaction-status-bubble {
+  height: 1.4rem;
+  width: 1.4rem;
+  border-radius: 50%;
+}
+
+.my-trades-table__row td:hover {
+  background-color: #e2e6f8;
+  color: #758ad4;
 }
 
 /* *************** FIRST ROW OF TABLE *************** */
@@ -71,32 +189,63 @@
   color: #9696bb;
   font-size: 1.6rem;
   font-weight: 700;
-
-  display: flex;
-  gap: 5rem;
   margin-bottom: 1.6rem;
 }
 
-.my-trades-table__header > p:not(:first-child):not(:last-child) {
+/* Cursor pointer on hover for all table headings (apart from first and last headings) */
+.my-trades-table__header
+  > td:not(:first-child):not(:last-child):not(:nth-last-child(2))
+  > p:hover {
   cursor: pointer;
+  color: #333;
+}
+
+/* <p> tags inside heading don't fill the full column, rather just the content  */
+.my-trades-table__header > td > p {
+  width: fit-content;
 }
 
 /* *************** REST OF THE ROWS *************** */
 .my-trades-table__row {
-  display: flex;
-  gap: 2rem;
   padding: 1rem;
-
   color: #212529;
   font-size: 1.6rem;
   font-weight: 400;
 }
 
-.my-trades-table__row:nth-child(even) {
+/* Striped colouring fo r table */
+.my-trades-table__row:nth-child(odd) {
   background-color: white;
 }
 
-/* ******************** ACTUAL TRADES TABLE ******************** */
+.my-trades-table__row .transaction-id,
+.my-trades-table__row .transaction-status,
+.my-trades-table__row .transaction-order-type,
+.my-trades-table__row .transaction-transaction-type,
+.my-trades-table__row .transaction-coin-name,
+.my-trades-table__row .transaction-quantity,
+.my-trades-table__row .transaction-price,
+.my-trades-table__row .transaction-time {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.my-trades-table__row .transaction-comment {
+  white-space: nowrap; /* Prevents text from wrapping to the next line */
+  overflow-x: auto; /* Adds horizontal scrollbar when needed */
+}
+
+.action-cancel-btn {
+  height: 1.6rem;
+  width: 1.6rem;
+}
+
+.action-cancel-btn:hover {
+  cursor: pointer;
+}
+
+/* ******************** TRADES TABLE PAGINATION BUTTONS ******************** */
 .pagination-buttons {
   display: flex;
   justify-content: space-between;
@@ -104,12 +253,14 @@
 
 .pagination-btn {
   color: #ffffff;
-  font-size: 1.6rem;
-
-  background-color: red;
-  padding: 1rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  background-color: #17c671;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
 }
 
 .pagination-btn:hover {
+  background-color: #0069d9;
   cursor: pointer;
 }

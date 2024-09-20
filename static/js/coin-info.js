@@ -5,6 +5,7 @@ import {
   addMessagePopupCloseEventListener,
   getAllCoinNamesDict,
   formatFloatToUSD,
+  scrollToSection,
 } from "../js/helpers.js";
 
 let currentCoin = { id: "bitcoin", name: "Bitcoin" };
@@ -374,29 +375,16 @@ async function addSecondNavButtonEventListeners() {
   // "News" Button Event Listener
   document
     .querySelector(".sn-btn--news")
-    .addEventListener("click", async function () {
-      scrollToSection(event, "#recent-news-section", 90);
+    .addEventListener("click", async function (e) {
+      scrollToSection(e, "#recent-news-section", 90);
     });
 
   // "Reddit" Button Event Listener
   document
     .querySelector(".sn-btn--reddit")
-    .addEventListener("click", async function () {
-      scrollToSection(event, "#reddit-section", 90);
+    .addEventListener("click", async function (e) {
+      scrollToSection(e, "#reddit-section", 90);
     });
-}
-
-function scrollToSection(event, sectionId, offset) {
-  event.preventDefault(); // Prevent the default jump to anchor behavior
-
-  const target = document.querySelector(sectionId);
-  const elementPosition = target.getBoundingClientRect().top + window.scrollY;
-  const offsetPosition = elementPosition - offset;
-
-  window.scrollTo({
-    top: offsetPosition,
-    behavior: "smooth", // Optional smooth scrolling
-  });
 }
 
 /**

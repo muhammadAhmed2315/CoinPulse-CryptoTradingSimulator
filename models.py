@@ -176,7 +176,7 @@ class Transaction(db.Model):
     coin_id = db.Column(db.Text, nullable=False)
     quantity = db.Column(db.Float, nullable=False)
     price_per_unit = db.Column(db.Float, nullable=False)
-    price_per_unit_at_execution = db.Column(db.Float)
+    price_per_unit_at_execution = db.Column(db.Float, default=-1)
     comment = db.Column(db.Text)
     balance_before = db.Column(db.Float, nullable=False)
     balance_after = db.Column(db.Float)
@@ -242,8 +242,7 @@ class Transaction(db.Model):
             )
         self.status = "finished"
 
-    def cancel_open_order(self, price_per_unit_at_execution):
-        self.price_per_unit_at_execution = price_per_unit_at_execution
+    def cancel_open_order(self):
         self.balance_after = self.balance_before
         self.status = "cancelled"
 

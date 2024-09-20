@@ -139,7 +139,8 @@ def get_trades_info():
             temp["quantity"] = transaction.quantity
             temp["price_per_unit"] = transaction.price_per_unit
             temp["comment"] = transaction.comment
-            temp["total_value"] = transaction.total_value
+            temp["status"] = transaction.status
+            temp["price_at_execution"] = transaction.price_per_unit_at_execution
             res.append(temp)
 
         return (
@@ -211,17 +212,27 @@ def sort_transactions(transactions, sort="timestamp_desc"):
             return sorted(
                 transactions, key=lambda trnsctn: trnsctn.price_per_unit, reverse=True
             )
-        case "total_value_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.total_value)
-        case "total_value_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.total_value, reverse=True
-            )
         case "timestamp_asc":
             return sorted(transactions, key=lambda trnsctn: trnsctn.timestamp)
         case "timestamp_desc":
             return sorted(
                 transactions, key=lambda trnsctn: trnsctn.timestamp, reverse=True
+            )
+        case "status_asc":
+            return sorted(transactions, key=lambda trnsctn: trnsctn.status)
+        case "status_desc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.status, reverse=True
+            )
+        case "price_at_execution_asc":
+            return sorted(
+                transactions, key=lambda trnsctn: trnsctn.price_per_unit_at_execution
+            )
+        case "price_at_execution_desc":
+            return sorted(
+                transactions,
+                key=lambda trnsctn: trnsctn.price_per_unit_at_execution,
+                reverse=True,
             )
 
 
@@ -733,7 +744,7 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
 
 def update_open_trades_in_background():
     def cancel_open_order(transaction):
-        transaction.cancel_open_order(coin_market_prices[transaction.coin_id])
+        transaction.cancel_open_order()
         db.session.add(transaction)
 
     def execute_open_order(transaction, is_buy):
@@ -919,11 +930,10 @@ def cancel_open_trade():
     # TODO add error handling for this function (e.g., transaction ID not found)
     data = request.get_json()
     transaction_id = data["transaction_id"]
-    coin_current_price = data["coin_current_price"]
 
     transaction = Transaction.query.get(transaction_id)
 
-    transaction.cancel_open_order(coin_current_price)
+    transaction.cancel_open_order()
 
     db.session.add(transaction)
     db.session.commit()

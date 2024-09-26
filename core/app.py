@@ -982,3 +982,14 @@ def get_coin_data():
     data = jsonify(data)
 
     return data
+
+
+@core.route("/get_all_coin_names")
+def get_all_coin_names():
+    url = "https://api.coingecko.com/api/v3/coins/list"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = jsonify(data)
+
+    return data

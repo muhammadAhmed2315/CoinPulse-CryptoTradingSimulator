@@ -156,7 +156,7 @@ async function getCurrentCoinInfo() {
   };
 
   try {
-    const response = await fetch("/get_coin_data", fetchOptions);
+    const response = await fetch("/get_single_coin_data", fetchOptions);
     const data = await response.json();
 
     let { name, image, current_price, price_change_24h, symbol } = data[0];

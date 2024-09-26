@@ -360,13 +360,23 @@ function setupObserver() {
  */
 async function getTrendingCoinsData() {
   // TODO add error handling
-  const url = new URL("https://api.coingecko.com/api/v3/search/trending");
+  const fetchOptions = {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  };
 
-  const response = await fetch(url, COINGECKO_API_OPTIONS);
-  const data = (await response.json()).coins;
+  try {
+    const response = await fetch("/get_trending_coins_data", fetchOptions);
+    const temp = await response.json();
+    console.log(temp);
+    const data = temp.coins;
 
-  const res = data.map((coin) => coin.item);
-  return res;
+    const res = data.map((coin) => coin.item);
+
+    return res;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 /**
@@ -1220,17 +1230,14 @@ async function getCoinDataFromAPI(coin_ids) {
   // TODO do 250 at a time
   const api_coin_ids = coin_ids.join(",");
 
-  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
-  const params = {
-    vs_currency: "usd",
-    ids: api_coin_ids,
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coin_ids: api_coin_ids }),
   };
-  Object.keys(params).forEach((key) =>
-    url.searchParams.append(key, params[key])
-  );
 
   try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const response = await fetch("/get_multiple_coin_data", fetchOptions);
     const data = await response.json();
 
     return data;

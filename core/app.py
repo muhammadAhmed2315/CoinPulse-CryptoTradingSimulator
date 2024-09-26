@@ -965,8 +965,8 @@ def get_top_coins_data():
     return data
 
 
-@core.route("/get_coin_data", methods=["POST"])
-def get_coin_data():
+@core.route("/get_single_coin_data", methods=["POST"])
+def get_single_coin_data():
     data = request.get_json()
     coin_id = data["coin_id"]
 
@@ -984,11 +984,41 @@ def get_coin_data():
     return data
 
 
+@core.route("/get_multiple_coin_data", methods=["POST"])
+def get_multiple_coin_data():
+    data = request.get_json()
+    coin_ids = data["coin_ids"]
+
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {
+        "vs_currency": "usd",
+        "ids": coin_ids,
+    }
+
+    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = jsonify(data)
+
+    return data
+
+
 @core.route("/get_all_coin_names")
 def get_all_coin_names():
     url = "https://api.coingecko.com/api/v3/coins/list"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = jsonify(data)
+
+    return data
+
+
+@core.route("/get_trending_coins_data")
+def get_trending_coins_data():
+    url = "https://api.coingecko.com/api/v3/search/trending"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+
     data = response.json()
     data = jsonify(data)
 

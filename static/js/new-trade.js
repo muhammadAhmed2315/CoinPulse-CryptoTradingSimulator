@@ -147,19 +147,16 @@ function addNewTradeSidebarSearchEventListeners() {
  * @returns {void}
  */
 async function getCurrentCoinInfo() {
-  // Make API call to get percentage_price_change and current price
-  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
-  const params = {
-    vs_currency: "usd",
-    ids: currentCoin.id,
-    price_change_percentage: "24h",
+  // Make Flask endpoint call to get percentage_price_change and current price for the
+  // current coin
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coin_id: currentCoin.id }),
   };
-  Object.keys(params).forEach((key) =>
-    url.searchParams.append(key, params[key])
-  );
 
   try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const response = await fetch("/get_coin_data", fetchOptions);
     const data = await response.json();
 
     let { name, image, current_price, price_change_24h, symbol } = data[0];

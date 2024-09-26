@@ -963,3 +963,22 @@ def get_top_coins_data():
     data = jsonify(data)
 
     return data
+
+
+@core.route("/get_coin_data", methods=["POST"])
+def get_coin_data():
+    data = request.get_json()
+    coin_id = data["coin_id"]
+
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {
+        "vs_currency": "usd",
+        "ids": coin_id,
+        "price_change_percentage": "24h",
+    }
+
+    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = jsonify(data)
+
+    return data

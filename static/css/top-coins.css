@@ -153,6 +153,10 @@ select {
   border-radius: 50%;
 }
 
+.coin-image-na-label {
+  font-size: 1.6rem;
+}
+
 /* ******************** ROUNDED CORNERS FOR TBODY ******************** */
 
 /* Apply rounded corners to the first and last cells of the first row in tbody */

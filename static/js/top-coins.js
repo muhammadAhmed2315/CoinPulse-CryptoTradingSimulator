@@ -1,4 +1,4 @@
-import { COINGECKO_API_OPTIONS } from "../js/helpers.js";
+import { COINGECKO_API_OPTIONS, formatFloatToUSD } from "../js/helpers.js";
 
 let current_page = 1;
 let current_sort = "market_cap_desc";
@@ -125,74 +125,83 @@ function displayCoins(pageNum) {
     ).textContent = `${dataToShow[i].name} (${dataToShow[i].symbol})`;
 
     // Update coin (current) price
-    row.querySelector(".coin-price").textContent = `${dataToShow[
-      i
-    ].current_price.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    })}`;
+    const currPrice = dataToShow[i].current_price;
+    row.querySelector(".coin-price").textContent = currPrice
+      ? `$${formatFloatToUSD(currPrice, 2)}`
+      : "N/A";
 
     // Update coin market cap
-    row.querySelector(".coin-market-cap").textContent = `${dataToShow[
-      i
-    ].market_cap.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    })}`;
+    const marketCap = dataToShow[i].market_cap;
+    row.querySelector(".coin-market-cap").textContent = marketCap
+      ? `$${formatFloatToUSD(marketCap, 2)}`
+      : "N/A";
 
     // Update coin 1h price change
-    if (dataToShow[i].price_change_1h) {
-      row.querySelector(".coin-price-change-1h").textContent =
-        dataToShow[i].price_change_1h >= 0 ? "+" : "";
-      row.querySelector(".coin-price-change-1h").textContent += `${dataToShow[
-        i
-      ].price_change_1h.toFixed(4)}%`;
-      row.querySelector(".coin-price-change-1h").style.color =
-        dataToShow[i].price_change_1h >= 0 ? "#17C671" : "#EB5757";
+    const priceChange1h = dataToShow[i].price_change_1h;
+    const priceChange1hElem = row.querySelector(".coin-price-change-1h");
+    if (priceChange1h) {
+      priceChange1hElem.textContent = priceChange1h >= 0 ? "+" : "";
+      priceChange1hElem.textContent += `${priceChange1h.toFixed(4)}%`;
+      priceChange1hElem.style.color =
+        priceChange1h >= 0 ? "#17C671" : "#EB5757";
     } else {
-      row.querySelector(".coin-price-change-1h").textContent = "N/A";
+      priceChange1hElem.textContent = "N/A";
     }
 
     // Update coin 24h price change
-    if (dataToShow[i].price_change_24h) {
-      row.querySelector(".coin-price-change-24h").textContent =
-        dataToShow[i].price_change_24h >= 0 ? "+" : "";
-      row.querySelector(".coin-price-change-24h").textContent += `${dataToShow[
-        i
-      ].price_change_24h.toFixed(4)}%`;
-      row.querySelector(".coin-price-change-24h").style.color =
-        dataToShow[i].price_change_24h >= 0 ? "#17C671" : "#EB5757";
+    const priceChange24h = dataToShow[i].price_change_24h;
+    const priceChange24hElem = row.querySelector(".coin-price-change-24h");
+    if (priceChange24h) {
+      priceChange24hElem.textContent = priceChange24h >= 0 ? "+" : "";
+      priceChange24hElem.textContent += `${priceChange24h.toFixed(4)}%`;
+      priceChange24hElem.style.color =
+        priceChange24h >= 0 ? "#17C671" : "#EB5757";
     } else {
-      row.querySelector(".coin-price-change-24h").textContent = "N/A";
+      priceChange24hElem.textContent = "N/A";
     }
 
     // Update coin 7d price change
-    row.querySelector(".coin-price-change-7d").textContent =
-      dataToShow[i].price_change_7d >= 0 ? "+" : "";
-    row.querySelector(".coin-price-change-7d").textContent += `${dataToShow[
-      i
-    ].price_change_7d.toFixed(4)}%`;
-    row.querySelector(".coin-price-change-7d").style.color =
-      dataToShow[i].price_change_7d >= 0 ? "#17C671" : "#EB5757";
+    const priceChange7d = dataToShow[i].price_change_7d;
+    const priceChange7dElem = row.querySelector(".coin-price-change-7d");
+    if (priceChange7d) {
+      priceChange7dElem.textContent = priceChange7d >= 0 ? "+" : "";
+      priceChange7dElem.textContent += `${priceChange7d.toFixed(4)}%`;
+      priceChange7dElem.style.color =
+        priceChange7d >= 0 ? "#17C671" : "#EB5757";
+    } else {
+      priceChange7dElem.textContent = "N/A";
+    }
 
     // Update coin total volume
-    row.querySelector(".coin-volume").textContent = `${dataToShow[
-      i
-    ].total_volume.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+    const totalVolume = dataToShow[i].total_volume;
+    row.querySelector(".coin-volume").textContent = totalVolume
+      ? `$${formatFloatToUSD(totalVolume, 2)}`
+      : "N/A";
 
     // Update coin price graph (7 days)
-    drawSparkline(
-      dataToShow[i].sparkline_in_7d,
-      row.querySelector(".sparkline-canvas")
-    );
+    const sparklineData = dataToShow[i].sparkline_in_7d;
+    if (sparklineData.length > 0) {
+      row.querySelector(".coin-graph").innerHTML =
+        '<canvas class="sparkline-canvas"></canvas>';
+      drawSparkline(sparklineData, row.querySelector(".sparkline-canvas"));
+    } else {
+      row.querySelector(".coin-graph").innerHTML = "<p>N/A</p>";
+      row.querySelector(".coin-graph p").classList.add("coin-image-na-label");
+    }
   }
 }
 
 function drawSparkline(data, canvas) {
+  console.log("DRAWING SPARKLINE");
   const ctx = canvas.getContext("2d");
 
   // Clear previous drawings
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!data || data.length === 0) {
+    ctx.fillText("N/A", canvas.width / 2, canvas.height / 2);
+    return;
+  }
 
   // Set up the drawing style
   if (data[0] > data[data.length - 1]) {
@@ -206,10 +215,10 @@ function drawSparkline(data, canvas) {
   // Determine the scale of the graph
   const maxVal = Math.max(...data);
   const minVal = Math.min(...data);
-  const range = maxVal - minVal;
+  const range = maxVal - minVal || 1; // Prevent division by zero (in case all data points are the same)
 
   // Function to map data points to canvas coordinates
-  const scaleX = canvas.width / (data.length - 1);
+  const scaleX = canvas.width / (data.length - 1 || 1); // Prevent division by zero (in case of empty data)
   const scaleY = canvas.height / range;
 
   // Start at the first data point

@@ -144,18 +144,14 @@ function addSearchBarEventListeners() {
  */
 async function getCurrentCoinInfo() {
   // Make API call to get percentage_price_change and current price
-  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
-  const params = {
-    vs_currency: "usd",
-    ids: currentCoin.id,
-    price_change_percentage: "24h",
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coin_id: currentCoin.id }),
   };
-  Object.keys(params).forEach((key) =>
-    url.searchParams.append(key, params[key])
-  );
 
   try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const response = await fetch("/get_single_coin_data", fetchOptions);
     const data = await response.json();
 
     // Update currentCoin global variable
@@ -181,14 +177,15 @@ async function getCurrentCoinInfo() {
  */
 async function getCurrentCoinOHLC() {
   // Make API call to get percentage_price_change and current price
-  const url = new URL(
-    `https://api.coingecko.com/api/v3/coins/${currentCoin.id}/ohlc?vs_currency=usd&days=365`
-  );
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coin_id: currentCoin.id }),
+  };
 
   try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const response = await fetch("/get_coin_OHLC_data", fetchOptions);
     const data = await response.json();
-
     currentCoinOHLC = data;
   } catch (error) {
     console.error("Error:", error);
@@ -213,12 +210,14 @@ async function getCurrentCoinOHLC() {
  */
 async function getCurrentCoinHistoricalData() {
   // Make API call to get percentage_price_change and current price
-  const url = new URL(
-    `https://api.coingecko.com/api/v3/coins/${currentCoin.id}/market_chart?vs_currency=usd&days=365&interval=daily`
-  );
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coin_id: currentCoin.id }),
+  };
 
   try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const response = await fetch("/get_coin_historical_data", fetchOptions);
     const data = await response.json();
 
     currentCoinHistoricalData.prices = data.prices;

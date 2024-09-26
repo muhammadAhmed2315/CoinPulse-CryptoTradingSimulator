@@ -984,6 +984,29 @@ def get_single_coin_data():
     return data
 
 
+@core.route("/get_all_coin_names")
+def get_all_coin_names():
+    url = "https://api.coingecko.com/api/v3/coins/list"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = jsonify(data)
+
+    return data
+
+
+@core.route("/get_trending_coins_data")
+def get_trending_coins_data():
+    url = "https://api.coingecko.com/api/v3/search/trending"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+
+    data = response.json()
+    data = jsonify(data)
+
+    return data
+
+
 @core.route("/get_multiple_coin_data", methods=["POST"])
 def get_multiple_coin_data():
     data = request.get_json()
@@ -1002,9 +1025,12 @@ def get_multiple_coin_data():
     return data
 
 
-@core.route("/get_all_coin_names")
-def get_all_coin_names():
-    url = "https://api.coingecko.com/api/v3/coins/list"
+@core.route("/get_coin_OHLC_data", methods=["POST"])
+def get_coin_OHLC_data():
+    data = request.get_json()
+    coin_id = data["coin_id"]
+
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days=365"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)
     data = response.json()
@@ -1013,12 +1039,14 @@ def get_all_coin_names():
     return data
 
 
-@core.route("/get_trending_coins_data")
-def get_trending_coins_data():
-    url = "https://api.coingecko.com/api/v3/search/trending"
+@core.route("/get_coin_historical_data", methods=["POST"])
+def get_coin_historical_data():
+    data = request.get_json()
+    coin_id = data["coin_id"]
+
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)
-
     data = response.json()
     data = jsonify(data)
 

@@ -1,12 +1,15 @@
-/* ******************** TOP COINS TABLE SECTION ******************** */
+/* ******************** GENERAL ******************** */
 .top-coins-container {
   padding: 4.8rem;
 }
 
+/* ******************** HEADER + TITLE + DROPDOWN ******************** */
 .top-coins-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.6rem;
 }
 
 .top-coins-title {
@@ -21,18 +24,70 @@
   font-weight: 400;
 }
 
-.table-header,
-.table-row {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  align-items: center;
+select {
+  height: 2rem;
+}
+
+/* ******************** TABLE ******************** */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  margin-bottom: 1.6rem;
+}
+
+.table colgroup .img {
+  width: 5%;
+}
+
+.table colgroup .name {
+  width: 13%;
+}
+
+.table colgroup .current-price {
+  width: 11%;
+}
+
+.table colgroup .market-cap {
+  width: 13%;
+}
+
+.table colgroup .change-1h,
+.table colgroup .change-24h,
+.table colgroup .change-7d {
+  width: 7%;
+}
+
+.table colgroup .total-volume {
+  width: 10%;
+}
+
+.table colgroup .price-graph {
+  width: 15%;
 }
 
 .table-header {
   font-size: 1.6rem;
   font-weight: 700;
   color: #9696bb;
+  background-color: #f8f9fa;
+}
+
+.table-header td:first-of-type {
+  text-align: center;
+}
+
+.table-header td {
+  padding: 1rem;
+  text-align: left;
+}
+
+.table-header td:first-child {
+  text-align: center;
 }
 
 .table-row {
@@ -41,24 +96,84 @@
   margin-bottom: 1rem;
 }
 
+.table-row td {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table-row:last-child td {
+  border-bottom: none;
+}
+
+.table-row .coin-image-container {
+  height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .coin-image {
   height: 3.2rem;
   width: 3.2rem;
 }
 
 .coin-name,
-.coin-price-change {
+.coin-price-change-1h,
+.coin-price-change-24h,
+.coin-price-change-7d {
   font-weight: 700;
 }
 
 .coin-name,
 .coin-price,
 .coin-market-cap,
-.coin-price-change,
+.coin-price-change-1h,
+.coin-price-change-24h,
+.coin-price-change-7d,
 .coin-volume {
   font-size: 1.6rem;
 }
 
+.coin-graph .sparkline-canvas {
+  height: 5rem;
+  width: 24rem;
+}
+
+/* ******************** COIN IMAGE CONTAINER ******************** */
+.coin-image-container {
+  height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coin-image {
+  height: 3.2rem;
+  width: 3.2rem;
+  border-radius: 50%;
+}
+
+/* ******************** ROUNDED CORNERS FOR TBODY ******************** */
+
+/* Apply rounded corners to the first and last cells of the first row in tbody */
+.table tbody tr:first-child td:first-child {
+  border-top-left-radius: 10px;
+}
+
+.table tbody tr:first-child td:last-child {
+  border-top-right-radius: 10px;
+}
+
+/* Apply rounded corners to the first and last cells of the last row in tbody */
+.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+
+.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
+/* ******************** PAGINATION BUTTONS ******************** */
 .pagination-buttons-container {
   display: flex;
   flex-direction: row;
@@ -66,11 +181,15 @@
 }
 
 .pagination-button {
-  background-color: red;
-  padding: 1rem;
-  color: white;
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 500;
+  background-color: #17c671;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
 }
 
 .pagination-button:hover {
+  background-color: #0069d9;
   cursor: pointer;
 }

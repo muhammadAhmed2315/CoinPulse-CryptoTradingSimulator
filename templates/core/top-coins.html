@@ -8,9 +8,14 @@
 {% block content %}
 <!-- TOP CRYPTOCURRENCIES TABLE -->
 <div class="top-coins-container">
+  <!-- TITLE -->
+  <p class="top-coins-title">Cryptocurrencies</p>
+
   <div class="top-coins-header">
-    <!-- TITLE -->
-    <p class="top-coins-title">Cryptocurrencies</p>
+    <!-- TITLE  -->
+    <p class="top-coins-subtitle">
+      See the 100 top performing cryptocurrencies
+    </p>
 
     <!-- SORT BY DROPDOWN -->
     <select class="sort-dropdown-menu" name="cars">
@@ -21,21 +26,34 @@
     </select>
   </div>
 
-  <!-- TITLE  -->
-  <p class="top-coins-subtitle">See the 100 top performing cryptocurrencies</p>
-
   <div class="table-container">
-    <div class="table">
-      <div class="table-header">
-        <p>#</p>
-        <p>CRYPTOCURRENCY</p>
-        <p>CURRENT PRICE</p>
-        <p>MARKET CAP</p>
-        <p>CHANGE</p>
-        <p>TOTAL VOLUME</p>
-        <p>PRICE GRAPH (7 DAYS)</p>
-      </div>
-    </div>
+    <table class="table">
+      <colgroup>
+        <col class="img" />
+        <col class="name" />
+        <col class="current-price" />
+        <col class="market-cap" />
+        <col class="change-1h" />
+        <col class="change-24h" />
+        <col class="change-7d" />
+        <col class="total-volume" />
+        <col class="price-graph" />
+      </colgroup>
+      <th>
+        <tr class="table-header">
+          <td>#</td>
+          <td>CRYPTOCURRENCY</td>
+          <td>CURRENT PRICE</td>
+          <td>MARKET CAP</td>
+          <td>1H</td>
+          <td>24H</td>
+          <td>7D</td>
+          <td>TOTAL VOLUME</td>
+          <td>PRICE GRAPH (7D)</td>
+        </tr>
+      </th>
+      <tbody></tbody>
+    </table>
     <div class="pagination-buttons-container">
       <p class="pagination-button pagination-button--previous hidden">
         PREVIOUS

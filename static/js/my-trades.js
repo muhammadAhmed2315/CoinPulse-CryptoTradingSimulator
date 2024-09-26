@@ -523,8 +523,8 @@ function addPaginationButtonEventListeners() {
 
   // Hide both pagination buttons if maxPages == 1
   if (maxPages === 0) {
-    // nextButton.classList.add("hidden");
-    // previousButton.classList.add("hidden");
+    nextButton.classList.add("hidden");
+    previousButton.classList.add("hidden");
   }
 
   nextButton.addEventListener("click", async function () {

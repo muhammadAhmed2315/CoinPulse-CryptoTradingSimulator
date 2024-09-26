@@ -46,7 +46,7 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
     order: sortCoinsBy,
     per_page: 100,
     page: 1,
-    price_change_percentage: "24h",
+    price_change_percentage: "1h,24h,7d",
     precision: 2,
     sparkline: "true",
   };
@@ -64,13 +64,12 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
         symbol,
         current_price,
         market_cap,
-        price_change_24h,
+        price_change_percentage_1h_in_currency: price_change_1h,
+        price_change_percentage_24h_in_currency: price_change_24h,
+        price_change_percentage_7d_in_currency: price_change_7d,
         total_volume,
         sparkline_in_7d,
       } = coin;
-
-      price_change_24h =
-        (price_change_24h / (current_price - price_change_24h)) * 100;
 
       sparkline_in_7d = sparkline_in_7d["price"];
 
@@ -80,7 +79,9 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
         symbol,
         current_price,
         market_cap,
+        price_change_1h,
         price_change_24h,
+        price_change_7d,
         total_volume,
         sparkline_in_7d,
       };
@@ -106,21 +107,28 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
  */
 function createCoinTableRows(numRows = 10) {
   const markup = `
-      <img  class="coin-image" src="" />
-      <p class="coin-name"></p>
-      <p class="coin-price"></p>
-      <p class="coin-market-cap"></p>
-      <p class="coin-price-change"></p>
-      <p class="coin-volume"></p>
-      <canvas class="sparkline-canvas" width="176px" height="50px"></canvas>
-      `;
+    <td>
+      <div class="coin-image-container">
+        <img class="coin-image" src="" alt="Coin Image" loading="lazy" />
+      </div>
+    </td>
+    <td class="coin-name"></td>
+    <td class="coin-price"></td>
+    <td class="coin-market-cap"></td>
+    <td class="coin-price-change-1h"></td>
+    <td class="coin-price-change-24h"></td>
+    <td class="coin-price-change-7d"></td>
+    <td class="coin-volume"></td>
+    <td class="coin-graph">
+      <canvas class="sparkline-canvas"></canvas>
+    </td>
+  `;
 
-  const coinsTable = document.querySelector(".table");
   for (let i = 0; i < numRows; i++) {
-    const coinTableDataRow = document.createElement("div");
+    const coinTableDataRow = document.createElement("tr");
     coinTableDataRow.classList.add("table-row");
     coinTableDataRow.innerHTML = markup;
-    coinsTable.appendChild(coinTableDataRow);
+    document.querySelector(".table tbody").appendChild(coinTableDataRow);
   }
 }
 
@@ -142,15 +150,18 @@ function displayCoins(pageNum) {
   );
 
   for (const [i, row] of Array.from(tableRows).entries()) {
+    // Update image
     row.querySelector(".coin-image").setAttribute("src", dataToShow[i].image);
     row
       .querySelector(".coin-image")
       .setAttribute("alt", dataToShow[i].name + " Logo");
 
+    // Update coin name + symbol
     row.querySelector(
       ".coin-name"
     ).textContent = `${dataToShow[i].name} (${dataToShow[i].symbol})`;
 
+    // Update coin (current) price
     row.querySelector(".coin-price").textContent = `${dataToShow[
       i
     ].current_price.toLocaleString("en-US", {
@@ -158,6 +169,7 @@ function displayCoins(pageNum) {
       currency: "USD",
     })}`;
 
+    // Update coin market cap
     row.querySelector(".coin-market-cap").textContent = `${dataToShow[
       i
     ].market_cap.toLocaleString("en-US", {
@@ -165,18 +177,47 @@ function displayCoins(pageNum) {
       currency: "USD",
     })}`;
 
-    row.querySelector(".coin-price-change").textContent =
-      dataToShow[i].price_change_24h >= 0 ? "+" : "";
-    row.querySelector(".coin-price-change").textContent += `${dataToShow[
-      i
-    ].price_change_24h.toFixed(2)}%`;
-    row.querySelector(".coin-price-change").style.color =
-      dataToShow[i].price_change_24h >= 0 ? "#17C671" : "#EB5757";
+    // Update coin 1h price change
+    if (dataToShow[i].price_change_1h) {
+      row.querySelector(".coin-price-change-1h").textContent =
+        dataToShow[i].price_change_1h >= 0 ? "+" : "";
+      row.querySelector(".coin-price-change-1h").textContent += `${dataToShow[
+        i
+      ].price_change_1h.toFixed(4)}%`;
+      row.querySelector(".coin-price-change-1h").style.color =
+        dataToShow[i].price_change_1h >= 0 ? "#17C671" : "#EB5757";
+    } else {
+      row.querySelector(".coin-price-change-1h").textContent = "N/A";
+    }
 
+    // Update coin 24h price change
+    if (dataToShow[i].price_change_24h) {
+      row.querySelector(".coin-price-change-24h").textContent =
+        dataToShow[i].price_change_24h >= 0 ? "+" : "";
+      row.querySelector(".coin-price-change-24h").textContent += `${dataToShow[
+        i
+      ].price_change_24h.toFixed(4)}%`;
+      row.querySelector(".coin-price-change-24h").style.color =
+        dataToShow[i].price_change_24h >= 0 ? "#17C671" : "#EB5757";
+    } else {
+      row.querySelector(".coin-price-change-24h").textContent = "N/A";
+    }
+
+    // Update coin 7d price change
+    row.querySelector(".coin-price-change-7d").textContent =
+      dataToShow[i].price_change_7d >= 0 ? "+" : "";
+    row.querySelector(".coin-price-change-7d").textContent += `${dataToShow[
+      i
+    ].price_change_7d.toFixed(4)}%`;
+    row.querySelector(".coin-price-change-7d").style.color =
+      dataToShow[i].price_change_7d >= 0 ? "#17C671" : "#EB5757";
+
+    // Update coin total volume
     row.querySelector(".coin-volume").textContent = `${dataToShow[
       i
     ].total_volume.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 
+    // Update coin price graph (7 days)
     drawSparkline(
       dataToShow[i].sparkline_in_7d,
       row.querySelector(".sparkline-canvas")
@@ -197,7 +238,7 @@ function drawSparkline(data, canvas) {
     ctx.strokeStyle = "#17C671"; // Line color
   }
 
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
 
   // Determine the scale of the graph
   const maxVal = Math.max(...data);

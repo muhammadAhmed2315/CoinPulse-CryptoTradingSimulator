@@ -9,54 +9,17 @@ let coinData = {
   volume_desc: null,
 };
 
-/**
- * Fetches cryptocurrency data from the CoinGecko API and returns a processed array of
- * coins.
- *
- * This asynchronous function retrieves market data for cryptocurrencies from the
- * CoinGecko API, sorted according to the specified criterion.
- *
- * @param {string} [sortCoinsBy="market_cap_desc"] - The sorting criterion for the API
- *                                                   request. Has the following sorting
- *                                                   options:
- * - `market_cap_asc`: Sort by market capitalization in ascending order.
- * - `market_cap_desc`: Sort by market capitalization in descending order.
- * - `volume_asc`: Sort by volume in ascending order.
- * - `volume_desc`: Sort by volume in descending order.
- *
- * @returns {Promise<Array<Object>>} - A promise that resolves to an array of objects,
- *                                     each representing a cryptocurrency with the
- *                                     following properties:
- * - `image`: The URL of the coin's image.
- * - `name`: The name of the cryptocurrency.
- * - `symbol`: The symbol of the cryptocurrency.
- * - `current_price`: The current price of the cryptocurrency in USD.
- * - `market_cap`: The market capitalization of the cryptocurrency in USD.
- * - `price_change_24h`: The 24-hour price change as a percentage.
- * - `total_volume`: The trading volume of the cryptocurrency.
- *
- * In case of an error during the API request, the function logs the error to the
- * console and returns an empty array.
- */
 async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
-  const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
-
-  const params = {
-    vs_currency: "usd",
-    order: sortCoinsBy,
-    per_page: 100,
-    page: 1,
-    price_change_percentage: "1h,24h,7d",
-    precision: 2,
-    sparkline: "true",
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sort_coins_by: sortCoinsBy }),
   };
-  Object.keys(params).forEach((key) =>
-    url.searchParams.append(key, params[key])
-  );
 
   try {
-    const response = await fetch(url, COINGECKO_API_OPTIONS);
+    const response = await fetch("/get_top_coins_data", fetchOptions);
     const data = await response.json();
+
     const results = data.map((coin) => {
       let {
         image,
@@ -90,7 +53,7 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
     return results;
   } catch (error) {
     console.error("Error:", error);
-    return []; // Return an empty array in case of error
+    return [];
   }
 }
 

@@ -4,7 +4,7 @@ import time
 from flask import render_template, request, Blueprint, jsonify, session
 from flask_login import current_user, login_required
 from models import User, Wallet, Transaction, TransactionLikes
-from constants import COINGECKO_API_KEY
+from constants import COINGECKO_API_KEY, COINGECKO_API_HEADERS
 from extensions import db
 import time
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
@@ -675,6 +675,7 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                                            If None, all wallets are updated.
     """
     while True:
+        print("RUNNING UPDATE USER WALLET VALUE IN BACKGROUND")
         from app import app
 
         with app.app_context():
@@ -702,7 +703,8 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
 
                 url = "https://api.coingecko.com/api/v3/coins/markets"
                 params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
-                response = requests.get(url, params=params)
+                headers = {"X-CoinGecko-Api-Key": COINGECKO_API_KEY}
+                response = requests.get(url, params=params, headers=headers)
                 data = response.json()
 
                 for coin in data:
@@ -939,3 +941,25 @@ def cancel_open_trade():
     db.session.commit()
 
     return jsonify({"success": "Transaction successfully cancelled"}), 200
+
+
+@core.route("/get_top_coins_data", methods=["POST"])
+def get_top_coins_data():
+    data = request.get_json()
+    sort_coins_by = data["sort_coins_by"]
+
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {
+        "vs_currency": "usd",
+        "order": sort_coins_by,
+        "per_page": 100,
+        "page": 1,
+        "price_change_percentage": "1h,24h,7d",
+        "precision": 2,
+        "sparkline": "true",
+    }
+    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = jsonify(data)
+
+    return data

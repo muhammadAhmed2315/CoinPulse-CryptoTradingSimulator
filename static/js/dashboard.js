@@ -226,7 +226,6 @@ function renderFeedPosts(type) {
     // //////////////////// Add like button event listeners ////////////////////
     // TODO Add like button event listener
     div.querySelector(".like-btn").addEventListener("click", async function () {
-      console.log(`Like button clicked for ${currFeedPost.timestamp}`);
       if (this.classList.contains("active")) {
         const response = (await updateLikeCounter(true, currFeedPost.id))[0];
 
@@ -368,7 +367,6 @@ async function getTrendingCoinsData() {
   try {
     const response = await fetch("/get_trending_coins_data", fetchOptions);
     const temp = await response.json();
-    console.log(temp);
     const data = temp.coins;
 
     const res = data.map((coin) => coin.item);
@@ -409,8 +407,8 @@ async function renderTrendingCoins(coinsData) {
         draggable="false"
         loading="lazy"
       />
-      <p class="coin-name"></p>
-      <p class="coin-symbol"></p>
+      <p class="coin-name" title=""></p>
+      <p class="coin-symbol" title=""></p>
     </div>
 
     <div class="trending-coins-card__main">
@@ -418,12 +416,6 @@ async function renderTrendingCoins(coinsData) {
       <img
         class="img--third"
         src=""
-        draggable="false"
-        loading="lazy"
-      />
-      <img
-        class="img--fourth"
-        src="../../static/img/dollar_symbol.svg"
         draggable="false"
         loading="lazy"
       />
@@ -447,13 +439,21 @@ async function renderTrendingCoins(coinsData) {
     newCard.querySelector(".trending-coins-card__main .img--third").src =
       coin.large;
 
-    // Update coin name and symbol
+    // Update coin name
     newCard.querySelector(
       ".trending-coins-card__header .coin-name"
     ).textContent = coin.name;
+    newCard
+      .querySelector(".trending-coins-card__header .coin-name")
+      .setAttribute("title", coin.name + ` (${coin.symbol})`);
+
+    // Update coin symbol
     newCard.querySelector(
       ".trending-coins-card__header .coin-symbol"
     ).textContent = `(${coin.symbol})`;
+    newCard
+      .querySelector(".trending-coins-card__header .coin-symbol")
+      .setAttribute("title", coin.name + ` (${coin.symbol})`);
 
     // Update coin price change and colour
     newCard.querySelector(
@@ -594,9 +594,6 @@ function formatWalletAssetsData(coin_info, coin_quantities) {
  * @param {number} balance - The user's total wallet balance in USD.
  */
 async function renderWalletAssets(assets, balance) {
-  console.log(balance);
-  console.log(assets);
-
   // Update USD balance in portfolio-overview-card
   document.querySelector(".portfolio-overview-card .amount-data").textContent =
     "$" + formatFloatToUSD(balance, 2);
@@ -839,7 +836,7 @@ function renderOpenTrades(trades, coinData) {
     if (trades[orderType].length == 0) {
       const noTradesDiv = document.createElement("div");
       noTradesDiv.classList.add("no-open-trades-to-show");
-      noTradesDiv.textContent = "You currently have no trade of this type";
+      noTradesDiv.textContent = "You currently have no trades of this type";
 
       // Append to correct div
       if (orderType === "limitBuy") {
@@ -1025,12 +1022,17 @@ function addFeedMenuButtonEventListeners() {
   );
   const ownFeedContainer = document.querySelector(".own-feedposts-container");
 
+  // Global feed button is selected by default
+  globalFeedBtn.style.color = "#000000";
+
   globalFeedBtn.addEventListener("click", function () {
     // Hide both feedposts sections
     globalFeedContainer.style.display = "flex";
     ownFeedContainer.style.display = "none";
 
     currFeed = "global";
+    globalFeedBtn.style.color = "#000000";
+    ownFeedBtn.style.color = "#9696bb";
   });
 
   ownFeedBtn.addEventListener("click", function () {
@@ -1038,6 +1040,8 @@ function addFeedMenuButtonEventListeners() {
     globalFeedContainer.style.display = "none";
 
     currFeed = "own";
+    ownFeedBtn.style.color = "#000000";
+    globalFeedBtn.style.color = "#9696bb";
   });
 }
 
@@ -1195,17 +1199,26 @@ function addOverviewOpenButtonsEventListeners() {
   const overviewCard = document.querySelector(".portfolio-overview-card");
   const openPositionsCard = document.querySelector(".open-positions-card");
 
+  // Overview button is selected by default
+  overviewBtn.style.color = "#000000";
+
   // Open Positions card should not initially be visible
   openPositionsCard.style.display = "none";
 
   overviewBtn.addEventListener("click", function () {
     overviewCard.style.display = "flex";
     openPositionsCard.style.display = "none";
+
+    overviewBtn.style.color = "#000000";
+    openPositionsBtn.style.color = "#9696bb";
   });
 
   openPositionsBtn.addEventListener("click", function () {
     overviewCard.style.display = "none";
     openPositionsCard.style.display = "block";
+
+    overviewBtn.style.color = "#9696bb";
+    openPositionsBtn.style.color = "#000000";
   });
 }
 
@@ -1251,7 +1264,6 @@ function showNewTradeSidebarOnLoad() {
   document.addEventListener("DOMContentLoaded", function () {
     // Check if there's a hash in the URL
     if (window.location.hash) {
-      console.log(window.location.hash);
       // Wait for the dynamically generated content to load
       setTimeout(function () {
         showNewTradeSidebarForSpecificCoin("bitcoin");

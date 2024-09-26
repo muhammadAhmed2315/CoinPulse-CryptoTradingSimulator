@@ -20,7 +20,6 @@
 
 /* ******************** TRENDING COINS SECTION ******************** */
 .trending-coins-container {
-  /* padding: 4.8rem 4.8rem 2.4rem 4.8rem; */
   padding: 2.4rem 4.8rem;
 }
 
@@ -57,7 +56,7 @@
   display: flex;
   flex-direction: row;
   gap: 4rem;
-  padding: 2rem;
+  padding: 2rem 2rem 2rem 0;
   height: 16rem;
   overflow: auto;
 
@@ -76,6 +75,7 @@
   background-color: #ffffff;
   border-radius: 10px;
   padding: 1.6rem;
+  overflow: hidden;
 }
 
 .trending-coins-card:hover {
@@ -105,10 +105,20 @@
 
 .coin-name {
   margin-left: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .coin-symbol {
   margin-left: 0.24rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .trending-coins-card__main {
@@ -119,26 +129,12 @@
 .trending-coins-card__main .coin-price-change {
   font-size: 3.2rem;
   font-weight: 500;
-  margin: 0;
-}
-
-.img--third,
-.img--fourth {
-  height: 4.5rem;
-  width: 4.5rem;
-
-  filter: grayscale(100%);
 }
 
 .img--third {
-  margin-right: -12.5rem;
   z-index: 1;
-  opacity: 0.5;
   border-radius: 50%;
-}
-
-.img--fourth {
-  opacity: 0.25;
+  height: 4.5rem;
 }
 
 .coin-price {
@@ -168,6 +164,7 @@
 .feed-header {
   display: flex;
   gap: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .feed-header p {
@@ -302,6 +299,7 @@
 .positions-header {
   display: flex;
   gap: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .positions-header p {
@@ -320,33 +318,32 @@
   background-color: #ffffff;
   width: 42rem;
   padding: 2rem;
+  border-radius: 8px;
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.portfolio-overview-card .title {
-  color: #212529;
-  font-size: 1.6rem;
-  font-weight: 500;
-  text-align: center;
 }
 
 .portfolio-overview-card table th {
-  color: #cccccc;
+  color: #9696bb;
   font-size: 1.6rem;
-  font-weight: 400;
+  font-weight: 700;
+  text-align: start;
+  padding-bottom: 0.4rem;
+  text-align: center;
 }
 
 .holdings-data {
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .amount-data {
   text-align: center;
+}
+
+.holdings-data,
+.amount-data {
+  padding: 1rem;
 }
 
 .holdings-data p,
@@ -356,15 +353,23 @@
   font-weight: 400;
 }
 
-/* TODO is this needed? */
-td img {
+.amount-data--usd {
+  font-weight: 700;
+}
+
+/* Coin image/logo sizes */
+.holdings-data img {
   height: 2.4rem;
   width: 2.4rem;
+  margin-right: 1.2rem;
 }
 
 /* ********** OPEN POSITIONS CARD ********** */
 .open-positions-card {
   background-color: #ffffff;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 42rem;
 }
 
 .title--limit-buy,
@@ -374,16 +379,37 @@ td img {
   color: #9696bb;
   font-size: 1.6rem;
   font-weight: 700;
+  margin-bottom: 0.8rem;
 }
 
+.limit-buy-orders-container,
+.limit-sell-orders-container,
+.stop-buy-orders-container,
+.stop-sell-orders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.no-open-trades-to-show {
+  font-size: 1.4rem;
+  color: #545490;
+}
+
+/* ***** ORDER CARD ***** */
 .open-order-container {
   background-color: #f5f5fa;
   display: flex;
+  border-radius: 8px;
+  padding: 1.12rem;
+  justify-content: space-between;
 }
 
 .order-price-info {
   display: flex;
   align-items: center;
+  gap: 0.2rem;
 }
 
 .order-price-info p {
@@ -400,6 +426,7 @@ td img {
 
 .current-price-info {
   display: flex;
+  gap: 0.6rem;
 
   color: #545490;
   font-size: 1.28rem;
@@ -414,14 +441,31 @@ td img {
 .open-order-container .second img {
   height: 2.8rem;
   width: 2.8rem;
+  filter: brightness(0) saturate(100%) invert(34%) sepia(40%) saturate(583%)
+    hue-rotate(201deg) brightness(91%) contrast(93%);
+}
+
+.open-order-container .second {
+  display: flex;
+  align-items: center;
 }
 
 .open-order-container .second p {
   color: #545490;
   font-size: 1.28rem;
   font-weight: 400;
+  margin-left: 0.4rem;
 }
 
 .open-order-container .second:hover {
   cursor: pointer;
+}
+
+.open-order-container .second:hover p {
+  color: #0056b3;
+}
+
+.open-order-container .second:hover img {
+  filter: brightness(0) saturate(100%) invert(19%) sepia(100%) saturate(1978%)
+    hue-rotate(198deg) brightness(101%) contrast(101%);
 }

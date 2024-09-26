@@ -2,7 +2,7 @@ import { formatFloatToUSD } from "../js/helpers.js";
 
 let currentPortfolioTotalValue = 0;
 
-async function fetchPortfolioBalance() {
+export async function fetchPortfolioBalance() {
   const fetchOptions = {
     method: "GET",
     headers: {

@@ -4,7 +4,9 @@ import {
   hideMessagePopup,
   addMessagePopupCloseEventListener,
   getAllCoinNamesDict,
+  formatFloatToUSD,
 } from "../js/helpers.js";
+import { fetchPortfolioBalance } from "../js/core-base.js";
 
 let currentCoin = {
   id: "bitcoin",
@@ -695,16 +697,24 @@ export async function showNewTradeSidebarForSpecificCoin(coinId) {
   showNewTradeSidebar();
 }
 
+async function updatePortfolioBalanceElement() {
+  const balance = await fetchPortfolioBalance();
+  document.querySelector(".nts-trade-info__balance div p").textContent =
+    "$" + formatFloatToUSD(balance, 2);
+}
+
 async function main() {
   await cacheCoinNamesInSession();
 
   addNewTradeSidebarSearchEventListeners();
   addNewTradeSidebarEventListeners();
 
+  await updatePortfolioBalanceElement();
+
   await getCurrentCoinInfo();
   updateNewTradeCoinInfo();
 
-  addTransactionButtonEventListeners();
+  await addTransactionButtonEventListeners();
   addOrderTypeButtonEventListeners();
   addOrderTypeInputEventListeners();
   addPlaceBuyOrderButtonEventListener();

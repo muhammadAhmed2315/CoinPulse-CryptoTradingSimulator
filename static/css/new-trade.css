@@ -20,6 +20,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 2rem;
 }
 
 .nts-header__close-title {
@@ -46,17 +47,26 @@
 }
 
 /* *************** SEARCH BAR *************** */
-
 .nts-search-box {
   position: relative;
   width: 300px;
-  margin: auto;
+  margin-bottom: 2rem;
 }
 
 .nts-search-box__input {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
+  border: 1px solid #f0f0ef;
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #000000;
+}
+
+.nts-search-box__input:focus {
+  outline: none;
+  border-color: #17c671;
+  box-shadow: 0 0 5px #17c67180;
 }
 
 .nts-search-box__results {
@@ -87,6 +97,7 @@
 .nts-trade-info {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 2.4rem;
 }
 
 /* ********** CRYPTO INFO ********** */
@@ -128,6 +139,7 @@
 .nts-trade-info__balance .title {
   font-size: 1.8rem;
   color: #212529;
+  margin-bottom: 0.4rem;
 }
 
 .nts-trade-info__balance div {
@@ -136,6 +148,7 @@
 }
 
 .nts-trade-info__balance div img {
+  margin-right: 1rem;
 }
 
 .nts-trade-info__balance div p {
@@ -148,6 +161,7 @@
 .nts-transaction-btns {
   display: flex;
   justify-content: space-around;
+  margin-bottom: 2.4rem;
 }
 
 .nts-transaction-btns__btn {
@@ -184,6 +198,7 @@
 .nts-order-type-btns {
   display: flex;
   gap: 2.4rem;
+  margin-bottom: 1.6rem;
 }
 
 .order-type-btn {
@@ -223,7 +238,8 @@
   display: flex;
   padding: 1.6rem;
   border-radius: 8px;
-  margin-bottom: 2rem; /* TODO DELETE THIS */
+  margin-bottom: 1.6rem;
+  gap: 0.8rem;
 }
 
 .market-order--total .label,
@@ -237,6 +253,7 @@
   font-size: 1.8rem;
   font-weight: 500;
   color: #9696bb;
+  margin-bottom: 1.2rem;
 }
 
 .market-order--total .input-box,
@@ -319,11 +336,13 @@
 .share-timeline-switch-container {
   display: flex;
   align-items: center;
+  margin-bottom: 1.2rem;
 }
 
 .share-timeline-switch-container p {
   font-size: 1.8rem;
   color: #212529;
+  margin-right: 0.8rem;
 }
 
 /* ********** ACTUAL TOGGLE CODE ********** */
@@ -381,16 +400,19 @@
 /* *************** COMMENT *************** */
 .nts-comment {
   height: 10.8rem;
-  width: 51.8rem;
   padding: 1.6rem;
   border: 1px solid #f0f0ef;
   border-radius: 8px;
+  margin-bottom: 1.6rem;
 }
 
 .nts-comment__input {
   height: 100%;
   width: 100%;
   border: none;
+  resize: none;
+  font-size: 1.6rem;
+  font-weight: 400;
 }
 
 .nts-comment__input::placeholder {
@@ -415,6 +437,7 @@
   font-weight: 700;
   padding: 0.8rem 3.2rem;
   text-align: center;
+  border-radius: 20px;
 }
 
 .nts-place-order-btn:hover {

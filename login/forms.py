@@ -69,9 +69,7 @@ class RequestPasswordResetForm(FlaskForm):
         },
         validators=[DataRequired()],
     )
-    submit = SubmitField(
-        "Send Passoword Reset Email", render_kw={"class": "submit-btn"}
-    )
+    submit = SubmitField("Send Password Reset Email", render_kw={"class": "submit-btn"})
 
 
 class PasswordResetForm(FlaskForm):

@@ -25,9 +25,10 @@ class PickUsernameForm(FlaskForm):
     """Creates a form for users to pick a username"""
 
     username = StringField(
-        "Username", render_kw={"placeholder": "john2024"}, validators=[DataRequired()]
+        render_kw={"placeholder": "Username", "class": "input input--username"},
+        validators=[DataRequired()],
     )
-    submit = SubmitField("Submit")
+    submit = SubmitField("Submit", render_kw={"class": "submit-btn"})
 
 
 class RegisterForm(FlaskForm):

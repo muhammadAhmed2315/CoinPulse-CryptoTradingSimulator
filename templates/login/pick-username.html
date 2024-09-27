@@ -1,21 +1,21 @@
 <!-- prettier-ignore -->
 {% extends "login/login-base.html" %}
-{% block content %}
-<p>Please pick a username</p>
 <!-- prettier-ignore -->
-<form method="post">
-  {{ form.hidden_tag() }} 
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/pick-username.css" />
+{% endblock %}
+<!-- prettier-ignore -->
+{% block content %}
+<!-- prettier-ignore -->
+<h1 class="title title--pick-username">Pick a Username</h1>
 
-  {{ form.username.label }} {{ form.username }}
+<form method="post">
+  {{ form.hidden_tag() }} {{ form.username }}
   <br />
 
   <!-- USERNAME ERROR MESSAGES -->
   {% for error in form.username.errors %}
-  <div class="invalid-feedback">
-    {{ error }}
-  </div>
-  {% endfor %}
-
-  {{ form.submit() }}
+  <div class="invalid-feedback">{{ error }}</div>
+  {% endfor %} {{ form.submit() }}
 </form>
 {% endblock %}

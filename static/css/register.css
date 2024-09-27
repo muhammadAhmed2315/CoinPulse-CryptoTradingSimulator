@@ -1,0 +1,43 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ********** ALTERNATIVE SIGN UP BOX ********** */
+.alternative-registers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+}
+
+.alternative-registers .label {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-right: 0.8rem;
+}
+
+/* ********** LOGIN ********** */
+span {
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.link--login {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.link--login:link,
+.link--login:visited {
+  color: #000000;
+  text-decoration: none;
+}
+
+.link--login:hover,
+.link--login:active,
+.link--login:focus {
+  color: #0069d9;
+  cursor: pointer;
+}

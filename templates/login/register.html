@@ -1,55 +1,72 @@
 <!-- prettier-ignore -->
 {% extends "login/login-base.html" %}
+<!-- prettier-ignore -->
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/register.css" />
+{% endblock %}
+<!-- prettier-ignore -->
 {% block content %}
 <!-- prettier-ignore -->
+<h1 class="title title--sign-up">Sign Up</h1>
+
 <form method="post">
-  {{ form.hidden_tag() }} 
+  {{ form.hidden_tag() }}
 
   <!-- EMAIL LABEL + INPUT -->
-  {{ form.email.label }} {{ form.email }}
+  {{ form.email }}
   <br />
 
   <!-- EMAIL ERROR MESSAGES -->
   {% for error in form.email.errors %}
-  <div class="invalid-feedback">
-    {{ error }}
-  </div>
+  <div class="invalid-feedback">{{ error }}</div>
   {% endfor %}
 
   <!-- USERNAME LABEL + INPUT -->
-  {{ form.username.label }} {{ form.username }}
+  {{ form.username }}
   <br />
 
   <!-- USERNAME ERROR MESSAGES -->
   {% for error in form.username.errors %}
-  <div class="invalid-feedback">
-    {{ error }}
-  </div>
+  <div class="invalid-feedback">{{ error }}</div>
   {% endfor %}
 
   <!-- PASSWORD LABEL + INPUT -->
-  {{ form.password.label }} {{ form.password }}
+  {{ form.password }}
   <br />
-  {{ form.pass_confirm.label }} {{ form.pass_confirm }}
+  {{ form.pass_confirm }}
   <br />
 
   <!-- PASSWORD ERROR MESSAGES -->
   {% for error in form.password.errors %}
-  <div class="invalid-feedback">
-    {{ error }}
-  </div>
-  {% endfor %}
-  {{ form.submit() }}
+  <div class="invalid-feedback">{{ error }}</div>
+  {% endfor %} {{ form.submit() }}
 </form>
-<a href="{{ url_for('user_authentication.login_google') }}"
-  >Register with Google</a
+
+<div class="alternative-registers">
+  <p class="label">Or sign up with</p>
+
+  <a href="{{ url_for('user_authentication.login_google') }}">
+    <img
+      class="logo-link logo-link--google"
+      src="../../static/img/logo-google.svg"
+      alt="Google logo"
+    />
+  </a>
+
+  <a href="{{ url_for('user_authentication.login_discord') }}">
+    <img
+      class="logo-link logo-link--discord"
+      src="../../static/img/logo-discord.svg"
+      alt="Discord logo"
+    />
+  </a>
+</div>
+<span
+  >Already have an account?&nbsp;<a
+    class="link link--login"
+    href="{{ url_for('user_authentication.login') }}"
+    >Login</a
+  ></span
 >
-<br />
-<a href="{{ url_for('user_authentication.login_discord') }}"
-  >Register with Discord</a
->
-<br />
-<a href="{{ url_for('user_authentication.login') }}"
-  >Already have an account? Sign in</a
->
+
 {% endblock %}

@@ -30,6 +30,13 @@ body {
   border-radius: 10px;
 }
 
+.title {
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 2.4rem;
+}
+
 .input {
   background-color: #e8e8f0;
   border: none;
@@ -45,4 +52,35 @@ body {
   font-size: 1.6rem;
   font-weight: 500;
   color: #000000;
+}
+
+.submit-btn {
+  background-color: #17c671;
+  border: none;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 0.8rem 3.2rem;
+  height: 4rem;
+  width: 35rem;
+  border-radius: 20px;
+  margin-bottom: 1.2rem;
+}
+
+.submit-btn:hover,
+.submit-btn:active,
+.submit-btn:focus {
+  background-color: #0069d9;
+  cursor: pointer;
+}
+
+.logo-link--google {
+  height: 1.8rem;
+  width: 1.8rem;
+  margin-right: 0.8rem;
+}
+
+.logo-link--discord {
+  height: 2.1rem;
+  width: 2.1rem;
 }

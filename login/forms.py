@@ -63,11 +63,15 @@ class RequestPasswordResetForm(FlaskForm):
     """Creates a form for users to request a password reset link by entering their email"""
 
     email = StringField(
-        "Email",
-        render_kw={"placeholder": "john@example.com"},
+        render_kw={
+            "placeholder": "Email",
+            "class": "input input--email",
+        },
         validators=[DataRequired()],
     )
-    submit = SubmitField("Send Email")
+    submit = SubmitField(
+        "Send Passoword Reset Email", render_kw={"class": "submit-btn"}
+    )
 
 
 class PasswordResetForm(FlaskForm):

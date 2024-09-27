@@ -49,6 +49,7 @@ body {
   width: 1.95rem;
   filter: brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%)
     hue-rotate(202deg) brightness(90%) contrast(85%);
+  margin-right: 0.6rem;
 }
 
 .nav-container-item:hover {
@@ -67,6 +68,7 @@ body {
   align-items: center;
   height: 100%;
   margin-left: 8rem;
+  gap: 0.4rem;
 }
 
 .portfolio-container__label {

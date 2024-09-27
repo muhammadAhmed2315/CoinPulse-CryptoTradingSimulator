@@ -528,8 +528,9 @@ function updateCoinInfo() {
   } else {
     document
       .querySelector(".coin-market-cap img")
-      .setAttribute("src", "../../static/img/icons/arrow-up.svg");
-    document.querySelector(".coin-market-cap img").style.color = "#EB5757";
+      .setAttribute("src", "../../static/img/icons/arrow-down.svg");
+    document.querySelector(".coin-market-cap img").style.filter =
+      "brightness(0) saturate(100%) invert(38%) sepia(8%) saturate(7345%) hue-rotate(322deg) brightness(111%) contrast(82%)";
     document.querySelector(".coin-market-cap .percentage-change").style.color =
       "#EB5757";
   }
@@ -560,6 +561,7 @@ function updateCoinInfo() {
   const max_supply = currentCoin.max_supply
     ? currentCoin.max_supply.toLocaleString()
     : "∞";
+
   document.querySelector(".coin-max-supply .value").textContent = max_supply;
 
   // Fully diluted market cap
@@ -568,9 +570,10 @@ function updateCoinInfo() {
   ).textContent = `$${currentCoin.fully_diluted_valuation.toLocaleString()}`;
 
   // All time high
-  document.querySelector(".coin-ath img").style.color = "#17C671";
+  document.querySelector(".coin-ath img").style.filter =
+    "brightness(0) saturate(100%) invert(38%) sepia(8%) saturate(7345%) hue-rotate(322deg) brightness(111%) contrast(82%)";
   document.querySelector(".coin-ath .percentage-change").style.color =
-    "#17C671";
+    "#EB5757";
   document.querySelector(
     ".coin-ath .percentage-change"
   ).textContent = `${currentCoin.ath_change_percentage}%`;
@@ -581,7 +584,8 @@ function updateCoinInfo() {
     "(" + currentCoin.ath_date + ")";
 
   // All time low
-  document.querySelector(".coin-atl img").style.color = "#17C671";
+  document.querySelector(".coin-atl img").style.filter =
+    "brightness(0) saturate(100%) invert(55%) sepia(91%) saturate(414%) hue-rotate(98deg) brightness(94%) contrast(90%)";
   document.querySelector(".coin-atl .percentage-change").style.color =
     "#17C671";
   document.querySelector(

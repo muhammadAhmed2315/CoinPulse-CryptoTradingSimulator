@@ -1,0 +1,107 @@
+/* ********** LOGIN TITLE ********** */
+.title--login {
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 2.4rem;
+}
+
+/* ********** FORM ********** */
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ********** INPUT BOXES ********** */
+
+/* ********** FORGOT PASSWORD  ********** */
+.link--forgot-password {
+  margin-bottom: 1.6rem;
+  margin-right: auto;
+}
+
+.link--forgot-password:link,
+.link--forgot-password:visited {
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #000000;
+  text-decoration: none;
+}
+
+.link--forgot-password:hover,
+.link--forgot-password:active,
+.link--forgot-password:focus {
+  color: #0069d9;
+}
+
+/* ********** SUBMIT BUTTON ********** */
+.submit-btn {
+  background-color: #17c671;
+  border: none;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 0.8rem 3.2rem;
+  height: 4rem;
+  width: 35rem;
+  border-radius: 20px;
+  margin-bottom: 1.2rem;
+}
+
+.submit-btn:hover,
+.submit-btn:active,
+.submit-btn:focus {
+  background-color: #0069d9;
+  cursor: pointer;
+}
+
+/* ********** ALTERNATIVE LOGIN BOX ********** */
+.alternative-logins {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+}
+
+.alternative-logins .label {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-right: 0.8rem;
+}
+
+.logo-link--google {
+  height: 1.8rem;
+  width: 1.8rem;
+  margin-right: 0.8rem;
+}
+
+.logo-link--discord {
+  height: 2.1rem;
+  width: 2.1rem;
+}
+
+/* ********** SIGN UP ********** */
+span {
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.link--sign-up {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.link--sign-up:link,
+.link--sign-up:visited {
+  color: #000000;
+  text-decoration: none;
+}
+
+.link--sign-up:hover,
+.link--sign-up:active,
+.link--sign-up:focus {
+  color: #0069d9;
+  cursor: pointer;
+}

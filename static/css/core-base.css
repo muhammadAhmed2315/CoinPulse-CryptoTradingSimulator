@@ -19,14 +19,14 @@ body {
   background-color: #fff;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6rem;
   z-index: 10;
 }
 
 .logo {
   height: 4.15rem;
   width: 16.5rem;
-  margin-right: 8rem;
+  margin-right: auto;
 }
 
 .nav-container-item {
@@ -67,7 +67,7 @@ body {
   display: flex;
   align-items: center;
   height: 100%;
-  margin-left: 8rem;
+  margin-left: auto;
   gap: 0.4rem;
 }
 

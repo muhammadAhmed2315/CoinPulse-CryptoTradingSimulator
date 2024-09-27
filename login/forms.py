@@ -8,16 +8,17 @@ class LoginForm(FlaskForm):
     """Creates a form for users to log in with their email and password"""
 
     email = StringField(
-        "Email",
-        render_kw={"placeholder": "john@example.com"},
+        render_kw={"placeholder": "Email", "class": "input input--email"},
         validators=[DataRequired()],
     )
     password = PasswordField(
-        "Password",
-        render_kw={"placeholder": "******************"},
+        render_kw={
+            "placeholder": "Password",
+            "class": "input input--password",
+        },
         validators=[DataRequired()],
     )
-    submit = SubmitField("Log In")
+    submit = SubmitField("Login", render_kw={"class": "submit-btn"})
 
 
 class PickUsernameForm(FlaskForm):

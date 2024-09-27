@@ -1,36 +1,57 @@
 <!-- prettier-ignore -->
 {% extends "login/login-base.html" %}
-{% block content %}
 <!-- prettier-ignore -->
-<form method="post">
-  {{ form.hidden_tag() }} 
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/login.css" />
+{% endblock %} {% block content %}
+<!-- prettier-ignore -->
+<h1 class="title--login">Login</h1>
 
-  {{ form.email.label }} {{ form.email }}
+<form method="post">
+  {{ form.hidden_tag() }} {{ form.email }}
   <br />
 
-  {{ form.password.label }} {{ form.password }}
+  {{ form.password }}
   <br />
   <!-- PASSWORD ERROR MESSAGES -->
   {% for error in form.password.errors %}
-  <div class="invalid-feedback">
-    {{ error }}
-  </div>
+  <div class="invalid-feedback">{{ error }}</div>
   {% endfor %}
+
+  <a
+    class="link link--forgot-password"
+    href="{{ url_for('user_authentication.forgot_password') }}"
+    >Forgot your password?</a
+  >
 
   {{ form.submit() }}
 </form>
-<a href="{{ url_for('user_authentication.login_google') }}"
-  >Log in with Google</a
+
+<div class="alternative-logins">
+  <p class="label">Or log in with</p>
+
+  <a href="{{ url_for('user_authentication.login_google') }}">
+    <img
+      class="logo-link logo-link--google"
+      src="../../static/img/logo-google.svg"
+      alt="Google logo"
+    />
+  </a>
+
+  <a href="{{ url_for('user_authentication.login_discord') }}">
+    <img
+      class="logo-link logo-link--discord"
+      src="../../static/img/logo-discord.svg"
+      alt="Discord logo"
+    />
+  </a>
+</div>
+<span
+  >Don't have an account?&nbsp;<a
+    class="link link--sign-up"
+    href="{{ url_for('user_authentication.register') }}"
+    >Sign Up</a
+  ></span
 >
-<br />
-<a href="{{ url_for('user_authentication.login_discord') }}"
-  >Log in with Discord</a
->
-<br />
-<a href="{{ url_for('user_authentication.register') }}"
-  >Don't have an account? Sign up</a
-><br />
-<a href="{{ url_for('user_authentication.forgot_password') }}"
-  >Forgot password?</a
->
+
 {% endblock %}

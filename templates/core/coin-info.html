@@ -9,9 +9,8 @@
 {% block content %}
 <!-- OPEN POSITIONS SECTION -->
 <div class="coin-info-page">  
-  <div class="coin-info-container">
-    
-    <div class="coin-info-container__first">
+  <div class="coin-info-container__first">
+    <div class="coin-info-container__first--left">
       <h1 class="coin-info__title">Search for a coin</h1>
       <!-- NEW TRADE SIDEBAR SEARCH BAR -->
       <div class="coin-info__search">
@@ -97,40 +96,37 @@
       </div>
     </div>
 
-    <div class="coin-info-container__second">
+    <div class="coin-info-container__first--right">
       <div class="second-nav-buttons">
         <p class="sn-btn sn-btn--ohlc">OHLC Chart</p>
         <p class="sn-btn sn-btn--price">Price Chart</p>
         <p class="sn-btn sn-btn--market-cap">Market Cap Chart</p>
         <p class="sn-btn sn-btn--total-volume">Volume Chart</p>
         <p class="sn-btn sn-btn--news">Recent News</p>
-        <p class="sn-btn sn-btn--reddit">Reddit</p>
+        <p class="sn-btn sn-btn--reddit">Reddit Posts</p>
       </div>
 
 
       <div id="coin-info-chart"></div>
-
+    </div>
+  </div>
+  <div class="coin-info-container__second">
+    <div class="coin-info-container__second--left">
       <div id="recent-news-section" class="coin-info-recent-news">
         <p class="recent-news__title">Recent Bitcoin News</p>
         
         <div class="news-container"></div>
         <div class="see-more-btn--news__container"></div>
-        
       </div>
-
-      <div id="reddit-section" class="coin-info-reddit">
-        <p class="reddit-posts__title">Recent Reddit Posts on Bitcoin</p>
-
-        <div class="reddit-posts-container"></div>
-        <div class="see-more-btn--reddit__container"></div>
-
-
-      </div>
-
     </div>
 
-    <div class="coin-info-container__third">
-      <p>asdfasfasdfsdf</p>
+    <div class="coin-info-container__second--right">
+      <div id="reddit-section" class="coin-info-reddit">
+        <p class="reddit-posts__title">Recent Reddit Posts on Bitcoin</p>
+  
+        <div class="reddit-posts-container"></div>
+        <div class="see-more-btn--reddit__container"></div>
+      </div>
     </div>
   </div>
 </div>

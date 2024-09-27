@@ -156,9 +156,54 @@ async function getCurrentCoinInfo() {
 
     // Update currentCoin global variable
     currentCoin = data[0];
+
+    // Update the coin last_updated time
+    currentCoin.last_updated = timeAgoMinutesSeconds(currentCoin.last_updated);
+
+    // Update the coin ath_date and atl_date
+    currentCoin.ath_date = timeAgoDaysMonths(currentCoin.ath_date);
+    currentCoin.atl_date = timeAgoDaysMonths(currentCoin.atl_date);
   } catch (error) {
     console.error("Error:", error);
     return []; // Return an empty array in case of error
+  }
+}
+
+function timeAgoMinutesSeconds(dateString) {
+  const dateObject = new Date(dateString);
+  const now = new Date();
+
+  // Calculate the difference in milliseconds
+  const diffMs = now - dateObject;
+
+  // Convert the difference to seconds
+  const diffSeconds = Math.floor(diffMs / 1000);
+
+  // Calculate minutes and seconds
+  const minutes = Math.floor(diffSeconds / 60);
+  const seconds = diffSeconds % 60;
+
+  return `${minutes} minutes ${seconds} seconds ago`;
+}
+
+function timeAgoDaysMonths(dateString) {
+  const dateObject = new Date(dateString);
+  const now = new Date();
+
+  // Calculate the difference in milliseconds
+  const diffMs = now - dateObject;
+
+  // Convert the difference to days
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // Calculate months and days
+  const months = Math.floor(diffDays / 30); // Approximate months as 30 days
+  const days = diffDays % 30;
+
+  if (months > 0) {
+    return `${months} months ${days} days ago`;
+  } else {
+    return `${days} days ago`;
   }
 }
 
@@ -240,6 +285,10 @@ async function getCurrentCoinHistoricalData() {
  */
 function drawOHLCChart() {
   Highcharts.stockChart("coin-info-chart", {
+    chart: {
+      borderRadius: 8,
+    },
+
     rangeSelector: {
       selected: 1,
     },
@@ -254,13 +303,13 @@ function drawOHLCChart() {
     },
 
     title: {
-      text: `${currentCoin.name} Price`,
+      text: `${currentCoin.name} OHLC`,
     },
 
     series: [
       {
         type: "candlestick",
-        name: `${currentCoin.name} Price`,
+        name: `${currentCoin.name} OHLC`,
         data: currentCoinOHLC,
         dataGrouping: {
           units: [
@@ -291,24 +340,31 @@ function drawHistoricalChart(coin_data = "price") {
 
   if (coin_data === "price") {
     data = currentCoinHistoricalData.prices;
+    coin_data = "Price";
   } else if (coin_data === "market-cap") {
     data = currentCoinHistoricalData.market_caps;
+    coin_data = "Market Cap";
   } else if (coin_data === "total-volume") {
     data = currentCoinHistoricalData.total_volumes;
+    coin_data = "Volume";
   }
 
   Highcharts.stockChart("coin-info-chart", {
+    chart: {
+      borderRadius: 8,
+    },
+
     rangeSelector: {
       selected: 1,
     },
 
     title: {
-      text: `${currentCoin.name} Price`,
+      text: `${currentCoin.name} ${coin_data}`,
     },
 
     series: [
       {
-        name: `${currentCoin.name} Price`,
+        name: `${currentCoin.name} ${coin_data}`,
         data: data,
         tooltip: { valueDecimals: 2 },
         color: "#EB5757", // #17C671 #EB5757
@@ -334,10 +390,17 @@ function drawHistoricalChart(coin_data = "price") {
  * @function addSecondNavButtonEventListeners
  */
 async function addSecondNavButtonEventListeners() {
+  // "OHLC Chart" button selected by default
+  document.querySelector(".sn-btn--ohlc").style.borderBottom =
+    "1.6px solid #17c671";
+
   // "OHLC Chart" Button Event Listener
   document
     .querySelector(".sn-btn--ohlc")
     .addEventListener("click", function () {
+      resetAllSecondNavButtonStyles();
+      this.style.borderBottom = "1.6px solid #17c671";
+
       drawOHLCChart();
     });
 
@@ -345,6 +408,9 @@ async function addSecondNavButtonEventListeners() {
   document
     .querySelector(".sn-btn--price")
     .addEventListener("click", async function () {
+      resetAllSecondNavButtonStyles();
+      this.style.borderBottom = "1.6px solid #17c671";
+
       if (currentCoinHistoricalData.prices.length == 0) {
         await getCurrentCoinHistoricalData();
       }
@@ -355,6 +421,9 @@ async function addSecondNavButtonEventListeners() {
   document
     .querySelector(".sn-btn--market-cap")
     .addEventListener("click", async function () {
+      resetAllSecondNavButtonStyles();
+      this.style.borderBottom = "1.6px solid #17c671";
+
       if (currentCoinHistoricalData.prices.length == 0) {
         await getCurrentCoinHistoricalData();
       }
@@ -365,6 +434,9 @@ async function addSecondNavButtonEventListeners() {
   document
     .querySelector(".sn-btn--total-volume")
     .addEventListener("click", async function () {
+      resetAllSecondNavButtonStyles();
+      this.style.borderBottom = "1.6px solid #17c671";
+
       if (currentCoinHistoricalData.prices.length == 0) {
         await getCurrentCoinHistoricalData();
       }
@@ -384,6 +456,14 @@ async function addSecondNavButtonEventListeners() {
     .addEventListener("click", async function (e) {
       scrollToSection(e, "#reddit-section", 90);
     });
+}
+
+function resetAllSecondNavButtonStyles() {
+  console.log("RESET ALL BUTTON STYLES");
+  document.querySelectorAll(".second-nav-buttons p").forEach((button) => {
+    console.log("what");
+    button.style.borderBottom = "1.6px solid #f5f5fa";
+  });
 }
 
 /**
@@ -406,7 +486,7 @@ function updateCoinInfo() {
   document.querySelector(".coin-name p:nth-of-type(1)").textContent =
     currentCoin.name;
   document.querySelector(".coin-name p:nth-of-type(2)").textContent =
-    currentCoin.symbol;
+    "(" + currentCoin.symbol + ")";
 
   // Update coin price
   document.querySelector(".coin-price").textContent =
@@ -417,28 +497,32 @@ function updateCoinInfo() {
     document
       .querySelector(".coin-price-change img")
       .setAttribute("src", "../../static/img/icons/arrow-up.svg");
-    document.querySelector(".coin-price-change img").style.color = "#17C671";
+    document.querySelector(".coin-price-change img").style.filter =
+      "brightness(0) saturate(100%) invert(64%) sepia(13%) saturate(6613%) hue-rotate(105deg) brightness(97%) contrast(82%)";
     document.querySelector(".coin-price-change p").style.color = "#17C671";
   } else {
     document
       .querySelector(".coin-price-change img")
       .setAttribute("src", "../../static/img/icons/arrow-down.svg");
-    document.querySelector(".coin-price-change img").style.color = "#EB5757";
+    document.querySelector(".coin-price-change img").style.filter =
+      "brightness(0) saturate(100%) invert(38%) sepia(8%) saturate(7345%) hue-rotate(322deg) brightness(111%) contrast(82%)";
     document.querySelector(".coin-price-change p").style.color = "#EB5757";
   }
   document.querySelector(
     ".coin-price-change p"
-  ).textContent = `${currentCoin.price_change_percentage_24h.toFixed(2)} (1d)`;
+  ).textContent = `${currentCoin.price_change_percentage_24h.toFixed(2)}% (1d)`;
 
   // Last updated text
-  document.querySelector(".coin-last-updated").textContent = new Date();
+  document.querySelector(".coin-last-updated").textContent =
+    "Last updated: " + currentCoin.last_updated;
 
   // Market cap
   if (currentCoin.market_cap_change_percentage_24h >= 0) {
     document
       .querySelector(".coin-market-cap img")
       .setAttribute("src", "../../static/img/icons/arrow-up.svg");
-    document.querySelector(".coin-market-cap img").style.color = "#17C671";
+    document.querySelector(".coin-market-cap img").style.filter =
+      "brightness(0) saturate(100%) invert(64%) sepia(13%) saturate(6613%) hue-rotate(105deg) brightness(97%) contrast(82%)";
     document.querySelector(".coin-market-cap .percentage-change").style.color =
       "#17C671";
   } else {
@@ -458,11 +542,11 @@ function updateCoinInfo() {
     ".coin-market-cap .value"
   ).textContent = `$${currentCoin.market_cap.toLocaleString()}`;
   document.querySelector(".coin-market-cap .rank").textContent =
-    currentCoin.market_cap_rank;
+    "#" + currentCoin.market_cap_rank;
 
   // Volume
   document.querySelector(".coin-volume .value").textContent =
-    currentCoin.total_volume.toLocaleString();
+    "$" + currentCoin.total_volume.toLocaleString();
 
   // Circulating supply
   document.querySelector(".coin-circulating-supply .value").textContent =
@@ -494,7 +578,7 @@ function updateCoinInfo() {
     .toFixed(2)
     .toLocaleString()}`;
   document.querySelector(".coin-ath .timestamp").textContent =
-    currentCoin.ath_date;
+    "(" + currentCoin.ath_date + ")";
 
   // All time low
   document.querySelector(".coin-atl img").style.color = "#17C671";
@@ -507,7 +591,7 @@ function updateCoinInfo() {
     .toFixed(2)
     .toLocaleString()}`;
   document.querySelector(".coin-atl .timestamp").textContent =
-    currentCoin.atl_date;
+    "(" + currentCoin.atl_date + ")";
 
   // Recent Coin News Heading
   document.querySelector(
@@ -725,7 +809,8 @@ function renderRedditPosts() {
     </div>
     <img
       class="reddit-post__thumbnail" loading="lazy"
-      src="https://b.thumbs.redditmedia.com/eQzJHUaDCQofnouZQAAPJqsYgbhSpgt5tE84pYwzBUM.jpg"
+      src="../../static/img/reddit-thumbnail-placeholder.png"
+      draggable="false"
     />
   `;
 
@@ -746,16 +831,21 @@ function renderRedditPosts() {
     newDiv.querySelector(".title").href = post.url;
 
     // Update content
-    newDiv.querySelector(".content").textContent = post.content;
+    newDiv.querySelector(".content").textContent = post.content
+      ? post.content.slice(0, 200) + "..."
+      : "";
 
     // Update score
     newDiv.querySelector(".score").textContent = post.score + " votes";
 
     // Update comment count
-    newDiv.querySelector(".comment-count").textContent = post.comment_count;
+    newDiv.querySelector(".comment-count").textContent =
+      post.comment_count + " comments";
 
     // Update thumbnail
-    newDiv.querySelector(".reddit-post__thumbnail").src = post.thumbnail;
+    if (post.thumbnail) {
+      newDiv.querySelector(".reddit-post__thumbnail").src = post.thumbnail;
+    }
 
     document.querySelector(".reddit-posts-container").appendChild(newDiv);
   }
@@ -774,6 +864,11 @@ function renderRedditPosts() {
 
     getAndRenderRedditPosts();
   });
+
+  // Recent Reddit Posts Heading
+  document.querySelector(
+    ".reddit-posts__title"
+  ).textContent = `Recent Reddit Posts on ${currentCoin.name}`;
 }
 
 /**

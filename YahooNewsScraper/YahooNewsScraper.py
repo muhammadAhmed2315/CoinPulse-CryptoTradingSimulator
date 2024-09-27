@@ -48,11 +48,21 @@ class YahooNewsScaper:
         # Convert all articles into NewsArticle objects
         articles = []
         for article in news_articles:
-            title = article.find("h4", class_="s-title fz-16 lh-20").text
-            author = article.find("span", class_="s-source mr-5 cite-co").text
-            timestamp = article.find("span", class_="fc-2nd s-time mr-8").text[2:]
-            description = article.find("p", class_="s-desc").text
-            url = article.find("h4", class_="s-title fz-16 lh-20").find("a").get("href")
+            title = article.find(
+                "h4", class_="s-title fz-20 lh-m fw-500 ls-027 mt-8 mb-2"
+            ).text
+            author = article.find("span", class_="s-source fw-l").text
+            timestamp = article.find(
+                "span", class_="s-time fz-14 lh-18 fc-dustygray fl-l mr-4"
+            ).text
+            description = article.find(
+                "p", class_="s-desc fz-14 lh-1_45x fc-444444"
+            ).text
+            url = (
+                article.find("h4", class_="s-title fz-20 lh-m fw-500 ls-027 mt-8 mb-2")
+                .find("a")
+                .get("href")
+            )
 
             articles.append(
                 NewsArticle(

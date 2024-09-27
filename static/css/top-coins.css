@@ -190,7 +190,7 @@ select {
   font-weight: 500;
   background-color: #17c671;
   padding: 0.5rem 1rem;
-  border-radius: 5px;
+  border-radius: 8px;
 }
 
 .pagination-button:hover {

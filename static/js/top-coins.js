@@ -1,4 +1,4 @@
-import { COINGECKO_API_OPTIONS, formatFloatToUSD } from "../js/helpers.js";
+import { formatFloatToUSD } from "../js/helpers.js";
 
 let current_page = 1;
 let current_sort = "market_cap_desc";

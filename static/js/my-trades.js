@@ -1,5 +1,4 @@
 import {
-  COINGECKO_API_OPTIONS,
   getAllCoinNamesDict,
   formatFloatToUSD,
   formatUNIXTimestamp,

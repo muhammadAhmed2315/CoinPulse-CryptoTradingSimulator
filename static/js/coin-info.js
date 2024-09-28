@@ -1,8 +1,4 @@
 import {
-  COINGECKO_API_OPTIONS,
-  showMessagePopup,
-  hideMessagePopup,
-  addMessagePopupCloseEventListener,
   getAllCoinNamesDict,
   formatFloatToUSD,
   scrollToSection,

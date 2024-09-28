@@ -1,11 +1,3 @@
-export const COINGECKO_API_OPTIONS = {
-  method: "GET",
-  headers: {
-    accept: "application/json",
-    "x-cg-demo-api-key": COINGECKO_API_KEY,
-  },
-};
-
 export function toTitleCase(str) {
   return str.replace(
     /\w\S*/g,

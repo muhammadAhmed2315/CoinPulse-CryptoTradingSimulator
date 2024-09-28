@@ -11,11 +11,15 @@
       rel="stylesheet"
     />
 
+    <!-- FAVICON -->
+    <link rel="icon" href="../../static/img/favicon.svg" type="image/svg+xml" />
+
     <link rel="stylesheet" href="../../static/css/login-base.css" />
     <link rel="stylesheet" href="../../static/css/general.css" />
     {% block css_links %}{% endblock %}
 
-    <title>{% block title %}{% endblock %}</title>
+    <!-- prettier-ignore -->
+    {% block title %}{% endblock %}
   </head>
   <body>
     <div class="main">

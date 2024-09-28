@@ -20,6 +20,7 @@ from login.forms import LoginForm, RegisterForm
 from constants import TOKEN_GENERATOR_SECRET_KEY
 from validate_email_address import validate_email
 from constants import DISCORD_OAUTH2_CLIENT_SECRET
+from constants import DISCORD_OAUTH2_REDIRECT_URI
 from constants import PASSWORD_ALLOWED_SPECIAL_CHARS
 from constants import TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
@@ -39,14 +40,32 @@ user_authentication = Blueprint("user_authentication", __name__)
 
 
 # #################### DISCORD OAUTH AUTHENTICATION ####################
-DISCORD_OAUTH2_REDIRECT_URI = "http://127.0.0.1:5000/callback_discord"
-
-
 def token_updater(token):
+    """
+    Update the stored OAuth2 token in the session
+
+    Args:
+        token (dict): A dictionary containing the OAuth2 token
+
+    Returns:
+        None
+    """
     session["oauth2_token"] = token
 
 
 def make_session(token=None, state=None, scope=None):
+    """
+    Create an OAuth2 session for Discord authentication.
+
+    Args:
+        token (dict, optional): The OAuth token to be used for the session.
+        state (str, optional): The state parameter from OAuth to prevent CSRF.
+        scope (list, optional): The scopes required for the OAuth session.
+
+    Returns:
+        OAuth2Session: An instance of OAuth2Session configured for Discord.
+    """
+
     return OAuth2Session(
         client_id=DISCORD_OAUTH2_CLIENT_ID,
         token=token,
@@ -64,6 +83,15 @@ def make_session(token=None, state=None, scope=None):
 
 @user_authentication.route("/login_discord")
 def login_discord():
+    """
+    Start the OAuth login process with Discord.
+
+    This function redirects the user to the Discord authorization URL where they can
+    authorize the application.
+
+    Returns:
+        Response: A redirection response to the Discord authorization URL.
+    """
     scope = request.args.get("scope", "identify email")
     discord = make_session(scope=scope.split(" "))
     authorization_url, state = discord.authorization_url(DISCORD_AUTHORIZATION_BASE_URL)
@@ -73,6 +101,15 @@ def login_discord():
 
 @user_authentication.route("/callback_discord")
 def callback_discord():
+    """
+    Handle the OAuth callback from Discord.
+
+    This function retrieves the OAuth token and user details, checks if the user exists
+    in the database, and handles logging in or registering the user.
+
+    Returns:
+        Response: A redirection to another endpoint after handling the login or error.
+    """
     if request.values.get("error"):
         return request.values["error"]
     discord = make_session(state=session.get("oauth2_state"))
@@ -101,7 +138,7 @@ def callback_discord():
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Only for development on localhost
+# os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Only for development on localhost
 
 
 @user_authentication.route("/login_google")
@@ -177,6 +214,7 @@ def callback_google():
         db.session.commit()
 
     login_user(user)
+
     return redirect(url_for("user_authentication.pick_username"))
 
 
@@ -325,7 +363,27 @@ def register():
 @user_authentication.route("/pick_username", methods=["get", "post"])
 @login_required
 def pick_username():
-    # Redirect user if user already has a username
+    """
+    Allows a newly registered (OAuth) user to pick a username after signing up.
+
+    This view function supports both GET and POST methods. It is intended for users who
+    registered using an OAuth provider and don't yet have a username. This function
+    enforces username requirements and checks for uniqueness in the database.
+
+    Behavior:
+    - If the user already has a username, they are redirected to the dashboard.
+    - On GET request: Displays the username selection form.
+    - On POST request: Validates the username's format and uniqueness, updates the
+                       user's profile, and initializes related models like Wallet and
+                       ValueHistory for the user.
+
+    Returns:
+    - If the user already has a username: Redirects to the dashboard.
+    - If the form is submitted and valid: Updates the user's username and associated
+      models, logs in the user, and redirects them to the dashboard.
+    - If the form is submitted but invalid: Renders the form again with error messages.
+    """
+    # Redirect to the dashboard if user already has a username
     if current_user.username:
         return redirect(url_for("core.dashboard"))
 
@@ -354,6 +412,16 @@ def pick_username():
         current_user.update_username(input_username)
         db.session.add(current_user)
         db.session.commit()
+
+        wallet = Wallet(current_user.id)
+        db.session.add(wallet)
+        db.session.commit()
+
+        valueHistory = ValueHistory(wallet.id)
+        db.session.add(valueHistory)
+        db.session.commit()
+
+        login_user(current_user)
 
         return redirect(url_for("core.dashboard"))
 
@@ -475,6 +543,30 @@ def send_verification_email(user_email, token, username):
 # #################### RESET USER'S PASSWORD ####################
 @user_authentication.route("/reset_password/<token>", methods=["get", "post"])
 def reset_password(token):
+    """
+    Handles the password reset process using a provided security token.
+
+    This view function supports both GET and POST methods and is used to validate a
+    password reset token, show a password reset form if the token is valid, and update
+    the user's password if the form is submitted and validated successfully.
+
+    Parameters:
+    token (str): The security token sent to the user's email for password reset
+                 validation.
+
+    Behavior:
+    - Token verification: Checks if the token is valid, not expired, and not tampered
+                          with or corrupted.
+    - GET request: If the token is valid, displays the password reset form.
+    - POST request: Validates the new password input and updates the password if all
+                    conditions are met.
+
+    Returns:
+    - If the token is expired or invalid: Renders an appropriate error page.
+    - If the form is submitted and valid: Updates the user's password and redirects to
+      a success page.
+    - If the form is submitted but invalid: Renders the form again with error messages.
+    """
     # Verify the token
     try:
         data = serializer.loads(
@@ -545,6 +637,30 @@ def reset_password(token):
 
 @user_authentication.route("/forgot_password", methods=["get", "post"])
 def forgot_password():
+    """
+    Handles the password reset request process for users who have forgotten their
+    password.
+
+    This view function supports both GET and POST methods. It displays a password reset
+    request form and processes the form submission. If the form is submitted and
+    validated successfully, it checks if the email provided exists in the database and
+    is not linked to an OAuth provider. If these conditions are met, it generates a
+    password reset token and sends a reset email to the user.
+
+    Behavior:
+    - If the user is already authenticated, they are redirected to the dashboard.
+    - On GET request: Displays the password reset form.
+    - On POST request: Validates the form and, if valid, sends a password reset email.
+                       If the email does not exist in the database or is invalid, it
+                       displays appropriate errors.
+
+    Returns:
+    - If the user is authenticated: Redirects to the dashboard.
+    - If the form submission is invalid or an email is not found: Renders the form with
+      error messages.
+    - If the reset email is sent successfully: Renders a confirmation page indicating
+      the email has been sent.
+    """
     # Redirect user if already logged in
     if current_user.is_authenticated:
         return redirect(url_for("core.dashboard"))
@@ -581,6 +697,23 @@ def forgot_password():
 
 
 def send_password_reset_email(user_email, token, username):
+    """
+    Sends a password reset email to a user.
+
+    This function composes and sends an email with a password reset link that includes
+    a security token. The email is sent to the user's email address provided during
+    registration or stored in the user's profile.
+
+    Parameters:
+    user_email (str): The email address of the user to whom the password reset email
+                      will be sent.
+    token (str): A unique security token used for verifying the identity of the user
+                 during the password reset process.
+    username (str): The username of the user, used to personalize the email content.
+
+    Returns:
+    None: The function sends an email and does not return any value.
+    """
     from app import mail_server
 
     html_body = render_template(
@@ -619,6 +752,24 @@ def generate_token(user_email, user_id):
 
 
 def check_password_format(input_password):
+    """
+    Validates the format of a user's password based on several criteria.
+
+    This function checks if the provided password meets the following conditions:
+    - Contains at least one uppercase letter.
+    - Contains at least one lowercase letter.
+    - Contains at least one digit (0-9).
+    - Contains at least one special character from a predefined set
+      (PASSWORD_ALLOWED_SPECIAL_CHARS).
+    - Is at least 8 characters in length.
+
+    Parameters:
+    input_password (str): The password string to validate.
+
+    Returns:
+    list: A list of error messages for each criterion that the password fails to meet.
+    An empty list indicates that the password meets all the criteria.
+    """
     password_errors = []
 
     if not any(char.isupper() for char in input_password):

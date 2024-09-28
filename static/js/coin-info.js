@@ -28,7 +28,7 @@ let redditPostsToRender = [];
  * into the coinNamesDict variable.
  *
  * @async
- * @function
+ * @function cacheCoinNamesInSession
  * @returns {Promise<void>} A promise that resolves once the data is either fetched and
  *                          stored in session storage or retrieved from session storage.
  * @global {Object} coinNamesDict - A module-scoped global variable holding the coin
@@ -47,6 +47,24 @@ async function cacheCoinNamesInSession() {
 }
 
 // ////////// SEARCH BOX EVENT LISTENERS //////////
+/**
+ * Attaches event listeners to the search bar, search results container, and the
+ * document to handle search input, result selection, and clicks outside of the
+ * search context.
+ *
+ * The function sets up three main event listeners:
+ * 1. An input event on the search bar to filter and display results dynamically as
+ *    the user types.
+ * 2. A click event on the search results to handle user interactions with the
+ *    dynamically generated search results. It processes the selection of a coin by
+ *    fetching and displaying detailed information about the selected coin, and
+ *    updates various components of the UI such as charts and news related to the
+ *    selected coin.
+ * 3. A click event on the document to clear the search results if a click occurs
+ *    outside the search bar or results area.
+ *
+ * @function addSearchBarEventListeners
+ */
 function addSearchBarEventListeners() {
   // Event listener for showing dynamic results when the user types something in the
   // search bar
@@ -137,6 +155,9 @@ function addSearchBarEventListeners() {
 /**
  * Gets information from the CoinGecko API about the coin that is stored in the
  * currentCoin global variable
+ *
+ * @async
+ * @function getCurrentCoinInfo
  */
 async function getCurrentCoinInfo() {
   // Make API call to get percentage_price_change and current price
@@ -165,6 +186,16 @@ async function getCurrentCoinInfo() {
   }
 }
 
+/**
+ * Converts a given date string into a relative time string expressed in minutes and
+ * seconds ago.
+ *
+ * @function timeAgoMinutesSeconds
+ * @param {string} dateString - The date string to convert. Must be a valid format
+ *                              parseable by Date().
+ * @returns {string} - A string representing the time elapsed since the given date, in
+ *                     the format of minutes and seconds ago.
+ */
 function timeAgoMinutesSeconds(dateString) {
   const dateObject = new Date(dateString);
   const now = new Date();
@@ -182,6 +213,17 @@ function timeAgoMinutesSeconds(dateString) {
   return `${minutes} minutes ${seconds} seconds ago`;
 }
 
+/**
+ * Converts a given date string into a relative time string expressed in months and
+ * days ago.
+ *
+ * @function timeAgoDaysMonths
+ * @param {string} dateString - The date string to convert. Must be a valid format
+ *                              parseable by Date().
+ * @returns {string} - A string representing the time elapsed since the given date,
+ *                     potentially in months and days. Returns only days if the elapsed
+ *                     time is less than a month.
+ */
 function timeAgoDaysMonths(dateString) {
   const dateObject = new Date(dateString);
   const now = new Date();
@@ -209,11 +251,9 @@ function timeAgoDaysMonths(dateString) {
  *
  * @async
  * @function getCurrentCoinOHLC
- *
  * @returns {Promise<void>} A promise that resolves when the API call is complete.
  * On success, it updates the global `currentCoinOHLC` variable with the fetched OHLC data.
  * On failure, it logs an error and returns an empty array.
- *
  * @throws Will log an error if the API request fails.
  */
 async function getCurrentCoinOHLC() {
@@ -241,12 +281,11 @@ async function getCurrentCoinOHLC() {
  *
  * @async
  * @function getCurrentCoinHistoricalData
- *
- * @returns {Promise<void>} A promise that resolves when the API call is complete.
- * On success, it updates the global `currentCoinHistoricalData` object with
- * the fetched data, including prices, market caps, and total volumes.
- * On failure, it logs an error and returns an empty array.
- *
+ * @returns {Promise<void>} A promise that resolves when the API call is complete:
+ *                          - On success, it updates the global
+ *                            `currentCoinHistoricalData` object with the fetched data,
+ *                            including prices, market caps, and total volumes.
+ *                          - On failure, it logs an error and returns an empty array.
  * @throws Will log an error if the API request fails.
  */
 async function getCurrentCoinHistoricalData() {
@@ -276,13 +315,14 @@ async function getCurrentCoinHistoricalData() {
  * Highcharts library.
  *
  * @function drawOHLCChart
- *
- * @throws Will log an error if the chart rendering fails or if the `currentCoinOHLC` data is not properly loaded.
+ * @throws - Will log an error if the chart rendering fails or if the `currentCoinOHLC`
+ *           data is not properly loaded.
  */
 function drawOHLCChart() {
   Highcharts.stockChart("coin-info-chart", {
     chart: {
       borderRadius: 8,
+      height: 431,
     },
 
     rangeSelector: {
@@ -327,6 +367,7 @@ function drawOHLCChart() {
  * This function uses the Highcharts library to render a stock chart displaying
  * historical price, market cap, or total volume data based on the `coin_data` parameter.
  *
+ * @function drawHistoricalChart
  * @param {string} [coin_data="price"] - The type of cryptocurrency data to display in
  *                                       the chart. It can be "price", "market-cap", or
  *                                       "total-volume".
@@ -348,6 +389,7 @@ function drawHistoricalChart(coin_data = "price") {
   Highcharts.stockChart("coin-info-chart", {
     chart: {
       borderRadius: 8,
+      height: 431,
     },
 
     rangeSelector: {
@@ -454,10 +496,19 @@ async function addSecondNavButtonEventListeners() {
     });
 }
 
+/**
+ * Resets the style for all buttons in the secondary navigation bar in the coin info
+ * page. Specifically, it removes the green bottom border style from all buttons. The
+ * buttons are used to switch between different charts and the news and Reddit
+ * sections.
+ *
+ * This function is typically called when there's a need to normalize the appearance of
+ * navigation buttons, generally before highlighting a newly active button.
+ *
+ * @function resetAllSecondNavButtonStyles
+ */
 function resetAllSecondNavButtonStyles() {
-  console.log("RESET ALL BUTTON STYLES");
   document.querySelectorAll(".second-nav-buttons p").forEach((button) => {
-    console.log("what");
     button.style.borderBottom = "1.6px solid #f5f5fa";
   });
 }
@@ -471,8 +522,7 @@ function resetAllSecondNavButtonStyles() {
  * name, ticker symbol, price, price changes, market cap, volume, supply details,
  * fully diluted market cap, all-time high (ATH), and all-time low (ATL) data.
  *
- * @function
- * @global
+ * @function updateCoinInfo
  */
 function updateCoinInfo() {
   // Update image + name + ticker
@@ -538,8 +588,16 @@ function updateCoinInfo() {
   document.querySelector(
     ".coin-market-cap .value"
   ).textContent = `$${currentCoin.market_cap.toLocaleString()}`;
+
+  // Market cap rank
+  const market_cap_rank = currentCoin.market_cap_rank
+    ? "#" + currentCoin.market_cap_rank
+    : "N/A";
   document.querySelector(".coin-market-cap .rank").textContent =
-    "#" + currentCoin.market_cap_rank;
+    market_cap_rank;
+  document
+    .querySelector(".coin-market-cap .rank")
+    .setAttribute("title", "Market Cap Rank: " + market_cap_rank);
 
   // Volume
   document.querySelector(".coin-volume .value").textContent =
@@ -613,7 +671,6 @@ function updateCoinInfo() {
  * @returns {Promise<Object[]>} - A promise that resolves to an array of article objects
  */
 async function getNewsArticles(query, page) {
-  // TODO add error handling to this function
   const fetchOptions = {
     method: "POST",
     headers: {
@@ -753,7 +810,6 @@ function resetRedditPosts() {
  *                                 objects.
  */
 async function getRedditPosts(query, after) {
-  // TODO add error handling to this function
   const fetchOptions = {
     method: "POST",
     headers: {
@@ -891,19 +947,26 @@ async function getAndRenderRedditPosts() {
 }
 
 async function main() {
+  // Cache coin names in session storage
   await cacheCoinNamesInSession();
 
-  addSearchBarEventListeners();
+  // Get current coin info and update the page to reflect the data
   await getCurrentCoinInfo();
   updateCoinInfo();
 
+  // Get OHLC data for the current coin and render the OHLC chart
   await getCurrentCoinOHLC();
   drawOHLCChart();
 
-  await addSecondNavButtonEventListeners();
-
+  // Get and render news articles and Reddit posts
   await getAndRenderNewsArticles();
   await getAndRenderRedditPosts();
+
+  // Add event listeners to the search bar for dynamic search functionality
+  addSearchBarEventListeners();
+
+  // Add event listeners to each button in the secondary navigation bar
+  await addSecondNavButtonEventListeners();
 }
 
 main();

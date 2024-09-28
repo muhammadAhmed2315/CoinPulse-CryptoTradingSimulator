@@ -4,6 +4,7 @@ import {
   formatFloatToUSD,
 } from "../js/helpers.js";
 import { fetchPortfolioBalance } from "../js/core-base.js";
+import { getAndRenderPortfolioTotalValue } from "../js/core-base.js";
 
 let currentCoin = {
   id: "bitcoin",
@@ -114,6 +115,7 @@ function addNewTradeSidebarSearchEventListeners() {
           currentCoin.id = coinNamesDict[e.target.textContent][1];
 
           await getCurrentCoinInfo();
+          await getCurrentCoinBalance();
           updateNewTradeCoinInfo();
         }
       } else {
@@ -176,6 +178,37 @@ async function getCurrentCoinInfo() {
 }
 
 /**
+ * Asynchronously retrieves the balance of a specific coin from the current user's
+ * wallet.
+ *
+ * This function sends a POST request to the "/get_coin_balance" endpoint with the
+ * coin's ID included in the request body. It updates the `currentCoin.balance` property
+ * with the fetched data.
+ *
+ * @async
+ * @function getCurrentCoinBalance
+ * @returns {Promise<void>} A promise that resolves with no value if the operation is successful,
+ *                          or returns an empty array if an error occurs during the fetch operation.
+ */
+async function getCurrentCoinBalance() {
+  const fetchOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ coin_id: currentCoin.id }),
+  };
+
+  try {
+    const response = await fetch("/get_coin_balance", fetchOptions);
+    const data = await response.json();
+
+    currentCoin.balance = data;
+  } catch (error) {
+    console.error("Error:", error);
+    return []; // Return an empty array in case of error
+  }
+}
+
+/**
  * Updates the UI elements on the new trade section with the information of the
  * currently selected coin.
  *
@@ -190,10 +223,12 @@ async function getCurrentCoinInfo() {
  * @returns {void}
  */
 function updateNewTradeCoinInfo() {
+  // Update coin image, name, and ticker
   document.querySelector(".coin-image").setAttribute("src", currentCoin.image);
   document.querySelector(".coin-name").textContent = currentCoin.name;
   document.querySelector(".coin-ticker").textContent = currentCoin.ticker;
 
+  // Update coin price and price change
   document.querySelector(".coin-price-change").textContent =
     currentCoin.price_change_24h >= 0 ? "+" : "";
   document.querySelector(".coin-price-change").textContent +=
@@ -201,38 +236,51 @@ function updateNewTradeCoinInfo() {
   document.querySelector(".coin-price").textContent =
     "$" + currentCoin.current_price.toLocaleString();
 
+  // Update text colour of coin price change (depending on an increase or decrease of
+  // price)
   if (currentCoin.price_change_24h >= 0) {
     document.querySelector(".coin-price-change").style.color = "#17C671";
   } else {
     document.querySelector(".coin-price-change").style.color = "#EB5757";
   }
 
+  // Update coin balance image and balance value
+  document.querySelector(".nts-trade-info__coin-balance div .coin-image").src =
+    currentCoin.image;
+  document.querySelector(
+    ".nts-trade-info__coin-balance .coin-balance"
+  ).textContent = currentCoin.balance.toFixed(4);
+
+  // Update coin symbol images for the market, limit, and stop orders input fields
   document
     .querySelector(".market-order--amount img")
     .setAttribute("src", currentCoin.image);
-
   document
     .querySelector(".limit-order--amount img")
     .setAttribute("src", currentCoin.image);
-
   document
     .querySelector(".stop-order--amount img")
     .setAttribute("src", currentCoin.image);
 
+  // Update limit order input field value
   document.querySelector(".limit-order--price input").value =
     currentCoin.current_price;
 
+  // Update stop order input field value
   document.querySelector(".stop-order--price input").value =
     currentCoin.current_price;
 
+  // Update market order input field value
   document.querySelector(".market-order--amount input").value =
     currentCoin.current_price *
     document.querySelector(".market-order--total input").value;
 
+  // Update total value for limit order
   document.querySelector(".limit-order--total input").value =
     document.querySelector(".limit-order--amount input").value *
     document.querySelector(".limit-order--price input").value;
 
+  // // Update total value for stop order
   document.querySelector(".stop-order--total input").value =
     document.querySelector(".stop-order--amount input").value *
     document.querySelector(".stop-order--price input").value;
@@ -267,6 +315,7 @@ function addPlaceBuyOrderButtonEventListener() {
       let price_per_unit = currentCoin.current_price;
       let quantity = 0;
 
+      // Get user input data based on order type
       if (orderType === "market") {
         quantity = parseFloat(
           document.querySelector(".market-order--amount input").value
@@ -299,9 +348,6 @@ function addPlaceBuyOrderButtonEventListener() {
         },
       };
 
-      // Validate input data
-      // TODO (assume valid for now)
-
       // Send to Flask route
       fetch("/process_transaction", {
         method: "POST",
@@ -311,10 +357,15 @@ function addPlaceBuyOrderButtonEventListener() {
         body: JSON.stringify(dataToSend),
       })
         .then((response) => response.json())
-        .then((data) => {
+        .then(async (data) => {
           if ("success" in data) {
             showMessagePopup(data["success"], true);
+
             resetAllOrderTypeInputsAndCommentBox();
+
+            // Update portfolio total value element and USD balance element
+            await updatePortfolioBalanceElement();
+            await getAndRenderPortfolioTotalValue();
           } else if ("error" in data) {
             showMessagePopup(data["error"], false);
           }
@@ -323,6 +374,17 @@ function addPlaceBuyOrderButtonEventListener() {
     });
 }
 
+/**
+ * Resets all input fields associated with order types and the comment box on the
+ * new trade form.
+ *
+ * This function clears the values of inputs for market orders, limit orders, stop
+ * orders, and the notes/comment input. It targets specific classes to identify and
+ * clear each input field.
+ *
+ * @function resetAllOrderTypeInputsAndCommentBox
+ * @returns {void} No return value.
+ */
 function resetAllOrderTypeInputsAndCommentBox() {
   document.querySelector(".market-order--total input").value = "";
   document.querySelector(".market-order--amount input").value = "";
@@ -352,14 +414,17 @@ function resetAllOrderTypeInputsAndCommentBox() {
  * @returns {void}
  */
 function addNewTradeSidebarEventListeners() {
+  // Show new trade sidebar on "New Trade" button click
   document
     .querySelector(".new-trade-btn")
     .addEventListener("click", showNewTradeSidebar);
 
+  // Hide new trade sidebar on "Close" button click
   document
     .querySelector(".nts-header__close-btn")
     .addEventListener("click", hideNewTradeSidebar);
 
+  // Hide new trade sidebar on overlay click (anywhere outside the sidebar)
   document
     .querySelector(".new-trade-sidebar-overlay")
     .addEventListener("click", function () {
@@ -693,30 +758,59 @@ function addShareOnTimelineToggleEventListener() {
     });
 }
 
+/**
+ * Function that shows the new trade sidebar, fetching and updating the sidebar to
+ * reflect information about a specific coin.
+ *
+ * @async
+ * @function showNewTradeSidebarForSpecificCoin
+ * @param {string} coinId - The unique identifier for the coin to display in the new
+ *                          trade sidebar.
+ * @returns {Promise<void>} A promise that resolves when all asynchronous operations
+ *                          and UI updates are complete.
+ */
 export async function showNewTradeSidebarForSpecificCoin(coinId) {
   currentCoin = { id: coinId };
   await getCurrentCoinInfo();
+  await getCurrentCoinBalance();
   updateNewTradeCoinInfo();
   showNewTradeSidebar();
 }
 
+/**
+ * Asynchronously updates the portfolio USD balance element in the UI with the latest
+ * balance data.
+ *
+ * @async
+ * @function updatePortfolioBalanceElement
+ * @returns {Promise<void>} A promise that resolves when the balance is successfully
+ *                          fetched and displayed.
+ */
 async function updatePortfolioBalanceElement() {
   const balance = await fetchPortfolioBalance();
-  document.querySelector(".nts-trade-info__balance div p").textContent =
-    "$" + formatFloatToUSD(balance, 2);
+  document.querySelector(
+    ".nts-trade-info__usd-balance .usd-balance"
+  ).textContent = "$" + formatFloatToUSD(balance, 2);
 }
 
 async function main() {
+  // Cache coin names in session storage
   await cacheCoinNamesInSession();
 
+  // Add event listeners for the sidebar search box and for opening and closing the
+  // new trade sidebar
   addNewTradeSidebarSearchEventListeners();
   addNewTradeSidebarEventListeners();
 
+  // Update porfolio USD balance element
   await updatePortfolioBalanceElement();
 
+  // Get and render current coin info
+  await getCurrentCoinBalance();
   await getCurrentCoinInfo();
   updateNewTradeCoinInfo();
 
+  // Add event listeners for the various buttons in the new trade sidebar
   await addTransactionButtonEventListeners();
   addOrderTypeButtonEventListeners();
   addOrderTypeInputEventListeners();

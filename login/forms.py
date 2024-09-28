@@ -91,4 +91,4 @@ class PasswordResetForm(FlaskForm):
         },
         validators=[DataRequired()],
     )
-    submit = SubmitField("Sign Up", render_kw={"class": "submit-btn"})
+    submit = SubmitField("Set New Password", render_kw={"class": "submit-btn"})

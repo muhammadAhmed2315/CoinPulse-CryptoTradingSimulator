@@ -12,7 +12,12 @@ from flask import (
 )
 from flask_login import current_user, login_required, logout_user
 from models import User, Wallet, Transaction, TransactionLikes
-from constants import COINGECKO_API_KEY, COINGECKO_API_HEADERS
+from constants import (
+    COINGECKO_API_KEY,
+    COINGECKO_API_HEADERS,
+    OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
+    WALLET_VALUE_UPDATE_INTERVAL_SECONDS,
+)
 from extensions import db
 import time
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
@@ -33,10 +38,13 @@ def dashboard():
         A rendered HTML template for the dashboard page, with the COINGECKO_API_KEY
         available for use in the template.
     """
-    if not current_user.verified:
+    # If user isn't verified and doesn't have a provider, log them out and redirect
+    # them to the login page
+    if not current_user.verified and not current_user.provider:
         logout_user()
         return redirect(url_for("user_authentication.login"))
 
+    # Else, render the dashboard page
     return render_template(
         "core/dashboard.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,
@@ -131,7 +139,8 @@ def get_trades_info():
 
     transactions = current_user.wallet.transactions
 
-    # TODO TEST THIS WITH A NEW USER WHO HAS NO TRANSACTIONS
+    # If the user has transactions, sort them based on the specified criteria and
+    # paginate the results
     if transactions:
         transactions = sort_transactions(transactions, sort)
         maxPages = (len(transactions) // 25) + 1
@@ -139,6 +148,7 @@ def get_trades_info():
 
         res = []
 
+        # Extract the necessary data from each transaction
         for transaction in transactions:
             temp = {}
             temp["orderType"] = transaction.orderType
@@ -249,7 +259,31 @@ def sort_transactions(transactions, sort="timestamp_desc"):
 @core.route("/get_feedposts", methods=["POST"])
 @login_required
 def get_feedposts():
-    # TODO add error handling for this function (e.g., user has no transactions)
+    """
+    Fetches and returns a list of feed posts (transactions) based on the specified type
+    and pagination.
+
+    This function retrieves the information about the globally visible transactions or
+    transactions specific to the current user (based on the input type). The
+    transactions are sorted by their timestamp in descending order to ensure the most
+    recent transactions are shown first.
+
+    Args:
+        None directly. Expects a JSON payload in the request containing:
+            type (str): Can be 'global' = fetch transactions visible to all users or
+                        'own' = fetch transactions specific to the current user.
+            page (int): The page number for pagination purposes, used to calculate the
+                        slice of transactions to return (1-indexed).
+
+    Returns:
+        A JSON response containing:
+            - 'success': A message indicating the status of the request.
+            - 'data': A list of dictionaries, each representing a transaction with
+                      details such as transaction ID, username, timestamp, number of
+                      likes, coin ID, quantity, price per unit, transaction type, and
+                      order type. Additional visibility status is included for 'own'
+                      type.
+    """
     data = request.get_json()
     type = data["type"]
     page = data["page"]
@@ -273,6 +307,7 @@ def get_feedposts():
 
     res = []
 
+    # Extract the necessary data from each transaction
     for transaction in transactions:
         temp = {}
 
@@ -297,6 +332,7 @@ def get_feedposts():
 
         res.append(temp)
 
+    # Paginate the results
     res = res[(page - 1) * 10 : page * 10]
 
     if res:
@@ -314,33 +350,24 @@ def update_likes():
     Given a transaction ID and a boolean flag indicating whether to add or remove a
     like from the transaction, the function adds or removes the current user from the
     transaction's TransactionLikes.liked_by_user_ids list.
-
-    TODO:
-        - Add error handling for cases where the transaction ID is not found.
-        - Add return for cases where like count was not successfully updated.
-
-    Raises:
-        Exception: If any error occurs during the update process.
     """
     data = request.get_json()
     is_increment = data["isIncrement"]
     transaction_id = data["transactionID"]
 
-    # TODO add in error handling for this function (what if id is not found?)
-    # Assuming for now the id is always found
-
+    # Get the transaction object from the database
     transaction = Transaction.query.get(transaction_id)
 
+    # Increment or decrement the number of likes for the transaction
     if is_increment:
         transaction.add_like(current_user.id)
     else:
         transaction.remove_like(current_user.id)
 
+    # Save the updated transaction to the database
     db.session.add(transaction)
     db.session.add(transaction.likes)
     db.session.commit()
-
-    # TODO add in return for if like count was not successfully updated
 
     return jsonify(
         {
@@ -354,6 +381,33 @@ def update_likes():
 @core.route("/process_transaction", methods=["POST"])
 @login_required
 def process_transaction():
+    """
+    Processes a cryptocurrency transaction submitted via a POST request containing JSON
+    data.
+
+    The function validates the input JSON for necessary fields and constraints, such as
+    ensuring positive quantities and sufficient balances to complete buy or sell
+    orders. It handles different transaction types and order types accordingly.
+
+    If the transaction is valid:
+    - It updates the user's wallet balance and assets based on the transaction type and
+      order type.
+    - It records the transaction in the database along with a new TransactionLikes
+      object to track likes.
+    - It invokes a background task to update the wallet value if necessary.
+
+    Returns:
+        JSON response: A JSON object indicating the success or failure of the
+                       transaction. On success, returns HTTP 201. On failure due to
+                       client errors (e.g., missing data, insufficient funds), returns
+                       HTTP 400. On failure due to server errors (e.g., database
+                       issues), returns HTTP 500.
+
+    Raises:
+        HTTPException: If the input JSON is missing or incorrectly formatted, or if any
+                       data constraints are violated, the function will raise an HTTP
+                       exception with an appropriate status code and error message.
+    """
     # Ensure request contains necessary JSON data
     if not request.json or "transactionData" not in request.json:
         return jsonify({"error": "Missing transaction data"}), 400
@@ -564,6 +618,46 @@ def get_wallet_total_current_value():
         )
 
 
+@core.route("/get_wallet_usd_balance", methods=["GET"])
+@login_required
+def get_wallet_usd_balance():
+    """
+    Retrieves the current USD balance from the user's wallet.
+
+    Returns:
+        tuple: A tuple containing a JSON response and an HTTP status code. On
+               successful retrieval, it returns the USD balance along with a 200 status
+               code. If an error occurs, it returns an error message with a 500 status
+               code.
+
+    Raises:
+        Exception: Captures any exceptions that may occur during the process of
+                   fetching the balance from the database and includes it in the error
+                   response.
+    """
+    try:
+        current_usd_balance = current_user.wallet.balance
+
+        return (
+            jsonify(
+                {"success": "Data successfully retrieved", "data": current_usd_balance}
+            ),
+            200,
+        )
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": (
+                        "An error occurred while retrieving the wallet's current USD balance from the database. "
+                        f"Reason: {str(e)}"
+                    )
+                }
+            ),
+            500,
+        )
+
+
 @core.route("/coin_info")
 @login_required
 def coin_info():
@@ -588,6 +682,17 @@ def coin_info():
 @core.route("/get_news", methods=["POST"])
 @login_required
 def get_news():
+    """
+    Fetch news articles based on a user-specified query and page number.
+
+    This endpoint accepts a JSON payload with the search query and page number to fetch
+    news articles using the YahooNewsScraper class.
+
+    Returns:
+        json: A JSON object containing a success message and a list of news articles.
+              Each article includes details like the title, URL, UNIX timestamp,
+              description, and publisher.
+    """
     data = request.get_json()
     query = data["query"]
     page = data["page"]
@@ -600,6 +705,7 @@ def get_news():
 
     res = []
 
+    # Extract necessary data from each article
     for article in articles:
         temp = {}
         temp["title"] = article.title
@@ -617,6 +723,19 @@ def get_news():
 @core.route("/get_reddit_posts", methods=["POST"])
 @login_required
 def get_reddit_posts():
+    """
+    Fetches posts from Reddit based on a user-specified query and pagination parameter.
+
+    This endpoint accepts a JSON payload with the search query and pagination 'after'
+    parameter to fetch posts. It uses the RedditScraper class to scrape Reddit posts
+    based on relevance within the past week.
+
+    Returns:
+        json: A JSON object containing the success message and a list of posts. Each
+              post includes details like title, thumbnail, content, subreddit, score,
+              comment count, id, url, fullname, and a human-readable timestamp
+              indicating how long ago the post was made.
+    """
     data = request.get_json()
     query = data["query"]
     after = data["after"]
@@ -631,6 +750,7 @@ def get_reddit_posts():
 
     res = []
 
+    # Extract the necessary data from each post
     for post in posts:
         temp = {}
         temp["title"] = post.title
@@ -649,6 +769,25 @@ def get_reddit_posts():
 
 
 def time_ago(unix_timestamp):
+    """
+    Converts a UNIX timestamp to a relative time string indicating how long ago that
+    time was in a human-readable format.
+
+    Parameters:
+        unix_timestamp (int): A UNIX timestamp in seconds.
+
+    Returns:
+        str: A string representing the time difference in a human-readable format, such
+             as "Just now", "X minutes ago", "X hours ago", or "X days ago". It
+             dynamically adjusts the singular or plural form based on the time
+             difference.
+
+    Examples:
+        - If the timestamp is less than a minute ago, it returns "Just now".
+        - If the timestamp is one minute ago, it returns "1 minute ago".
+        - If the timestamp is several hours or days in the past, it formats the string
+          accordingly.
+    """
     now = datetime.now()
     past_time = datetime.fromtimestamp(unix_timestamp)
     difference = now - past_time
@@ -745,7 +884,7 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 for key in wallet.assets:
                     curr_assets_value += wallet.assets[key] * coin_market_prices[key]
 
-                wallet.value_history.updateValueHistory(
+                wallet.value_history.update_value_history(
                     wallet.balance, curr_assets_value, current_time
                 )
 
@@ -755,19 +894,78 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
             db.session.commit()
 
         if not current_wallet_id:
-            time.sleep(1800)
+            time.sleep(WALLET_VALUE_UPDATE_INTERVAL_SECONDS)
         else:
             break
 
 
 def update_open_trades_in_background():
+    """
+    Continuously monitors and executes open trades based on current market conditions.
+
+    This function runs in a infinite loop that checks all open trades for all users and
+    determines if they can be executed based on their type (limit or stop) and the
+    current market price of the coin involved. Trades are executed (if the user has
+    enough money/balance) or cancelled (if the user does not have enough money/balance),
+    updating the transaction and wallet accordingly.
+
+
+    This function fetches current market prices in batches to adhere to API rate limits
+    and updates each trade accordingly.
+
+    This function should be run in a background thread or as a separate process due
+    to its infinite loop nature and sleep intervals which pause execution to limit
+    API calls and database transactions.
+
+    The function uses two helper functions:
+    - `cancel_open_order`: Cancels an open order and updates the transaction without
+                           committing it.
+    - `execute_open_order`: Executes an open order based on market prices and updates
+                            balances and assets.
+    """
+
     def cancel_open_order(transaction):
+        """
+        Cancels an open order/transaction and updates the transaction in the database
+        (does not commit the changes to the database)
+
+        This function invokes the `cancel_open_order` method of the given transaction
+        object to change its status to 'cancelled'. It then adds the updated transaction
+        object to the database session for persistence.
+
+        Args:
+        transaction (Transaction): The transaction object representing the order to be cancelled.
+
+        Returns:
+        None
+        """
         transaction.cancel_open_order()
         db.session.add(transaction)
 
     def execute_open_order(transaction, is_buy):
+        """
+        Executes an open order based on the current market price and updates the wallet
+        balance and assets.
+
+        This function checks if the order is a buy or sell. For a buy order, it
+        subtracts the total cost of the coins from the wallet's balance and adds the
+        quantity to the assets. For a sell order, it adds the total cost to the balance
+        and subtracts the quantity from the assets. The transaction and wallet states
+        are then updated in the database session.
+
+        Args:
+        transaction (Transaction): The transaction object representing the order to be
+                                   executed.
+        is_buy (bool): A flag indicating whether the transaction is a buy (True) or
+                       sell (False).
+
+        Returns:
+        None
+        """
+        # Execute the order
         transaction.execute_open_order(coin_market_prices[transaction.coin_id])
         if is_buy:
+            # Update wallet balance and assets for buy order
             transaction.wallet.update_balance_subtract(
                 transaction.quantity * coin_market_prices[transaction.coin_id]
             )
@@ -775,12 +973,15 @@ def update_open_trades_in_background():
                 transaction.coin_id, transaction.quantity
             )
         else:
+            # Update wallet balance and assets for sell order
             transaction.wallet.update_balance_add(
                 transaction.quantity * coin_market_prices[transaction.coin_id]
             )
             transaction.wallet.update_assets_subtract(
                 transaction.coin_id, transaction.quantity
             )
+
+        # Update the transaction and the wallet in the database
         db.session.add(transaction)
         db.session.add(transaction.wallet)
 
@@ -887,13 +1088,24 @@ def update_open_trades_in_background():
             # Commit all changes to the database
             db.session.commit()
 
-        time.sleep(60)
+        time.sleep(OPEN_TRADE_UPDATE_INTERVAL_SECONDS)
 
 
 @core.route("/get_wallet_assets", methods=["GET"])
 @login_required
 def get_wallet_assets():
-    # TODO add error handling for this function (e.g., user has no transactions)
+    """
+    Retrieves and returns the assets and balance of the currently logged-in user's
+    wallet.
+
+    This function accesses the assets attribute of the current user's wallet to obtain
+    a dictionary of all assets owned by the user. It also retrieves the current balance
+    of the user's wallet. The response is structured as a JSON object that includes
+    both the assets dictionary and the balance.
+
+    Returns:
+        A JSON response containing a success message along with the user's assets and wallet balance.
+    """
     current_assets = current_user.wallet.assets
 
     return (
@@ -911,7 +1123,21 @@ def get_wallet_assets():
 @core.route("/get_open_trades", methods=["GET"])
 @login_required
 def get_open_trades():
-    # TODO add error handling for this function (e.g., user has no transactions)
+    """
+    Retrieves and returns a list of open trade transactions (i.e., limit or stop orders
+    that are active/open) for the currently logged-in user.
+
+    This endpoint filters transactions by the current user's wallet ID and 'open'
+    status to fetch all open trades associated with the user. Each transaction is
+    represented as a dictionary containing key details such as transaction ID, coin ID,
+    quantity, price per unit, transaction type, and order type.
+
+    Returns:
+        A JSON response containing a success message and the data list of open
+        transactions. If an error occurs (e.g., the user has no transactions or the
+        database query fails), the function needs proper error handling to manage such
+        exceptions.
+    """
     open_transactions = Transaction.query.filter_by(
         wallet_id=current_user.wallet.id, status="open"
     ).all()
@@ -934,12 +1160,23 @@ def get_open_trades():
 @core.route("/cancel_open_trade", methods=["POST"])
 @login_required
 def cancel_open_trade():
-    # TODO add error handling for this function (e.g., transaction ID not found)
+    """
+    Cancels an open trade transaction (i.e., a limit or stop order that is currently
+    still active/open).
+
+    This function handles a POST request to cancel an open transaction. It retrieves
+    the transaction ID from the JSON payload of the request, finds the corresponding
+    transaction in the database, and invokes the cancel_open_order method on the
+    transaction object. After updating the transaction status, it commits the changes
+    to the database.
+
+    Returns:
+        A JSON response indicating the success of the operation and HTTP status code 200.
+    """
     data = request.get_json()
     transaction_id = data["transaction_id"]
 
     transaction = Transaction.query.get(transaction_id)
-
     transaction.cancel_open_order()
 
     db.session.add(transaction)
@@ -950,6 +1187,23 @@ def cancel_open_trade():
 
 @core.route("/get_top_coins_data", methods=["POST"])
 def get_top_coins_data():
+    """
+    Retrieve and return a list of the top coins from the CoinGecko API, sorted by a
+    user-specified criterion.
+
+    The function fetches JSON data from the CoinGecko API based on the sorting
+    parameter received from the client. The response includes various details about the
+    coins such as current price, price change percentages over different time frames,
+    and sparkline data.
+
+    The endpoint accepts a POST request with a JSON body that specifies the sorting
+    criteria.
+
+    Returns:
+        A JSON response containing an array of the top 100 cryptocurrencies sorted
+        according to the specified parameter. Each item in the array includes detailed
+        market data of the coin.
+    """
     data = request.get_json()
     sort_coins_by = data["sort_coins_by"]
 
@@ -963,6 +1217,7 @@ def get_top_coins_data():
         "precision": 2,
         "sparkline": "true",
     }
+
     response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
     data = response.json()
     data = jsonify(data)
@@ -972,6 +1227,17 @@ def get_top_coins_data():
 
 @core.route("/get_single_coin_data", methods=["POST"])
 def get_single_coin_data():
+    """
+    Fetches and returns detailed market data for a specific coin.
+
+    This function processes a POST request that includes JSON data with a 'coin_id'
+    key. It constructs a query to the CoinGecko API to retrieve current market data for
+    the specified coin in USD, including the price change percentage over the last 24
+    hours.
+
+    Returns:
+        Flask.Response: A JSON response containing detailed market data for the specified cryptocurrency coin.
+    """
     data = request.get_json()
     coin_id = data["coin_id"]
 
@@ -989,8 +1255,42 @@ def get_single_coin_data():
     return data
 
 
+@core.route("/get_coin_balance", methods=["POST"])
+def get_coin_balance():
+    """
+    Fetches and returns the balance of a specific coin from the current user's wallet.
+
+    This function handles a POST request with JSON content including a 'coin_id'. It
+    retrieves the balance of the specified coin from the current user's wallet. If the
+    coin is not found in the wallet, it returns a balance of 0.
+
+    Returns:
+        Flask.Response: A JSON response containing the balance of the specified coin in
+                        the user's wallet.
+
+    """
+    data = request.get_json()
+    coin_id = data["coin_id"]
+
+    # Get coin balance from curent user's wallet corresponding with the coin_id
+    coin_balance = current_user.wallet.assets.get(coin_id, 0)
+
+    return jsonify(coin_balance), 200
+
+
 @core.route("/get_all_coin_names")
 def get_all_coin_names():
+    """
+    Fetch and return a list of all cryptocurrency coins available on CoinGecko.
+
+    This function processes a GET request and queries the CoinGecko API at the
+    '/coins/list' endpoint, which provides a comprehensive list of all cryptocurrencies
+    tracked by CoinGecko, including their IDs, symbols, and names.
+
+    Returns:
+        Flask.Response: A JSON response containing a list of all cryptocurrencies, with each entry including
+        the coin's ID, symbol, and name.
+    """
     url = "https://api.coingecko.com/api/v3/coins/list"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)
@@ -1002,6 +1302,16 @@ def get_all_coin_names():
 
 @core.route("/get_trending_coins_data")
 def get_trending_coins_data():
+    """
+    Fetch and return data for currently trending coins from the CoinGecko API.
+
+    This function handles a GET request and queries the CoinGecko API's trending
+    endpoint, which provides data on the most popular cryptocurrencies based on recent
+    search activities.
+
+    Returns:
+        Flask.Response: A JSON response containing data about trending cryptocurrency coins.
+    """
     url = "https://api.coingecko.com/api/v3/search/trending"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)
@@ -1014,6 +1324,16 @@ def get_trending_coins_data():
 
 @core.route("/get_multiple_coin_data", methods=["POST"])
 def get_multiple_coin_data():
+    """
+    Fetch and return market data for multiple specified coins.
+
+    This function processes a POST request that should include a JSON body containing
+    'coin_ids', a string of coin IDs (comma-separated). It constructs a query to the
+    CoinGecko API to retrievethe current market data for the specified coins in USD.
+
+    Returns:
+        Flask.Response: A JSON response containing the market data for the specified coins.
+    """
     data = request.get_json()
     coin_ids = data["coin_ids"]
 
@@ -1032,6 +1352,17 @@ def get_multiple_coin_data():
 
 @core.route("/get_coin_OHLC_data", methods=["POST"])
 def get_coin_OHLC_data():
+    """
+    Fetch and return the Open, High, Low, and Close (OHLC) market data for a specified
+    coin over the past year.
+
+    This function processes a POST request containing JSON data with a 'coin_id' key.
+    It uses this ID to query the CoinGecko API and retrieves OHLC data in USD for the
+    specified coin over the last 365 days.
+
+    Returns:
+        Flask.Response: A JSON response containing the OHLC data for the specified coin.
+    """
     data = request.get_json()
     coin_id = data["coin_id"]
 
@@ -1046,6 +1377,16 @@ def get_coin_OHLC_data():
 
 @core.route("/get_coin_historical_data", methods=["POST"])
 def get_coin_historical_data():
+    """
+    Fetch and return historical market data for a specified coin over the past year.
+
+    This function handles a POST request with JSON content that includes a 'coin_id'.
+    It queries the CoinGecko API to retrieve daily market chart data in USD for the
+    specified coin over the last 365 days.
+
+    Returns:
+        Flask.Response: A JSON response containing the historical market data.
+    """
     data = request.get_json()
     coin_id = data["coin_id"]
 

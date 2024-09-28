@@ -6,6 +6,10 @@
 <link rel="stylesheet" href="../../static/css/new-trade.css" />
 {% endblock %}
 <!-- prettier-ignore -->
+{% block title %}
+<title>Dashboard - CoinPulse</title>
+{% endblock %}
+<!-- prettier-ignore -->
 {% block message_popup %}
 <div class="message-popup">
   <p class="message-popup-text"></p>
@@ -86,9 +90,6 @@
 {% endblock %}
 <!-- prettier-ignore -->
 {% block js_scripts %}
-<script>
-  const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
-</script>
 <script
   type="module"
   src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"

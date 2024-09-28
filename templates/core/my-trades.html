@@ -5,6 +5,10 @@
 <link rel="stylesheet" href="../../static/css/my-trades.css" />
 {% endblock %}
 <!-- prettier-ignore -->
+{% block title %}
+<title>My Trades - CoinPulse</title>
+{% endblock %}
+<!-- prettier-ignore -->
 {% block content %}
 <!-- OPEN POSITIONS SECTION -->
 <div class="my-trades-container">
@@ -83,10 +87,6 @@
 {% endblock %}
 <!-- prettier-ignore -->
 {% block js_scripts %}
-<script>
-  <!-- TODO IS THIS NEEDED? -->
-  const COINGECKO_API_KEY = "{{ COINGECKO_API_KEY }}";
-</script>
 <script defer src="https://code.highcharts.com/stock/highstock.js"></script>
 <script
   defer

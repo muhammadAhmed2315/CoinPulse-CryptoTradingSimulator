@@ -179,11 +179,6 @@ td {
   border-radius: 50%;
 }
 
-.my-trades-table__row td:hover {
-  background-color: #e2e6f8;
-  color: #758ad4;
-}
-
 /* *************** FIRST ROW OF TABLE *************** */
 .my-trades-table__header {
   color: #9696bb;
@@ -241,13 +236,7 @@ td {
   justify-content: center;
 }
 
-.transaction-action {
-  display: flex;
-  justify-content: center;
-}
-
 .transaction-action img {
-  margin-top: 0.5rem;
   height: 2.7rem;
   width: 2.7rem;
 }
@@ -256,6 +245,15 @@ td {
   cursor: pointer;
   filter: brightness(0) saturate(100%) invert(21%) sepia(100%) saturate(1508%)
     hue-rotate(195deg) brightness(99%) contrast(106%);
+}
+
+/* ******************** NO TRADES PLACED LABEL ******************** */
+.no-transactions-label {
+  color: #9696bb;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.6rem 0;
+  text-align: center;
 }
 
 /* ******************** TRADES TABLE PAGINATION BUTTONS ******************** */

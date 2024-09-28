@@ -70,10 +70,6 @@ body {
   font-weight: 400;
 }
 
-.portfolio-container__img {
-  height: 2.5rem;
-}
-
 .portfolio-container__total-value {
   font-size: 18px;
   font-weight: 700;

@@ -1,3 +1,8 @@
+/**
+ * Initialises the particlesJS library with the given configuration. This library is
+ * used as the background for the login, register, password reset, and email
+ * verification pages.
+ */
 document.addEventListener("DOMContentLoaded", function () {
   particlesJS("particles-js", {
     particles: {

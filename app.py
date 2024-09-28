@@ -32,11 +32,13 @@ def create_app():
     CORS(app)
 
     # Configure app
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url and database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
     app.config["SECRET_KEY"] = "mysecretkey"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"postgresql://{POSTGRESQL_USERNAME}:{POSTGRESQL_PASSWORD}@localhost/cryptotradingsimulator"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 
     # Configure mail
     app.config["MAIL_SERVER"] = "smtp.gmail.com"
@@ -96,10 +98,12 @@ if __name__ == "__main__":
     )
 
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        # Run thread to continuously update user wallet value in the background
         threadOne = threading.Thread(target=update_user_wallet_value_in_background)
         threadOne.daemon = True
         threadOne.start()
 
+        # Run thread to continuously monitor and execute open trades in the background
         threadTwo = threading.Thread(target=update_open_trades_in_background)
         threadTwo.daemon = True
         threadTwo.start()

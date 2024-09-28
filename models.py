@@ -1,5 +1,5 @@
 from extensions import db
-from sqlalchemy import Boolean, ARRAY, TIMESTAMP
+from sqlalchemy import Boolean, ARRAY
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
@@ -12,7 +12,7 @@ import time
 class User(db.Model, UserMixin):
     """
     User model class (for the database) that supports authentication and additional
-    properties inlcuding support for OAuth providers.
+    properties including support for OAuth providers.
 
     Attributes:
         id: Unique identifier for the user, serves as the primary key
@@ -58,10 +58,24 @@ class User(db.Model, UserMixin):
             self.provider_id = provider_id
 
     def update_username(self, username):
+        """
+        Updates the username for the user.
+
+        Parameters:
+            username (str): The new username to be assigned to the user.
+        """
         self.username = username
 
     def update_password(self, password):
-        if not self.provider and self.provider_id:
+        """
+        Updates the password for the user. If the user is not authenticated via an
+        an external provider (e.g., OAuth), this function will update the user's
+        hashed password in the database.
+
+        Parameters:
+            password (str): The new password to be hashed and stored.
+        """
+        if not self.provider and not self.provider_id:
             self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
@@ -89,6 +103,25 @@ class User(db.Model, UserMixin):
 
 
 class Wallet(db.Model):
+    """
+    Wallet model class (for the database) that stores the user's balance, assets,
+    transaction history, etc.
+
+    Attributes:
+        id: Unique identifier for the wallet, serves as the primary key
+        balance: The user's balance in USD
+        assets: A dictionary of the user's assets, where the key is the coin ID and the
+                value is the quantity of that coin
+        time_created: The time the wallet was created, in UNIX time (in seconds)
+        status: The status of the wallet, e.g., "active" or "inactive"
+        total_current_value: The total value of the user's assets in USD
+        owner_id: The user ID of the wallet owner
+        transactions: A relationship to the Transaction model, representing the user's
+                      transaction history
+        value_history: A relationship to the ValueHistory model, storing the history of
+                       the wallet's value
+    """
+
     __tablename__ = "wallets"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -104,21 +137,57 @@ class Wallet(db.Model):
     value_history = db.relationship("ValueHistory", backref="wallet", uselist=False)
 
     def __init__(self, owner_id):
+        """
+        Initializes a new wallet for the specified owner.
+
+        Parameters:
+            owner_id (UUID): The UUID of the user who owns this wallet.
+        """
         self.owner_id = owner_id
 
     def update_balance_add(self, amount):
+        """
+        Adds a specified amount to the wallet's balance.
+
+        Parameters:
+            amount (float): The amount to add to the balance.
+        """
         self.balance += amount
 
     def update_balance_subtract(self, amount):
+        """
+        Subtracts a specified amount from the wallet's balance.
+
+        Parameters:
+            amount (float): The amount to subtract from the balance.
+        """
         self.balance -= amount
 
     def update_assets_add(self, coin_id, quantity):
+        """
+        Adds a specified quantity of a coin to the wallet's assets.
+
+        Parameters:
+            coin_id (str): The identifier for the coin.
+            quantity (float): The amount of the coin to add.
+        """
         if coin_id in self.assets:
             self.assets[coin_id] += quantity
         else:
             self.assets[coin_id] = quantity
 
     def update_assets_subtract(self, coin_id, quantity):
+        """
+        Subtracts a specified quantity of a coin from the wallet's assets.
+
+        Parameters:
+            coin_id (str): The identifier for the coin.
+            quantity (float): The amount of the coin to subtract.
+
+        Note:
+            If subtracting the quantity results in zero holdings of the coin,
+            it is removed from the assets dictionary.
+        """
         # If transaction results in User owning 0 of the coin, then remove the coin
         # from the assets dictionary
         if self.assets[coin_id] == quantity:
@@ -127,13 +196,45 @@ class Wallet(db.Model):
             self.assets[coin_id] -= quantity
 
     def has_enough_balance(self, amount):
+        """
+        Determines if the wallet has enough balance for a transaction.
+
+        Parameters:
+            amount (float): The amount to check against the wallet's balance.
+
+        Returns:
+            bool: True if the wallet has enough balance, False otherwise.
+        """
         return self.balance >= amount
 
     def has_enough_coins(self, coin_id, coin_quantity):
+        """
+        Determines if the wallet has enough of a specific coin for a transaction.
+
+        Parameters:
+            coin_id (str): The identifier for the coin to check.
+            coin_quantity (float): The quantity of the coin to check.
+
+        Returns:
+            bool: True if the wallet has enough of the specified coin, False otherwise.
+        """
         return self.assets.get(coin_id, 0) >= coin_quantity
 
 
 class ValueHistory(db.Model):
+    """
+    ValueHistory model class (for the database) that stores the wallet's total value,
+    balance, and assets value over time.
+
+    Attributes:
+        id: Unique identifier for the value history, serves as the primary key
+        wallet_id: The ID of the wallet to which this value history belongs
+        balance_history: A list of the wallet's balance over time
+        assets_value_history: A list of the wallet's assets value over time
+        total_value_history: A list of the wallet's total value over time
+        timestamps: A list of timestamps corresponding to the value history entries
+    """
+
     __tablename__ = "value_histories"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -152,9 +253,27 @@ class ValueHistory(db.Model):
     )
 
     def __init__(self, wallet_id):
+        """
+        Initializes a new ValueHistory instance associated with a specific wallet.
+
+        Parameters:
+            wallet_id (UUID): The identifier of the wallet for which the value history
+                              is being recorded.
+        """
         self.wallet_id = wallet_id
 
-    def updateValueHistory(self, balance_value, assets_value, time):
+    def update_value_history(self, balance_value, assets_value, time):
+        """
+        Updates the value history by adding new entries for the balance, assets value,
+        and total value at a given time.
+
+        Parameters:
+            balance_value (float): The current balance of the wallet to be recorded.
+            assets_value (float): The current total value of the assets in the wallet
+                                  to be recorded.
+            time (int): The UNIX timestamp (in seconds) of when the values were
+                        recorded.
+        """
         self.balance_history.append(balance_value)
         self.assets_value_history.append(assets_value)
         self.total_value_history.append(balance_value + assets_value)
@@ -163,7 +282,29 @@ class ValueHistory(db.Model):
 
 class Transaction(db.Model):
     """
-    status = "open" | "finished" | "cancelled"
+    Transaction model class (for the database) that stores information about a given
+    transaction, including the status, type, order type, coin ID, quantity, etc.
+
+    Attributes:
+        id: Unique identifier for the transaction, serves as the primary key (UUID)
+        status: The status of the transaction ("open" || "finished" || "cancelled")
+        transactionType: The type of transaction ("buy" || "sell")
+        orderType: The type of order ("market" || "limit" || "stop")
+        timestamp: The UNIX timestamp (in seconds) of when the transaction was created
+        coin_id: The identifier of the coin involved in the transaction
+        quantity: The quantity of the coin involved in the transaction
+        price_per_unit: The price per unit of the coin at the time of the transaction
+        price_per_unit_at_execution: The price per unit of the coin at the time of
+                                     execution (if applicable)
+        comment: A comment or note associated with the transaction
+        balance_before: The user's balance before the transaction
+        balance_after: The user's balance after the transaction
+        total_value: The total value of the transaction
+        likes: A relationship to the TransactionLikes model, representing the likes
+               associated with the transaction
+        visibility: A boolean flag indicating whether the transaction is visible to
+                    other users
+        wallet_id: The ID of the wallet to which this transaction belongs
     """
 
     __tablename__ = "transactions"
@@ -198,6 +339,7 @@ class Transaction(db.Model):
         balance_before,
         visibility,
     ):
+        """Initializes a new instance of the Transaction class with necessary parameters."""
         self.visibility = visibility
         self.status = status
         self.transactionType = transactionType
@@ -221,15 +363,41 @@ class Transaction(db.Model):
             self.balance_after = None
 
     def add_like(self, user_id):
+        """
+        Adds a like to the transaction by a specific user.
+
+        Parameters:
+            user_id (UUID): The ID of the user who is liking the transaction.
+        """
         self.likes.add_user_like(user_id)
 
     def remove_like(self, user_id):
+        """
+        Removes a like from the transaction by a specific user.
+
+        Parameters:
+            user_id (UUID): The ID of the user who is unliking the transaction.
+        """
         self.likes.remove_user_like(user_id)
 
     def get_number_of_likes(self):
+        """
+        Retrieves the total number of likes this transaction has received.
+
+        Returns:
+            int: The number of users who have liked the transaction.
+        """
         return len(self.likes.liked_by_user_ids)
 
     def execute_open_order(self, price_per_unit_at_execution):
+        """
+        Executes an open order at a specified execution price and updates the
+        transaction's status and balance.
+
+        Parameters:
+            price_per_unit_at_execution (float): The price per unit at which the order
+                                                 is executed.
+        """
         self.price_per_unit_at_execution = price_per_unit_at_execution
 
         if self.transactionType == "buy":
@@ -243,11 +411,25 @@ class Transaction(db.Model):
         self.status = "finished"
 
     def cancel_open_order(self):
-        self.balance_after = self.balance_before
+        """
+        Cancels an open order and sets the user's balance_after to "N/A". Also updates
+        the transaction status to "cancelled".
+        """
+        self.balance_after = "N/A"
         self.status = "cancelled"
 
 
 class TransactionLikes(db.Model):
+    """
+    TransactionLikes model class (for the database) that stores the user IDs of users
+    who have liked a specific transaction.
+
+    Attributes:
+        id: Unique identifier for the transaction likes, serves as the primary key
+        liked_by_user_ids: A list of user IDs who have liked the transaction
+        transaction_id: The ID of the transaction to which these likes belong
+    """
+
     __tablename__ = "transaction_likes"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -258,12 +440,30 @@ class TransactionLikes(db.Model):
     transaction_id = db.Column(UUID(as_uuid=True), db.ForeignKey("transactions.id"))
 
     def __init__(self, transaction_id):
+        """
+        Initialize a TransactionLikes instance.
+
+        Args:
+            transaction_id (UUID): The ID of the transaction to associate likes with.
+        """
         self.transaction_id = transaction_id
 
     def add_user_like(self, user_id):
+        """
+        Add a user's like to the transaction if they have not already liked it.
+
+        Args:
+            user_id (UUID): The ID of the user liking the transaction.
+        """
         if user_id not in self.liked_by_user_ids:
             self.liked_by_user_ids.append(user_id)
 
     def remove_user_like(self, user_id):
+        """
+        Remove a user's like from the transaction if they have already liked it.
+
+        Args:
+            user_id (UUID): The ID of the user whose like is to be removed.
+        """
         if user_id in self.liked_by_user_ids:
             self.liked_by_user_ids.remove(user_id)

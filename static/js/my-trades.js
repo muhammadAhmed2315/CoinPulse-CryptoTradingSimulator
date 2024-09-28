@@ -106,6 +106,10 @@ function drawChart(chartType = "totalValueHistory") {
     seriesName = "Total Wallet Value";
   }
 
+  // Highcharts expects timestamps in milliseconds, and since the timestamps are
+  // currently in seconds, multiply each timestamp by 1000
+  data = data.map(([date, value]) => [date * 1000, value]);
+
   // Set the chart gradient colours and line color based on the data
   if (data[0][1] > data.at(-1)[1]) {
     chartGradientColourStart = "#EB5757aa";
@@ -337,137 +341,158 @@ async function cacheCoinNamesInSession() {
   }
 }
 
-// TODO
+/**
+ * Dynamically displays transaction data in the "My Trades" table.
+ * If no transactions exist, it adds a "No Transactions" label to the page.
+ * For existing transactions, it populates table rows with detailed information and
+ * also adds action buttons for cancellable transactions and updates the UI accordingly
+ * when a transaction is cancelled.
+ *
+ * @function displayTransactionData
+ */
 function displayTransactionData() {
   const tableRows = document.querySelectorAll(".my-trades-table__row");
 
-  for (const [i, row] of Array.from(tableRows).entries()) {
-    // Format the data first
-    // TODO
+  if (
+    tableRows.length === 0 &&
+    !document.querySelector(".no-transactions-label")
+  ) {
+    const noTransactionsLabel = document.createElement("p");
+    noTransactionsLabel.classList.add("no-transactions-label");
+    noTransactionsLabel.textContent =
+      "It looks like you haven't placed any trades yet. Head to the Home page or click the New Trade button above to place your first trade.";
+    document
+      .querySelector(".my-trades-table")
+      .insertAdjacentElement("afterend", noTransactionsLabel);
+  } else {
+    for (const [i, row] of Array.from(tableRows).entries()) {
+      // Rendering status bubbles
+      const statusDiv = document.createElement("div");
+      statusDiv.classList.add("transaction-status-bubble");
+      row.querySelector(".transaction-status").innerHTML = "";
 
-    // Rendering status bubbles
-    const statusDiv = document.createElement("div");
-    statusDiv.classList.add("transaction-status-bubble");
-    row.querySelector(".transaction-status").innerHTML = "";
+      let statusBubbleBackgroundColor = "";
+      if (transactionsData[i].status === "open") {
+        statusBubbleBackgroundColor = "#17C671";
+      } else if (transactionsData[i].status === "finished") {
+        statusBubbleBackgroundColor = "#758AD4";
+      } else if (transactionsData[i].status === "cancelled") {
+        statusBubbleBackgroundColor = "#EB5757";
+      }
+      statusDiv.style.backgroundColor = statusBubbleBackgroundColor;
+      row.querySelector(".transaction-status").appendChild(statusDiv);
 
-    let statusBubbleBackgroundColor = "";
-    if (transactionsData[i].status === "open") {
-      statusBubbleBackgroundColor = "#17C671";
-    } else if (transactionsData[i].status === "finished") {
-      statusBubbleBackgroundColor = "#758AD4";
-    } else if (transactionsData[i].status === "cancelled") {
-      statusBubbleBackgroundColor = "#EB5757";
-    }
-    statusDiv.style.backgroundColor = statusBubbleBackgroundColor;
-    row.querySelector(".transaction-status").appendChild(statusDiv);
-
-    // Update transaction id
-    row.querySelector(".transaction-id").textContent = transactionsData[i].id;
-    row
-      .querySelector(".transaction-id")
-      .setAttribute("title", transactionsData[i].id);
-
-    // Update order type
-    row.querySelector(".transaction-order-type").textContent =
-      transactionsData[i].orderType;
-    row
-      .querySelector(".transaction-order-type")
-      .setAttribute("title", transactionsData[i].orderType);
-
-    // Update transaction type (buy/sell)
-    row.querySelector(".transaction-transaction-type").textContent =
-      transactionsData[i].transactionType;
-    row
-      .querySelector(".transaction-transaction-type")
-      .setAttribute("title", transactionsData[i].transactionType);
-
-    // Update coin name
-    row.querySelector(".transaction-coin-name").textContent =
-      transactionsData[i].coin_id;
-    row
-      .querySelector(".transaction-coin-name")
-      .setAttribute("title", transactionsData[i].coin_id);
-
-    // Update transaction quantity
-    row.querySelector(".transaction-quantity").textContent = formatFloatToUSD(
-      transactionsData[i].quantity,
-      2
-    );
-    row
-      .querySelector(".transaction-quantity")
-      .setAttribute("title", formatFloatToUSD(transactionsData[i].quantity, 2));
-
-    // Update transaction price
-    row.querySelector(".transaction-price").textContent =
-      "$" + formatFloatToUSD(transactionsData[i].price_per_unit, 2);
-    row
-      .querySelector(".transaction-price")
-      .setAttribute(
-        "title",
-        "$" + formatFloatToUSD(transactionsData[i].price_per_unit, 2)
-      );
-
-    // Update transaction price at execution
-    const priceAtExecution =
-      transactionsData[i].price_at_execution != -1
-        ? "$" + formatFloatToUSD(transactionsData[i].price_at_execution, 2)
-        : "N/A";
-
-    row.querySelector(".transaction-price-at-execution").textContent =
-      priceAtExecution;
-    row
-      .querySelector(".transaction-price-at-execution")
-      .setAttribute("title", priceAtExecution);
-
-    // Update transaction time
-    row.querySelector(".transaction-time").textContent = formatUNIXTimestamp(
-      transactionsData[i].timestamp
-    );
-    row
-      .querySelector(".transaction-time")
-      .setAttribute(
-        "title",
-        formatUNIXTimestamp(transactionsData[i].timestamp)
-      );
-
-    // Update action
-    if (transactionsData[i].status === "open") {
-      // Add cancel button
-      row.querySelector(".transaction-action").innerHTML =
-        "<img title='Cancel Trade' src='../../static/img/icons/close-circle.svg' />";
-
-      // Reduce padding for that cell
-      row.querySelector(".transaction-action").style.padding = "0";
-
-      // Add event listener to cancel button
+      // Update transaction id
+      row.querySelector(".transaction-id").textContent = transactionsData[i].id;
       row
-        .querySelector(".transaction-action img")
-        .addEventListener("click", async function () {
-          const result = await requestOpenTradeCancellation(
-            transactionsData[i].id
-          );
+        .querySelector(".transaction-id")
+        .setAttribute("title", transactionsData[i].id);
 
-          if (result) {
-            // Change cross button to cancelled text
-            row.querySelector(".transaction-action").innerHTML =
-              "<p>Cancelled</p>";
+      // Update order type
+      row.querySelector(".transaction-order-type").textContent =
+        transactionsData[i].orderType;
+      row
+        .querySelector(".transaction-order-type")
+        .setAttribute("title", transactionsData[i].orderType);
 
-            // Change colour of status bubble
-            row.querySelector(
-              ".transaction-status-bubble"
-            ).style.backgroundColor = "#EB5757";
-          }
-        });
-    } else {
-      row.querySelector(".transaction-action").innerHTML = "<p>N/A</p>";
+      // Update transaction type (buy/sell)
+      row.querySelector(".transaction-transaction-type").textContent =
+        transactionsData[i].transactionType;
+      row
+        .querySelector(".transaction-transaction-type")
+        .setAttribute("title", transactionsData[i].transactionType);
+
+      // Update coin name
+      row.querySelector(".transaction-coin-name").textContent =
+        transactionsData[i].coin_id;
+      row
+        .querySelector(".transaction-coin-name")
+        .setAttribute("title", transactionsData[i].coin_id);
+
+      // Update transaction quantity
+      row.querySelector(".transaction-quantity").textContent = formatFloatToUSD(
+        transactionsData[i].quantity,
+        2
+      );
+      row
+        .querySelector(".transaction-quantity")
+        .setAttribute(
+          "title",
+          formatFloatToUSD(transactionsData[i].quantity, 2)
+        );
+
+      // Update transaction price
+      row.querySelector(".transaction-price").textContent =
+        "$" + formatFloatToUSD(transactionsData[i].price_per_unit, 2);
+      row
+        .querySelector(".transaction-price")
+        .setAttribute(
+          "title",
+          "$" + formatFloatToUSD(transactionsData[i].price_per_unit, 2)
+        );
+
+      // Update transaction price at execution
+      const priceAtExecution =
+        transactionsData[i].price_at_execution != -1
+          ? "$" + formatFloatToUSD(transactionsData[i].price_at_execution, 2)
+          : "N/A";
+
+      row.querySelector(".transaction-price-at-execution").textContent =
+        priceAtExecution;
+      row
+        .querySelector(".transaction-price-at-execution")
+        .setAttribute("title", priceAtExecution);
+
+      // Update transaction time
+      row.querySelector(".transaction-time").textContent = formatUNIXTimestamp(
+        transactionsData[i].timestamp
+      );
+      row
+        .querySelector(".transaction-time")
+        .setAttribute(
+          "title",
+          formatUNIXTimestamp(transactionsData[i].timestamp)
+        );
+
+      // Update action
+      if (transactionsData[i].status === "open") {
+        // Add cancel button
+        row.querySelector(".transaction-action").innerHTML =
+          "<img title='Cancel Trade' src='../../static/img/icons/close-circle.svg' />";
+
+        // Reduce padding for that cell
+        row.querySelector(".transaction-action").style.padding = "0";
+
+        // Add event listener to cancel button
+        row
+          .querySelector(".transaction-action img")
+          .addEventListener("click", async function () {
+            const result = await requestOpenTradeCancellation(
+              transactionsData[i].id
+            );
+
+            if (result) {
+              // Change cross button to cancelled text
+              row.querySelector(".transaction-action").innerHTML =
+                "<p>Cancelled</p>";
+
+              // Change colour of status bubble
+              row.querySelector(
+                ".transaction-status-bubble"
+              ).style.backgroundColor = "#EB5757";
+            }
+          });
+      } else {
+        row.querySelector(".transaction-action").innerHTML = "<p>N/A</p>";
+      }
+
+      // Update comment
+      row.querySelector(".transaction-comment").textContent =
+        transactionsData[i].comment;
+      row
+        .querySelector(".transaction-comment")
+        .setAttribute("title", transactionsData[i].comment);
     }
-
-    // Update comment
-    row.querySelector(".transaction-comment").textContent =
-      transactionsData[i].comment;
-    row
-      .querySelector(".transaction-comment")
-      .setAttribute("title", transactionsData[i].comment);
   }
 }
 
@@ -485,7 +510,6 @@ function displayTransactionData() {
  *                             or `false` if there was an error.
  */
 async function requestOpenTradeCancellation(transaction_id) {
-  // TODO add error handling
   const fetchOptions = {
     method: "POST",
     headers: {
@@ -718,6 +742,18 @@ function addSortingEventListeners() {
   }
 }
 
+/**
+ * Scrolls to a specific element on the page identified by the URL hash when the page
+ * loads.
+ *
+ * The function waits for the entire content to load, including dynamically generated
+ * content, before attempting to scroll. It then applies a smooth scroll to the element
+ * offset by 100 pixels from the top to not obstruct any fixed headers or elements on
+ * the page. The delay in the scroll execution can be adjusted to accommodate varying
+ * content loading times.
+ *
+ * @function scrollToHashOnLoad
+ */
 function scrollToHashOnLoad() {
   document.addEventListener("DOMContentLoaded", function () {
     // Check if there's a hash in the URL
@@ -752,18 +788,22 @@ function scrollToHashOnLoad() {
 async function main() {
   scrollToHashOnLoad();
 
+  // Draw the total value history chart
   await getWalletHistory();
   drawChart("total");
   addChartButtonEventListeners();
 
+  // Add pagination and sorting event listeners
   addPaginationButtonEventListeners();
   addSortingEventListeners();
 
+  // Get transaction data (from the database) and cache coin names
   await cacheCoinNamesInSession();
   const temp = await getTransactionData(1);
   transactionsData = temp[0];
   maxPages = temp[1];
 
+  // Create table rows based on length of transactions data and display the data
   createTableRows(transactionsData.length);
   displayTransactionData();
 }

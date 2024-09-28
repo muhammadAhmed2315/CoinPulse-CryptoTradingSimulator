@@ -11,11 +11,15 @@
       rel="stylesheet"
     />
 
+    <!-- FAVICON -->
+    <link rel="icon" href="../../static/img/favicon.svg" type="image/svg+xml" />
+
     <link rel="stylesheet" href="../../static/css/core-base.css" />
     <link rel="stylesheet" href="../../static/css/general.css" />
     {% block css_links %}{% endblock %}
 
-    <title>Document</title>
+    <!-- prettier-ignore -->
+    {% block title %}{% endblock %}
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -26,11 +30,7 @@
     <div class="nav-container">
       <!-- PORTFOLIO VALUE HEADER -->
       <div class="portfolio-container">
-        <h1 class="portfolio-container__label">Portfolio</h1>
-        <img
-          class="portfolio-container__img"
-          src="../../static/img/dollar_symbol.svg"
-        />
+        <h1 class="portfolio-container__label">Portfolio Value:</h1>
         <h1 class="portfolio-container__total-value">$1,000,000</h1>
       </div>
 

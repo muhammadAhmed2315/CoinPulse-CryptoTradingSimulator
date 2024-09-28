@@ -9,6 +9,19 @@ let coinData = {
   volume_desc: null,
 };
 
+/**
+ * Asynchronously fetches data about the top 100 coins (sorted by a specified
+ * parameter). The function sends a POST request with the sorting parameter and returns
+ * structured data about each coin, including image, name, symbol, prices, market cap,
+ * etc.
+ *
+ * @async
+ * @function fetchCoinsData
+ * @param {string} [sortCoinsBy="market_cap_desc"] - The criterion by which the coins
+ * data should be sorted ("market_cap_asc" || "market_cap_desc" || "volume_asc" || "volume_desc").
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of objects,
+ *          each containing details of a cryptocurrency. If an error occurs, returns an empty array.
+ */
 async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
   const fetchOptions = {
     method: "POST",
@@ -20,6 +33,7 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
     const response = await fetch("/get_top_coins_data", fetchOptions);
     const data = await response.json();
 
+    // Extract necessary data from each coin object
     const results = data.map((coin) => {
       let {
         image,
@@ -65,6 +79,7 @@ async function fetchCoinsData(sortCoinsBy = "market_cap_desc") {
  * name, price, market cap, price change, and volume). These rows are then
  * appended to an existing table in the DOM.
  *
+ * @function createCoinTableRows
  * @param {number} [numRows=10] - The number of table rows to create.
  *                                 Defaults to 10 if not specified.
  */
@@ -103,6 +118,7 @@ function createCoinTableRows(numRows = 10) {
  * of the data from the `coinData` dictionary and updates the table rows
  * accordingly.
  *
+ * @function displayCoins
  * @param {number} pageNum - The page number to display (1-indexed)
  */
 function displayCoins(pageNum) {
@@ -191,6 +207,16 @@ function displayCoins(pageNum) {
   }
 }
 
+/**
+ * Draws a sparkline graph on a specified canvas element based on provided data points.
+ * The function first clears any previous drawings, checks if data is available,
+ * sets the stroke color based on the trend of data (green for upward, red for downward),
+ * and then plots each point on the canvas by mapping data values to canvas coordinates.
+ *
+ * @function drawSparkline
+ * @param {Array<number>} data - The array of numerical values to plot as a sparkline.
+ * @param {HTMLCanvasElement} canvas - The canvas element on which the sparkline will be drawn.
+ */
 function drawSparkline(data, canvas) {
   console.log("DRAWING SPARKLINE");
   const ctx = canvas.getContext("2d");
@@ -242,6 +268,8 @@ function drawSparkline(data, canvas) {
  * Renders the new coins, and handles button visibility as well depending on
  * which page is currently visible (i.e., next = hidden on last page, previous =
  * hidden on first page).
+ *
+ * @function addPaginationButtonEventListeners
  */
 function addPaginationButtonEventListeners() {
   const tableButtonNext = document.querySelector(".pagination-button--next");
@@ -249,6 +277,7 @@ function addPaginationButtonEventListeners() {
     ".pagination-button--previous"
   );
 
+  // Next pagination button event listener
   tableButtonNext.addEventListener("click", function () {
     if (current_page < 10) {
       current_page += 1;
@@ -259,6 +288,7 @@ function addPaginationButtonEventListeners() {
     }
   });
 
+  // Previous pagination button event listener
   tableButtonPrevious.addEventListener("click", function () {
     if (current_page > 1) {
       current_page -= 1;
@@ -284,6 +314,8 @@ function addPaginationButtonEventListeners() {
  * - Calls `resetPaginationButtons()` to reset pagination controls.
  * - Conditionally fetches the sorted coin data if not already cached in `coinData`.
  * - Calls `displayCoins(current_page)` to refresh the displayed content.
+ *
+ * @function addSortDropdownEventListeners
  */
 function addSortDropdownEventListeners() {
   document
@@ -341,6 +373,8 @@ function addSortDropdownEventListeners() {
  * This function ensures that the "Next" pagination button is visible and the
  * "Previous" pagination button is hidden. Used when the user switches the sort
  * being applied on the table data.
+ *
+ * @function resetPaginationButtons
  */
 function resetPaginationButtons() {
   document.querySelector(".pagination-button--next").classList.remove("hidden");

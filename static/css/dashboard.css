@@ -201,6 +201,7 @@
 
 .feedpost-header .profile-img {
   height: 6rem;
+  width: 6rem;
   border-radius: 50%;
 }
 
@@ -221,7 +222,6 @@
   margin-left: auto;
 
   padding: 1.3rem 1rem;
-  width: 28.5rem;
 }
 
 .feedpost-header__second div {
@@ -329,7 +329,7 @@
   font-size: 1.6rem;
   font-weight: 700;
   text-align: start;
-  padding-bottom: 0.4rem;
+  padding-bottom: 0.8rem;
   text-align: center;
 }
 
@@ -343,7 +343,7 @@
 
 .holdings-data,
 .amount-data {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .holdings-data p,

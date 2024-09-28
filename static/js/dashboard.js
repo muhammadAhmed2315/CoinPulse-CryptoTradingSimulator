@@ -2,6 +2,7 @@ import {
   toTitleCase,
   formatFloatToUSD,
   addMessagePopupCloseEventListener,
+  showMessagePopup,
 } from "../js/helpers.js";
 import { showNewTradeSidebarForSpecificCoin } from "../js/new-trade.js";
 
@@ -166,7 +167,7 @@ function renderFeedPosts(type) {
     // Update profile image
     div.querySelector(
       ".profile-img"
-    ).src = `../../static/img/profileLetters/${currFeedPost.username[0]}.png`;
+    ).src = `../../static/img/profileLetters/${currFeedPost.username[0].toUpperCase()}.png`;
 
     // Update username
     div.querySelector(".username").textContent = currFeedPost.username;
@@ -221,23 +222,24 @@ function renderFeedPosts(type) {
     div.querySelector(".likes-count").textContent = currFeedPost.likes;
 
     // //////////////////// Add like button event listeners ////////////////////
-    // TODO Add like button event listener
     div.querySelector(".like-btn").addEventListener("click", async function () {
       if (this.classList.contains("active")) {
+        // If user has already liked the post
         const response = (await updateLikeCounter(true, currFeedPost.id))[0];
 
         if (response.success) {
           div.querySelector(".likes-count").textContent = response.currLikes;
         } else {
-          // TODO show error message popup
+          showMessagePopup("Like count could not be updated", false);
         }
       } else {
+        // If user has not liked the post
         const response = (await updateLikeCounter(false, currFeedPost.id))[0];
 
         if (response.success) {
           div.querySelector(".likes-count").textContent = response.currLikes;
         } else {
-          // TODO show error message popup
+          showMessagePopup("Like count could not be updated", false);
         }
       }
     });
@@ -261,7 +263,6 @@ function renderFeedPosts(type) {
  * `isIncrement` flag and `transactionID` in the request body. The server is expected
  * to return a JSON object which is then returned by this function.
  *
- * Error handling for unsuccessful responses is currently not implemented. TODO
  */
 async function updateLikeCounter(isIncrement, transactionID) {
   const fetchOptions = {
@@ -278,7 +279,6 @@ async function updateLikeCounter(isIncrement, transactionID) {
   const response = await fetch("/update_likes", fetchOptions);
   const data = await response.json();
 
-  // TODO add error handling for if /update_likes doesn't return a success
   return data;
 }
 
@@ -355,7 +355,6 @@ function setupObserver() {
  * @throws {Error} Throws an error if the API call fails or if the response is invalid.
  */
 async function getTrendingCoinsData() {
-  // TODO add error handling
   const fetchOptions = {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -533,7 +532,6 @@ async function getWalletAssets() {
   const data = await response.json();
 
   if (data.success) {
-    // TODO what to actually return? perhaps only return data.assets and data.balance
     return data;
   }
 }
@@ -672,7 +670,6 @@ async function getAndRenderWalletAssetsData() {
  *                            The exact structure of the returned data is TBD,
  *                            but it may include `data.assets` and `data.balance`.
  */
-
 async function getOpenTradesData() {
   const fetchOptions = {
     method: "GET",
@@ -691,14 +688,12 @@ async function getOpenTradesData() {
   const data = await response.json();
 
   if (data.success) {
-    // TODO what to actually return? perhaps only return data.assets and data.balance
     return data.data;
   }
 }
 
 /**
- * Splits/formats the open trades data into categories based on order and transaction
- * types.
+ * Splits the open trades data into separate lists based on order and transaction types.
  *
  * This function processes an array of trade data and organizes it into separate arrays
  * for limit buy, limit sell, stop buy, and stop sell orders. It returns an object
@@ -903,7 +898,7 @@ function renderOpenTrades(trades, coinData) {
           if (success) {
             tradeInfoDiv.querySelector(".second").innerHTML = "Cancelled";
           } else {
-            // TODO error handling
+            showMessagePopup("Trade could not be cancelled", false);
           }
         });
 
@@ -943,7 +938,6 @@ function renderOpenTrades(trades, coinData) {
  *                             or `false` if there was an error.
  */
 async function requestOpenTradeCancellation(transaction_id) {
-  // TODO add error handling
   const fetchOptions = {
     method: "POST",
     headers: {
@@ -1237,7 +1231,6 @@ function addOverviewOpenButtonsEventListeners() {
  *                                   or an empty array if an error occurs.
  */
 async function getCoinDataFromAPI(coin_ids) {
-  // TODO do 250 at a time
   const api_coin_ids = coin_ids.join(",");
 
   const fetchOptions = {
@@ -1257,6 +1250,19 @@ async function getCoinDataFromAPI(coin_ids) {
   }
 }
 
+// ******************************************************************
+/**
+ * Sets up an event listener to show the new trade sidebar for a specific coin when the
+ * page loads.
+ *
+ * This function checks if there is a hash in the URL upon page load. If a hash is
+ * present, it waits for dynamically generated content to load, then displays the new
+ * trade sidebar for the specified coin. The function currently defaults to displaying
+ * the sidebar for "bitcoin" but can be modified to use the hash as an identifier.
+ *
+ * @function showNewTradeSidebarOnLoad
+ * @returns {void} No return value.
+ */
 function showNewTradeSidebarOnLoad() {
   document.addEventListener("DOMContentLoaded", function () {
     // Check if there's a hash in the URL
@@ -1273,22 +1279,32 @@ function showNewTradeSidebarOnLoad() {
 // ******************** MAIN FUNCTION *********************
 // ********************************************************
 async function main() {
+  // Show new trade sidebar on load (if necessary )
   showNewTradeSidebarOnLoad();
-  addMessagePopupCloseEventListener();
-  addOverviewOpenButtonsEventListeners();
-  await fetchFeedPosts("global", 1);
 
+  // Fetch and render global feedposts and setup the IntersectionObserver so that more
+  // feedposts are automatically loaded when the user scrolls down the page
+  await fetchFeedPosts("global", 1);
   renderFeedPosts("global");
   setupObserver();
 
-  addFeedMenuButtonEventListeners();
-
+  // Fetch and render wallet assets data and trending coins
   await getAndRenderWalletAssetsData();
   await getAndRenderTrendingCoins();
 
+  // Fetch and render open trades data
+  await getAndRenderOpenTradesData();
+
+  // Add event listeners to the trending coins container for draggable scrolling
   addTrendingCoinsDraggableEventListener();
 
-  await getAndRenderOpenTradesData();
+  // Add event listeners to the feed menu buttons and the overview/open positions
+  // buttons
+  addFeedMenuButtonEventListeners();
+  addOverviewOpenButtonsEventListeners();
+
+  // Add event listener to enable message popup close button
+  addMessagePopupCloseEventListener();
 }
 
 main();

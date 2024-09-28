@@ -102,8 +102,6 @@
 
 /* ********** CRYPTO INFO ********** */
 .nts-trade-info__coin {
-  width: 50rem;
-  border-right: 1px solid #dee2e6;
 }
 
 .nts-trade-info__coin .header {
@@ -134,27 +132,40 @@
   color: #828282;
 }
 
-/* ********** BALANCE INFO ********** */
-.nts-trade-info__balance {
+.nts-trade-info__coin .coin-name {
+  margin-left: 0.4rem;
+}
+
+/* ********** USD BALANCE + COIN BALANCE INFO ********** */
+.nts-trade-info__coin-balance,
+.nts-trade-info__usd-balance {
   padding: 0 4.8rem;
 }
 
-.nts-trade-info__balance .title {
+.nts-trade-info__coin-balance .title,
+.nts-trade-info__usd-balance .title {
   font-size: 1.8rem;
   color: #212529;
   margin-bottom: 0.4rem;
 }
 
-.nts-trade-info__balance div {
+.nts-trade-info__usd-balance div,
+.nts-trade-info__coin-balance div {
   display: flex;
   align-items: center;
 }
 
-.nts-trade-info__balance div img {
-  margin-right: 1rem;
+.nts-trade-info__coin-balance .coin-image,
+.nts-trade-info__usd-balance .coin-image {
+  margin-right: 0.4rem;
 }
 
-.nts-trade-info__balance div p {
+.nts-trade-info__coin-balance .coin-image {
+  border-radius: 50%;
+}
+
+.nts-trade-info__coin-balance .coin-balance,
+.nts-trade-info__usd-balance .usd-balance {
   font-size: 1.8rem;
   font-weight: 700;
   color: #343a40;

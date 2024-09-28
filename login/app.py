@@ -489,7 +489,7 @@ def reset_password(token):
     # Token is valid
     user = User.query.filter_by(email=data["email"]).first()
 
-    if user and user.id == data["id"]:
+    if user and str(user.id) == str(data["id"]):
         # Show password reset form
         form = PasswordResetForm()
 
@@ -531,6 +531,7 @@ def reset_password(token):
             db.session.commit()
 
             return render_template("passwordReset/password-reset-successful.html")
+
         return render_template("passwordReset/password-reset-form.html", form=form)
     else:
         return render_template("passwordReset/password-reset-token-invalid.html")

@@ -79,13 +79,17 @@ class PasswordResetForm(FlaskForm):
     """
 
     password = PasswordField(
-        "Password",
-        render_kw={"placeholder": "******************"},
+        render_kw={
+            "placeholder": "New Password",
+            "class": "input input--password",
+        },
         validators=[DataRequired()],
     )
     pass_confirm = PasswordField(
-        "Confirm Password",
-        render_kw={"placeholder": "******************"},
+        render_kw={
+            "placeholder": "Confirm New Password",
+            "class": "input input--pass-confirm",
+        },
         validators=[DataRequired()],
     )
-    submit = SubmitField("Sign Up")
+    submit = SubmitField("Sign Up", render_kw={"class": "submit-btn"})

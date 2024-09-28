@@ -19,14 +19,8 @@ body {
   background-color: #fff;
   display: flex;
   align-items: center;
-  gap: 6rem;
+  gap: 5rem;
   z-index: 10;
-}
-
-.logo {
-  height: 4.15rem;
-  width: 16.5rem;
-  margin-right: auto;
 }
 
 .nav-container-item {
@@ -67,8 +61,8 @@ body {
   display: flex;
   align-items: center;
   height: 100%;
-  margin-left: auto;
   gap: 0.4rem;
+  margin-right: auto;
 }
 
 .portfolio-container__label {
@@ -85,8 +79,42 @@ body {
   font-weight: 700;
 }
 
-/* ******************** MAIN PAGE CONTENT ******************** */
+/* ******************** PROFILE IMG + USERNAME + LOGOUT BTN ******************** */
+.profile-container {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
 
+.profile-img {
+  height: 4.5rem;
+  width: 4.5rem;
+  border-radius: 50%;
+  margin-right: 0.6rem;
+}
+
+.profile-username {
+  font-size: 1.8rem;
+  margin-right: 1.4rem;
+}
+
+.profile-container a {
+  font-size: 1.4rem;
+  text-decoration: none;
+}
+
+.profile-container a:link,
+.profile-container a:visited {
+  color: #000000;
+}
+
+.profile-container a:hover,
+.profile-container a:active,
+.profile-container a:focus {
+  color: #0069d9;
+}
+
+/* ******************** MAIN PAGE CONTENT ******************** */
 .main-content {
   margin-top: 8rem;
   height: 100%;

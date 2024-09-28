@@ -24,8 +24,15 @@
 
     <!-- TOP NAVIGATION BAR -->
     <div class="nav-container">
-      <!-- LOGO -->
-      <img class="logo" src="../../static/img/logo.svg" />
+      <!-- PORTFOLIO VALUE HEADER -->
+      <div class="portfolio-container">
+        <h1 class="portfolio-container__label">Portfolio</h1>
+        <img
+          class="portfolio-container__img"
+          src="../../static/img/dollar_symbol.svg"
+        />
+        <h1 class="portfolio-container__total-value">$1,000,000</h1>
+      </div>
 
       <!-- NAVIGATION LINKS -->
       <!-- HOME LINK -->
@@ -73,14 +80,10 @@
         <p class="nav-container-text">Portfolio Analytics</p>
       </a>
 
-      <!-- PORTFOLIO VALUE HEADER -->
-      <div class="portfolio-container">
-        <h1 class="portfolio-container__label">Portfolio</h1>
-        <img
-          class="portfolio-container__img"
-          src="../../static/img/dollar_symbol.svg"
-        />
-        <h1 class="portfolio-container__total-value">$1,000,000</h1>
+      <div class="profile-container">
+        <img class="profile-img" src="" alt="User profile image" />
+        <p class="profile-username">{{ current_user.username }}</p>
+        <a href="{{ url_for('user_authentication.logout') }}">Log out</a>
       </div>
     </div>
     <div class="main-content">{% block content %}{% endblock %}</div>

@@ -32,7 +32,18 @@ function updatePortfolioTotalValueElement() {
     "$" + formatFloatToUSD(currentPortfolioTotalValue, 2);
 }
 
+function renderProfileImage() {
+  const username = document
+    .querySelector(".profile-username")
+    .textContent.slice(0, 1);
+
+  document.querySelector(
+    ".profile-img"
+  ).src = `../../static/img/profileLetters/${username}.png`;
+}
+
 async function main() {
+  renderProfileImage();
   currentPortfolioTotalValue = await fetchPortfolioBalance();
   updatePortfolioTotalValueElement();
 }

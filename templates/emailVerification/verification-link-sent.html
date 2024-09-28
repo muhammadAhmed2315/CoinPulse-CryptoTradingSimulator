@@ -1,10 +1,19 @@
 <!-- prettier-ignore -->
 {% extends "login/login-base.html" %}
+<!-- prettier-ignore -->
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/verification-link-sent.css" />
+{% endblock %}
+<!-- prettier-ignore -->
 {% block content %}
 <!-- prettier-ignore -->
-<h3>Verify your email address</h3>
+<h1 class="title title--verify-email">Verify Your Email Address</h1>
 <p>We've sent a verification link to <strong>{{ user_email }}.</strong></p>
 <p>Click on the link to complete the verification process.</p>
 <p>You might need to <strong>check your spam folder.</strong></p>
-<a href="{{url_for('user_authentication.login')}}">Resend Verification Email</a>
+<div class="resend-email-btn-container">
+  <a href="{{url_for('user_authentication.login')}}"
+    >Resend Verification Email</a
+  >
+</div>
 {% endblock %}

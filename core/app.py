@@ -1,8 +1,16 @@
 import requests
 import time
 import time
-from flask import render_template, request, Blueprint, jsonify, session
-from flask_login import current_user, login_required
+from flask import (
+    render_template,
+    request,
+    Blueprint,
+    jsonify,
+    session,
+    redirect,
+    url_for,
+)
+from flask_login import current_user, login_required, logout_user
 from models import User, Wallet, Transaction, TransactionLikes
 from constants import COINGECKO_API_KEY, COINGECKO_API_HEADERS
 from extensions import db
@@ -27,6 +35,10 @@ def dashboard():
         A rendered HTML template for the dashboard page, with the COINGECKO_API_KEY
         available for use in the template.
     """
+    if not current_user.verified:
+        logout_user()
+        return redirect(url_for("user_authentication.login"))
+
     return render_template(
         "core/dashboard.html",
         COINGECKO_API_KEY=COINGECKO_API_KEY,

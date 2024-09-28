@@ -24,7 +24,12 @@ from constants import DISCORD_OAUTH2_CLIENT_SECRET
 from constants import PASSWORD_ALLOWED_SPECIAL_CHARS
 from constants import TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import (
+    login_user,
+    login_required,
+    logout_user,
+    current_user,
+)
 from flask import render_template, redirect, request, url_for, Blueprint, session
 from flask_mail import Message
 from login.forms import RequestPasswordResetForm, PasswordResetForm, PickUsernameForm
@@ -186,7 +191,7 @@ def login():
     they were trying to access.
     """
     # Redirect user if already logged in
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.verified:
         return redirect(url_for("core.dashboard"))
 
     form = LoginForm()
@@ -267,9 +272,7 @@ def register():
 
         for char in input_username:
             if not char.isalpha() and not char.isdigit():
-                form.username.errors.append(
-                    "Username can only consist of alphanumeric characters"
-                )
+                form.username.errors.append("Username must be alphanumeric")
                 return render_template("login/register.html", form=form)
 
         # Confirm username is not already in use
@@ -280,8 +283,9 @@ def register():
 
         # Confirm password is not in too common list
         if input_password.lower() in MOST_COMMON_PASSWORDS:
+            form.password.errors.append("This password is too common")
             form.password.errors.append(
-                "This password is too common. Choose a less common password for better security."
+                "Choose a less common password for better security"
             )
             return render_template("login/register.html", form=form)
 
@@ -339,16 +343,14 @@ def pick_username():
 
         for char in input_username:
             if not char.isalpha() and not char.isdigit():
-                form.username.errors.append(
-                    "Username can only consist of alphanumeric characters"
-                )
-                return render_template("login/register.html", form=form)
+                form.username.errors.append("Username must be alphanumeric")
+                return render_template("login/pick-username.html", form=form)
 
         # Confirm username is not already in use
         user = User.query.filter_by(username=input_username).first()
         if user:
             form.username.errors.append("Username is already in use")
-            return render_template("login/register.html", form=form)
+            return render_template("login/pick-username.html", form=form)
 
         # Save username to database and redirect user to the home page
         current_user.update_username(input_username)
@@ -380,6 +382,12 @@ def verification_sent():
     email to them. It then renders a template to display a confirmation message that
     the verification email has been sent.
     """
+    if current_user.is_authenticated:
+        if current_user.verified:
+            return redirect(url_for("core.dashboard"))
+    else:
+        return redirect(url_for("user_authentication.login"))
+
     token = generate_token(current_user.email, current_user.id)
     send_verification_email(current_user.email, token)
     return render_template(
@@ -499,8 +507,9 @@ def reset_password(token):
 
             # Confirm password is not in too common list
             if input_password.lower() in MOST_COMMON_PASSWORDS:
+                form.password.errors.append("This password is too common")
                 form.password.errors.append(
-                    "This password is too common. Choose a less common password for better security."
+                    "Choose a less common password for better security"
                 )
                 return render_template(
                     "passwordReset/password-reset-form.html", form=form
@@ -518,7 +527,6 @@ def reset_password(token):
 
             # Check passwords match
             if input_password != input_pass_confirm:
-                form.password.errors.append("Passwords do not match")
                 form.pass_confirm.errors.append("Passwords do not match")
                 return render_template(
                     "passwordReset/password-reset-form.html", form=form

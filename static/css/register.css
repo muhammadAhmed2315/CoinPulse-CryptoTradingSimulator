@@ -41,3 +41,9 @@ span {
   color: #0069d9;
   cursor: pointer;
 }
+
+/* ********** ERROR MESSAGES ********** */
+.invalid-feedback {
+  text-align: center;
+  margin-bottom: 0.4rem;
+}

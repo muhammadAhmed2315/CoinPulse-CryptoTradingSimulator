@@ -11,7 +11,7 @@
 <p>The verification link for <strong>{{ user_email }}</strong> has expired.</p>
 <p>Please request a new verification link by clicking the button below.</p>
 <div class="link-container">
-  <a href="{{url_for('user_authentication.login')}}"
+  <a href="{{url_for('user_authentication.verification_sent')}}"
     >Resend Verification Email</a
   >
 </div>

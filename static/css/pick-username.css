@@ -1,3 +1,9 @@
 .input--username {
   margin-bottom: 1.6rem;
 }
+
+/* ********** ERROR MESSAGES ********** */
+.invalid-feedback {
+  text-align: center;
+  margin-bottom: 0.4rem;
+}

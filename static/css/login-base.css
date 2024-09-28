@@ -84,3 +84,11 @@ body {
   height: 2.1rem;
   width: 2.1rem;
 }
+
+.invalid-feedback {
+  margin-top: -1rem;
+  color: #eb5757;
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}

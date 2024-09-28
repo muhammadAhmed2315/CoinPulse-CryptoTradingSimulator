@@ -1,9 +1,18 @@
 <!-- prettier-ignore -->
 {% extends "login/login-base.html" %}
+<!-- prettier-ignore -->
+{% block css_links %}
+<link rel="stylesheet" href="../../static/css/verification-token-expired.css" />
+{% endblock %}
+<!-- prettier-ignore -->
 {% block content %}
 <!-- prettier-ignore -->
-<h3>Verification Link Expired</h3>
+<h1 class="title title--verification-link-expired">Verification Link Expired</h1>
 <p>The verification link for <strong>{{ user_email }}</strong> has expired.</p>
 <p>Please request a new verification link by clicking the button below.</p>
-<a href="{{url_for('user_authentication.login')}}">Resend Verification Email</a>
+<div class="link-container">
+  <a href="{{url_for('user_authentication.login')}}"
+    >Resend Verification Email</a
+  >
+</div>
 {% endblock %}

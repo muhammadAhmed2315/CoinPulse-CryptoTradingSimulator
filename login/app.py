@@ -389,7 +389,7 @@ def verification_sent():
         return redirect(url_for("user_authentication.login"))
 
     token = generate_token(current_user.email, current_user.id)
-    send_verification_email(current_user.email, token)
+    send_verification_email(current_user.email, token, current_user.username)
     return render_template(
         "emailVerification/verification-link-sent.html", user_email=current_user.email
     )
@@ -448,7 +448,7 @@ def verify_user(token):
         return render_template("emailVerification/verification-token-invalid.html")
 
 
-def send_verification_email(user_email, token):
+def send_verification_email(user_email, token, username):
     """
     Sends a verification email to the specified user.
 
@@ -463,10 +463,10 @@ def send_verification_email(user_email, token):
     from app import mail_server
 
     html_body = render_template(
-        "emailVerification/verification-email.html", token=token
+        "emailVerification/verification-email.html", token=token, username=username
     )
     msg = Message(
-        subject="Verify Your Email Address for INVESTR",
+        subject="Verify Your CoinPulse Account",
         sender="MAIL_DEFAULT_SENDER",
         recipients=[user_email],
         html=html_body,
@@ -568,7 +568,9 @@ def forgot_password():
         user = User.query.filter_by(email=form.email.data).first()
         if user and not user.provider:
             token = generate_token(user_email=user.email, user_id=user.id)
-            send_password_reset_email(user_email=user.email, token=token)
+            send_password_reset_email(
+                user_email=user.email, token=token, username=user.username
+            )
 
         # Redirect user to email sent page
         return render_template(
@@ -580,12 +582,14 @@ def forgot_password():
     )
 
 
-def send_password_reset_email(user_email, token):
+def send_password_reset_email(user_email, token, username):
     from app import mail_server
 
-    html_body = render_template("passwordReset/password-reset-email.html", token=token)
+    html_body = render_template(
+        "passwordReset/password-reset-email.html", token=token, username=username
+    )
     msg = Message(
-        subject="Verify Your Email Address for INVESTR",
+        subject="Reset your CoinPulse password",
         sender="MAIL_DEFAULT_SENDER",
         recipients=[user_email],
         html=html_body,

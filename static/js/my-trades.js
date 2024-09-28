@@ -728,9 +728,17 @@ function scrollToHashOnLoad() {
         // Scroll to the element with the specified ID
         var targetElement = document.querySelector(window.location.hash);
         if (targetElement) {
-          targetElement.scrollIntoView({ behavior: "smooth" });
+          var elementPosition =
+            targetElement.getBoundingClientRect().top + window.pageYOffset;
+          var offsetPosition = elementPosition - 100;
+
+          // Scroll to the position with offset
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
         }
-      }, 500); // Adjust the delay to match your content loading time
+      }, 250); // Adjust the delay to match your content loading time
     }
   });
 }

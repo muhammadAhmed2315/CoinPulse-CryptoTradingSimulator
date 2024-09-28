@@ -1,5 +1,4 @@
 import os
-import time
 from models import User, Wallet, ValueHistory
 from flask import jsonify
 from extensions import db

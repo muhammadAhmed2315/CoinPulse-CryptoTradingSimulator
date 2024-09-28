@@ -16,10 +16,8 @@ from constants import COINGECKO_API_KEY, COINGECKO_API_HEADERS
 from extensions import db
 import time
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
-from YahooNewsScraper.NewsArticle import NewsArticle
 from RedditScraper.RedditScraper import RedditScraper
-from RedditScraper.RedditPost import RedditPost
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy import or_, and_
 
 core = Blueprint("core", __name__)
@@ -386,6 +384,17 @@ def process_transaction():
     if any(field not in data for field in required_fields):
         return jsonify({"error": "Missing fields: " + errors}), 400
 
+    # Make sure user did not enter a negative quantity
+    if data["quantity"] <= 0:
+        return (
+            jsonify(
+                {
+                    "error": "Transaction Failed: Quantity must be greater than 0. Please check your input and try again."
+                }
+            ),
+            400,
+        )
+
     # Make sure user has enough balance (USD) to execute a buy order of any type
     if data["transactionType"] == "buy":
         if not current_user.wallet.has_enough_balance(
@@ -717,8 +726,6 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 data = response.json()
 
                 for coin in data:
-                    # TODO RESPONSIBLE FOR THE STIRNG INDICES MUST BE INTEGERS, NOT STR
-                    # ERROR DO THIS1
                     coin_market_prices[coin["id"]] = coin["current_price"]
 
                 # If more than one page of data needs to be fetched from the API, then
@@ -812,8 +819,6 @@ def update_open_trades_in_background():
                 data = response.json()
 
                 for coin in data:
-                    # TODO some error here to do with string indices must be integers,
-                    # not "str"
                     coin_market_prices[coin["id"]] = coin["current_price"]
 
             # Update each open trade, seeing if it can be closed

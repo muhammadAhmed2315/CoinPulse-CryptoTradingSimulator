@@ -1,9 +1,7 @@
 import requests
 import urllib.parse
-from typing import List
 from goose3 import Goose
 from bs4 import BeautifulSoup
-from datetime import datetime
 from .NewsArticle import NewsArticle
 
 

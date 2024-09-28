@@ -1,6 +1,6 @@
 from extensions import db
 from sqlalchemy import Boolean, ARRAY, TIMESTAMP
-from flask_login import UserMixin, current_user
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 from sqlalchemy.dialects.postgresql import UUID

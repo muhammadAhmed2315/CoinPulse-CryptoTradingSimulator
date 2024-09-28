@@ -9,7 +9,6 @@ from constants import MAIL_PASSWORD
 from extensions import db, login_manager
 import uuid
 from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
-from flask_apscheduler import APScheduler
 import threading
 from flask_cors import CORS
 

@@ -236,13 +236,26 @@ td {
   overflow-x: auto; /* Adds horizontal scrollbar when needed */
 }
 
-.action-cancel-btn {
-  height: 1.6rem;
-  width: 1.6rem;
+.transaction-status {
+  display: flex;
+  justify-content: center;
 }
 
-.action-cancel-btn:hover {
+.transaction-action {
+  display: flex;
+  justify-content: center;
+}
+
+.transaction-action img {
+  margin-top: 0.5rem;
+  height: 2.7rem;
+  width: 2.7rem;
+}
+
+.transaction-action img:hover {
   cursor: pointer;
+  filter: brightness(0) saturate(100%) invert(21%) sepia(100%) saturate(1508%)
+    hue-rotate(195deg) brightness(99%) contrast(106%);
 }
 
 /* ******************** TRADES TABLE PAGINATION BUTTONS ******************** */

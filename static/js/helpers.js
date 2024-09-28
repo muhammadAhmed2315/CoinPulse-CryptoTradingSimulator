@@ -48,8 +48,10 @@ export async function getAllCoinNamesDict() {
   };
 
   try {
-    const response = await fetch("/get_top_coins_data", fetchOptions);
+    const response = await fetch("/get_all_coin_names", fetchOptions);
     const data = await response.json();
+
+    const result = {};
 
     for (const coin of data) {
       // IMPORTANT: ID = API SPECIFIC ID, TICKERS = NOT UNIQUE, NAMES = UNIQUE

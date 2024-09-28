@@ -362,6 +362,12 @@ function addNewTradeSidebarEventListeners() {
   document
     .querySelector(".nts-header__close-btn")
     .addEventListener("click", hideNewTradeSidebar);
+
+  document
+    .querySelector(".new-trade-sidebar-overlay")
+    .addEventListener("click", function () {
+      hideNewTradeSidebar();
+    });
 }
 
 /**

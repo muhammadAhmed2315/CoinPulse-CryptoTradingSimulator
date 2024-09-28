@@ -435,11 +435,14 @@ function displayTransactionData() {
     if (transactionsData[i].status === "open") {
       // Add cancel button
       row.querySelector(".transaction-action").innerHTML =
-        "<img class='action-cancel-btn' title='Cancel Trade' src='../../static/img/icons/close-circle.svg' />";
+        "<img title='Cancel Trade' src='../../static/img/icons/close-circle.svg' />";
+
+      // Reduce padding for that cell
+      row.querySelector(".transaction-action").style.padding = "0";
 
       // Add event listener to cancel button
       row
-        .querySelector(".action-cancel-btn")
+        .querySelector(".transaction-action img")
         .addEventListener("click", async function () {
           const result = await requestOpenTradeCancellation(
             transactionsData[i].id

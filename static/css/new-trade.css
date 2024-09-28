@@ -74,9 +74,9 @@
   width: 100%;
   background: white;
   border: 1px solid #ccc;
-  display: none; /* Hidden by default */
-  max-height: 400px; /* This should be adjusted to fit the height of 10 items */
-  overflow-y: auto; /* Enable vertical scrolling */
+  display: none;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .nts-search-box__results .result-item {
@@ -102,7 +102,8 @@
 
 /* ********** CRYPTO INFO ********** */
 .nts-trade-info__coin {
-  /* border-right: 1px solid #dee2e6; TODO */
+  width: 50rem;
+  border-right: 1px solid #dee2e6;
 }
 
 .nts-trade-info__coin .header {
@@ -113,6 +114,7 @@
 .nts-trade-info__coin .header .coin-image {
   height: 2.1rem;
   width: 2.1rem;
+  border-radius: 50%;
 }
 
 .nts-trade-info__coin .header p {
@@ -134,6 +136,7 @@
 
 /* ********** BALANCE INFO ********** */
 .nts-trade-info__balance {
+  padding: 0 4.8rem;
 }
 
 .nts-trade-info__balance .title {
@@ -330,6 +333,7 @@
   height: 2.6rem;
   width: 2.6rem;
   margin-right: 1rem;
+  border-radius: 50%;
 }
 
 /* *************** SHARE ON TIMELINE TOGGLE SWITCH *************** */

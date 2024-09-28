@@ -94,9 +94,5 @@ class YahooNewsScaper:
         """
         g = Goose()
         article = g.extract(url=url)
-        print("ARTICLE TEXT")
-        print(article.cleaned_text)
-        print("META DESCRIPTION")
-        print(article.meta_description)
 
         return article.meta_description + article.cleaned_text

@@ -362,8 +362,6 @@ def process_transaction():
 
     data = request.json["transactionData"]
 
-    print(data)
-
     # Check data contains all required fields
     required_fields = {
         "transactionType": False,
@@ -687,7 +685,6 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                                            If None, all wallets are updated.
     """
     while True:
-        print("RUNNING UPDATE USER WALLET VALUE IN BACKGROUND")
         from app import app
 
         with app.app_context():
@@ -833,7 +830,6 @@ def update_open_trades_in_background():
                             * coin_market_prices[transaction.coin_id]
                         ):
                             # Execute the order
-                            print("JUST EXECUTED A LIMIT BUY ORDER")
                             execute_open_order(transaction, True)
                         else:
                             # If user doesn't have enough balance to execute the trade, cancel it
@@ -848,29 +844,22 @@ def update_open_trades_in_background():
                             transaction.coin_id, transaction.quantity
                         ):
                             # Execute the order
-                            print("JUST EXECUTED A LIMIT SELL ORDER")
                             execute_open_order(transaction, False)
                         else:
                             # If user doesn't have enough coins to execute the trade, cancel it
                             cancel_open_order(transaction)
                 elif transaction.orderType == "stop":
-                    print("STOP ORDER")
-                    print("FIRST >= SECOND")
-                    print(coin_market_prices[transaction.coin_id])
-                    print(transaction.price_per_unit)
                     if (
                         transaction.transactionType == "buy"
                         and coin_market_prices[transaction.coin_id]
                         >= transaction.price_per_unit
                     ):
-                        print("USER HAS ENOUGH BALANCE")
                         # If user has enough balance to execute the trade, execute it
                         if transaction.wallet.has_enough_balance(
                             transaction.quantity
                             * coin_market_prices[transaction.coin_id]
                         ):
                             # Execute the order
-                            print("JUST EXECUTED A STOP BUY ORDER")
                             execute_open_order(transaction, True)
                         else:
                             # If user doesn't have enough balance to execute the trade, cancel it
@@ -885,7 +874,6 @@ def update_open_trades_in_background():
                             transaction.coin_id, transaction.quantity
                         ):
                             # Execute the order
-                            print("JUST EXECUTED A STOP SELL ORDER")
                             execute_open_order(transaction, False)
                         else:
                             # If user doesn't have enough coins to execute the trade, cancel it

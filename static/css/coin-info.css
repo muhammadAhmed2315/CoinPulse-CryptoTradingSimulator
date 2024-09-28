@@ -14,6 +14,13 @@
 .coin-info__search-input {
   width: 100%;
   padding: 10px;
+  border: 1px solid #f0f0ef;
+}
+
+.coin-info__search-input:focus {
+  outline: none;
+  border-color: #17c671;
+  box-shadow: 0 0 5px #17c67180;
 }
 
 .coin-info__search-results {

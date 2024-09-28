@@ -304,7 +304,6 @@ def register():
             return render_template("login/register.html", form=form)
 
         # Save user information to database, create a wallet for them, and log them in
-        print(input_username)
         user = User(email=input_email, username=input_username, password=input_password)
         db.session.add(user)
         db.session.commit()
@@ -369,7 +368,7 @@ def logout():
     page.
     """
     logout_user()
-    return render_template("login/register.html", form=RegisterForm())
+    return redirect(url_for("user_authentication.login"))
 
 
 # #################### VERIFY USER'S EMAIL ####################

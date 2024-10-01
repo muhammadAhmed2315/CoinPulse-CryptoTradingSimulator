@@ -6,11 +6,13 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from constants import MAIL_USERNAME
 from constants import MAIL_PASSWORD
-from extensions import db, login_manager
+from extensions import db, login_manager, jwt
 import uuid
 from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
+from constants import JWT_SECRET_KEY, JWT_ACCESS_TOKEN_EXPIRES_HOURS
 import threading
 from flask_cors import CORS
+from datetime import timedelta
 
 # Configure logging
 log = logging.getLogger("werkzeug")
@@ -51,6 +53,14 @@ def create_app():
     # Initialise Mail object
     mail_server = Mail(app)
 
+    # Configure JWT manager
+    app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
+        hours=JWT_ACCESS_TOKEN_EXPIRES_HOURS
+    )
+    # Initialize JWTManager with the app
+    jwt.init_app(app)
+
     # Initialize database
     db.init_app(app)
     Migrate(app, db)
@@ -76,10 +86,12 @@ def create_app():
     # Import blueprints
     from login.app import user_authentication
     from core.app import core
+    from api.app import api
 
     # Register blueprints
     app.register_blueprint(user_authentication)
     app.register_blueprint(core)
+    app.register_blueprint(api, url_prefix="/api")
 
     # Create database tables
     with app.app_context():

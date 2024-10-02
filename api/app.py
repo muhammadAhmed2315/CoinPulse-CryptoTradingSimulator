@@ -307,3 +307,44 @@ def get_transactions():
         ),
         200,
     )
+
+
+@api.route("/transactions/cancel", methods=["POST"])
+@jwt_required()
+def cancel_transaction():
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Validate JSON request
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    # Validate JSON request body parameters
+    transaction_id = request.json.get("transaction_id", None)
+
+    if not transaction_id:
+        return jsonify({"msg": "Missing transaction_id"}), 400
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+    if not wallet:
+        return jsonify({"message": "Wallet not found"}), 404
+
+    # Fetch the transaction to cancel
+    transaction = wallet.transactions.filter_by(id=transaction_id).first()
+
+    if not transaction:
+        return jsonify({"message": "Transaction not found"}), 404
+
+    # Check if the transaction is active/open
+    if transaction.status != "open":
+        return jsonify({"message": "Transaction is not open"}), 400
+
+    # Cancel the transaction
+    transaction.status = "cancelled"
+    db.session.commit()
+
+    return (
+        jsonify({"msg": f"Success! Transaction {transaction.id} has been cancelled."}),
+        200,
+    )

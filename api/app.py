@@ -7,8 +7,19 @@ from flask_jwt_extended import (
 )
 from extensions import db
 from models import User, Wallet, ValueHistory
+from rapidfuzz import process
+import time
+import requests
+from constants import COINGECKO_API_HEADERS
+from collections import OrderedDict
+
 
 api = Blueprint("api", __name__)
+
+# List of coins available on the CoinGecko API, cached to minimize frequent API calls
+# and updated every 5 minutes. In the format of a list, with each element being of the
+# following format: [<coin_name>, <coin_id>].
+cache = {"coins_list": [], "timestamp": 0}
 
 
 @api.route("/")
@@ -30,8 +41,8 @@ def home():
     )
 
 
-@api.route("/get_jwt_token", methods=["POST"])
-def get_jwt_token():
+@api.route("/token/generate", methods=["POST"])
+def generate_token():
     """
     Processes a POST request to authenticate a user using their email and password and
     generate a JWT access token.
@@ -76,9 +87,9 @@ def get_jwt_token():
     return jsonify(access_token=access_token), 200
 
 
-@api.route("/get_portfolio", methods=["GET"])
+@api.route("/portfolio/assets", methods=["GET"])
 @jwt_required()
-def get_portfolio():
+def get_portfolio_assets():
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -87,3 +98,86 @@ def get_portfolio():
     wallet.assets["Account Cash Balance (USD)"] = wallet.balance
 
     return jsonify(wallet.assets), 200
+
+
+@api.route("/coins/search", methods=["GET"])
+@jwt_required()
+def search_coins():
+    """
+    Searches for coins with names similar to the input coin name, using a fuzzy
+    matching algorithm. Returns a list of similar coins in the format of a list, with
+    each element of the list being of the following format: [<coin_name>, <coin_id>].
+
+    This endpoint processes GET requests with JSON body content that must include:
+    - `coin_name`: A string representing the name of the coin to search for.
+    - `limit`: An optional integer to limit the number of similar coins returned
+      (default is 10).
+    - `similarity_threshold`: An optional integer (percentage) defining the minimum
+      similarity score for matches (default is 80).
+
+    The function fetches the list of all coins from the CoinGecko API, caching the
+    results and updating the cache every 5 minutes to minimize frequent API calls (and
+    also because the CoinGecko API updates its list of coins every 5 minutes). It then
+    performs a fuzzy search for coins with names similar to `coin_name` based on the
+    provided `similarity_threshold`.
+
+    Returns:
+        - A JSON response containing a list of similar coins in the format
+          [<coin_name>, <coin_id>], along with a message describing the format of the
+          returned data.
+    """
+    # Validate JSON request
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    # Validate JSON request body parameters
+    input_coin_name = request.json.get("coin_name", None)
+    input_limit = request.json.get("limit", 10)
+    input_similarity_threshold = request.json.get("similarity_threshold", 80)
+
+    if not input_coin_name:
+        return jsonify({"msg": "Missing coin_name"}), 400
+
+    # Convert input to lowercase
+    input_coin_name = input_coin_name.lower()
+
+    # Fetch all coins from the CoinGecko API (update this cache every 5 minutes since
+    # the CoinGecko API updates the list of coins every 5 minutes)
+    current_time = time.time()
+
+    if current_time - cache["timestamp"] > 300:
+        url = "https://api.coingecko.com/api/v3/coins/list"
+
+        response = requests.get(url, headers=COINGECKO_API_HEADERS)
+        coins_list = response.json()
+        cache["coins_list"] = []
+
+        for coin in coins_list:
+            cache["coins_list"].append([coin["name"].lower(), coin["id"]])
+
+        cache["timestamp"] = current_time
+
+    # Search for similar coins
+    coin_names = [coin[0] for coin in cache["coins_list"]]
+
+    similar_coins = process.extract(
+        query=input_coin_name,
+        choices=coin_names,
+        limit=input_limit,
+        score_cutoff=input_similarity_threshold,
+    )
+
+    # Format the output
+    res = []
+    for coin in similar_coins:
+        res.append([coin[0], cache["coins_list"][coin[2]][1]])
+
+    return (
+        jsonify(
+            {
+                "msg": "Format = <coin_name, coin_id>",
+                "similar_coins": res,
+            }
+        ),
+        200,
+    )

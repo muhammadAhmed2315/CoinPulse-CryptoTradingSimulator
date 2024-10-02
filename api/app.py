@@ -90,6 +90,17 @@ def generate_token():
 @api.route("/portfolio/assets", methods=["GET"])
 @jwt_required()
 def get_portfolio_assets():
+    """
+    Fetches the portfolio assets for the currently authenticated user.
+
+    This endpoint requires a valid JWT token for authentication. Once authenticated,
+    it returns a JSON object containing the user's assets, including their current cash
+    balance in USD.
+
+    Returns:
+        dict: A JSON object containing the user's assets, including their cash balance.
+        int: HTTP status code 200 on successful retrieval.
+    """
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -103,6 +114,21 @@ def get_portfolio_assets():
 @api.route("/portfolio/balance_history", methods=["GET"])
 @jwt_required()
 def get_balance_history():
+    """
+    Retrieves the historical balance data from the currently authenticated user's
+    wallet.
+
+    This endpoint requires a valid JWT for authentication. Once authenticated, the
+    user's balance history and corresponding timestamps are fetched from their wallet's
+    'value_history' attribute, and then formatted into a list of
+    [balance, timestamp] pairs. These pairs are then returned as a list in the JSON
+    response.
+
+    Returns:
+        list: A list of [balance, timestamp] pairs representing the history of
+              balance changes.
+        int: HTTP status code 200 on successful retrieval.
+    """
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -124,6 +150,21 @@ def get_balance_history():
 @api.route("/portfolio/assets_value_history", methods=["GET"])
 @jwt_required()
 def get_assets_value_history():
+    """
+    Retrieves the historical assets value data from the currently authenticated user's
+    wallet.
+
+    This endpoint requires a valid JWT for authentication. Once authenticated, the
+    user's assets value history and corresponding timestamps are fetched from their
+    wallet's 'value_history' attribute, and then formatted into a list of
+    [asset_value, timestamp] pairs. These pairs are then returned as a list in the JSON
+    response.
+
+    Returns:
+        list: A list of [asset_value, timestamp] pairs representing the history of
+              balance changes.
+        int: HTTP status code 200 on successful retrieval.
+    """
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -145,6 +186,21 @@ def get_assets_value_history():
 @api.route("/portfolio/total_value_history", methods=["GET"])
 @jwt_required()
 def get_total_value_history():
+    """
+    Retrieves the historical total value data from the currently authenticated user's
+    wallet.
+
+    This endpoint requires a valid JWT for authentication. Once authenticated, the
+    user's wallet's total value (historical) data and corresponding timestamps are
+    fetched from their wallet's 'total_value_history' attribute, and then formatted
+    into a list of [total_value, timestamp] pairs. These pairs are then returned as a
+    list in the JSON response.
+
+    Returns:
+        list: A list of [total_value, timestamp] pairs representing the history of
+              balance changes.
+        int: HTTP status code 200 on successful retrieval.
+    """
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -249,6 +305,26 @@ def search_coins():
 @api.route("/transactions", methods=["GET"])
 @jwt_required()
 def get_transactions():
+    """
+    Retrieves a paginated list of transactions from the currently authenticated user's
+    wallet.
+
+    This endpoint requires a valid JWT token for authentication and optionally accepts
+    'page' and 'per_page' query parameters to control pagination. After validating the
+    user's identity and fetching their wallet, it retrieves the transactions associated
+    with that wallet. Transactions are ordered by their timestamp in descending order
+    (most recent first) and paginated based on the provided query parameters.
+
+    The function constructs a list of dictionaries, each representing a transaction
+    with detailed attributes, and returns this list along with pagination metadata and
+    a success message.
+
+    Returns:
+        dict: A JSON object containing a list of transactions, pagination details, and
+              a success message.
+        int: HTTP status code 200 on successful retrieval, or 404 if the wallet is not
+              found.
+    """
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -312,6 +388,21 @@ def get_transactions():
 @api.route("/transactions/cancel", methods=["POST"])
 @jwt_required()
 def cancel_transaction():
+    """
+    Cancels an open transaction for the currently authenticated user.
+
+    This endpoint requires a valid JWT token for authentication. Once the user has been
+    authenticated, the function checks for a valid JSON payload containing the
+    transaction_id. If the transaction_id is found in the user's wallet, the status of
+    the transaction is checked. If the transaction is open, it will be cancelled;
+    otherwise, an error response will be generated.
+
+    Returns:
+        dict: A JSON object with a message indicating either success or the nature of
+              the error.
+        int: HTTP status code 200 for success, 400 for input errors, or 404 for not
+              found items.
+    """
     # Get the user's identity from the JWT token
     current_user_id = get_jwt_identity()
 
@@ -341,7 +432,7 @@ def cancel_transaction():
         return jsonify({"message": "Transaction is not open"}), 400
 
     # Cancel the transaction
-    transaction.status = "cancelled"
+    transaction.cancel_open_order()
     db.session.commit()
 
     return (

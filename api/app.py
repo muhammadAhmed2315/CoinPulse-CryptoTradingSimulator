@@ -6,7 +6,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 from extensions import db
-from models import User, Wallet, ValueHistory
+from models import User, Wallet, ValueHistory, Transaction
 from rapidfuzz import process
 import time
 import requests
@@ -265,7 +265,7 @@ def get_transactions():
 
     # Fetch transactions with pagination
     wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
-    transactions = wallet.transactions
+    transactions = wallet.transactions.order_by(Transaction.timestamp.desc())
     pagination = transactions.paginate(page=page, per_page=per_page, error_out=False)
     transactions = pagination.items
 

@@ -100,6 +100,69 @@ def get_portfolio_assets():
     return jsonify(wallet.assets), 200
 
 
+@api.route("/portfolio/balance_history", methods=["GET"])
+@jwt_required()
+def get_balance_history():
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+
+    # Get balance history and timestamps from wallet.value_history
+    balance_history = wallet.value_history.balance_history
+    timestamps = wallet.value_history.timestamps
+
+    # Format the balance history and the timestamps into a single list
+    res = []
+    for i in range(len(balance_history)):
+        res.append([balance_history[i], timestamps[i]])
+
+    return jsonify(res), 200
+
+
+@api.route("/portfolio/assets_value_history", methods=["GET"])
+@jwt_required()
+def get_assets_value_history():
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+
+    # Get assets value history and timestamps from wallet.value_history
+    assets_value_history = wallet.value_history.assets_value_history
+    timestamps = wallet.value_history.timestamps
+
+    # Format the assets value history and the timestamps into a single list
+    res = []
+    for i in range(len(assets_value_history)):
+        res.append([assets_value_history[i], timestamps[i]])
+
+    return jsonify(res), 200
+
+
+@api.route("/portfolio/total_value_history", methods=["GET"])
+@jwt_required()
+def get_total_value_history():
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+
+    # Get total value history and timestamps from wallet.value_history
+    total_value_history = wallet.value_history.total_value_history
+    timestamps = wallet.value_history.timestamps
+
+    # Format the total value history and the timestamps into a single list
+    res = []
+    for i in range(len(total_value_history)):
+        res.append([total_value_history[i], timestamps[i]])
+
+    return jsonify(res), 200
+
+
 @api.route("/coins/search", methods=["GET"])
 @jwt_required()
 def search_coins():

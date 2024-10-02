@@ -74,3 +74,16 @@ def get_jwt_token():
     # Create an access token
     access_token = create_access_token(identity=user.id)
     return jsonify(access_token=access_token), 200
+
+
+@api.route("/get_portfolio", methods=["GET"])
+@jwt_required()
+def get_portfolio():
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+    wallet.assets["Account Cash Balance (USD)"] = wallet.balance
+
+    return jsonify(wallet.assets), 200

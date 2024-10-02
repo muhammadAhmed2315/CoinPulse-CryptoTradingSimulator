@@ -244,3 +244,66 @@ def search_coins():
         ),
         200,
     )
+
+
+@api.route("/transactions", methods=["GET"])
+@jwt_required()
+def get_transactions():
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+    if not wallet:
+        return jsonify({"message": "Wallet not found"}), 404
+
+    # Get pagination parameters from query string, set defaults if not provided
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get(
+        "per_page", 10, type=int
+    )  # You can adjust the default per_page as needed
+
+    # Fetch transactions with pagination
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+    transactions = wallet.transactions
+    pagination = transactions.paginate(page=page, per_page=per_page, error_out=False)
+    transactions = pagination.items
+
+    res = []
+
+    for transaction in transactions:
+        temp = {
+            "id": transaction.id,
+            "status": transaction.status,
+            "transaction_type": transaction.transactionType,
+            "order_type": transaction.orderType,
+            "timestamp": transaction.timestamp,
+            "coin_id": transaction.coin_id,
+            "quantity": transaction.quantity,
+            "price_per_unit": transaction.price_per_unit,
+            "price_per_unit_at_execution": transaction.price_per_unit_at_execution,
+            "total_value": transaction.total_value,
+            "comment": transaction.comment,
+        }
+        res.append(temp)
+
+    # Prepare pagination metadata
+    pagination_info = {
+        "total_items": pagination.total,
+        "total_pages": pagination.pages,
+        "current_page": pagination.page,
+        "per_page": pagination.per_page,
+        "has_next": pagination.has_next,
+        "has_prev": pagination.has_prev,
+    }
+
+    return (
+        jsonify(
+            {
+                "transactions": res,
+                "pagination": pagination_info,
+                "msg": "Format = <coin_name, coin_id>",
+            }
+        ),
+        200,
+    )

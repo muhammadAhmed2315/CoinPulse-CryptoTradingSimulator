@@ -24,21 +24,167 @@ api = Blueprint("api", __name__)
 # following format: [<coin_name>, <coin_id>].
 cache = {"coins_list": [], "timestamp": 0}
 
+
 # ******************** GENERAL API ENDPOINTS ********************
-
-
 @api.route("/")
 def home():
     """
     Home endpoint for the API.
-    Provides a basic overview of the API and its endpoints.
+    Provides a comprehensive overview of the API and its endpoints.
     """
     return (
         jsonify(
             {
                 "message": "Welcome to the CoinPulse API!",
                 "endpoints": {
-                    "/get_jwt_token": "POST to obtain a JWT token by providing 'email' and 'password' in the request body as JSON.",
+                    "Authentication": {
+                        "/token/generate": {
+                            "method": "POST",
+                            "description": "Obtain a JWT token by providing 'email' and 'password' in the request body as JSON.",
+                            "payload": {"email": "string", "password": "string"},
+                            "response": {
+                                "access_token": "string",
+                                "refresh_token": "string",
+                            },
+                        },
+                        "/token/refresh": {
+                            "method": "POST",
+                            "description": "Refresh the JWT access token using a valid refresh token.",
+                            "headers": {"Authorization": "Bearer <refresh_token>"},
+                            "response": {"access_token": "string"},
+                        },
+                    },
+                    "Portfolio": {
+                        "/portfolio/assets": {
+                            "method": "GET",
+                            "description": "Retrieve the authenticated user's portfolio assets, including cash balance in USD.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "response": {"assets": "object"},
+                        },
+                        "/portfolio/balance_history": {
+                            "method": "GET",
+                            "description": "Retrieve the authenticated user's balance history.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "response": [["balance", "timestamp"]],
+                        },
+                        "/portfolio/assets_value_history": {
+                            "method": "GET",
+                            "description": "Retrieve the authenticated user's assets value history.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "response": [["asset_value", "timestamp"]],
+                        },
+                        "/portfolio/total_value_history": {
+                            "method": "GET",
+                            "description": "Retrieve the authenticated user's total value history.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "response": [["total_value", "timestamp"]],
+                        },
+                    },
+                    "Transactions": {
+                        "/transactions": {
+                            "method": "GET",
+                            "description": "Retrieve a paginated list of the authenticated user's transactions.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {
+                                "page": "integer (optional, default=1)",
+                                "per_page": "integer (optional, default=10)",
+                            },
+                            "response": {
+                                "transactions": "list",
+                                "pagination": "object",
+                                "msg": "string",
+                            },
+                        },
+                        "/transactions/cancel": {
+                            "method": "POST",
+                            "description": "Cancel an open transaction by providing 'transaction_id' in the request body as JSON.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "payload": {"transaction_id": "string"},
+                            "response": {"msg": "string"},
+                        },
+                        "/transactions/execute": {
+                            "method": "POST",
+                            "description": "Execute a buy or sell transaction with required parameters in the request body as JSON.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "payload": {
+                                "transaction_type": "'buy' or 'sell'",
+                                "order_type": "'market', 'limit', or 'stop'",
+                                "coin_id": "string",
+                                "visibility": "'True' or 'False'",
+                                "comment": "string (optional)",
+                                "quantity_in_usd": "float (optional for market orders)",
+                                "quantity": "float (optional for limit and stop orders)",
+                                "price_per_unit": "float (optional for limit and stop orders)",
+                            },
+                            "response": {"msg": "string"},
+                        },
+                    },
+                    "Coin Data": {
+                        "/coins/historical/ohlc": {
+                            "method": "GET",
+                            "description": "Fetch historical daily OHLC data for a specified cryptocurrency over the past year.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {"coin_id": "string"},
+                            "response": "list of OHLC data",
+                        },
+                        "/coins/search": {
+                            "method": "GET",
+                            "description": "Search for coins with names similar to the input coin name using fuzzy matching.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "payload": {
+                                "coin_name": "string",
+                                "limit": "integer (optional, default=10)",
+                                "similarity_threshold": "integer (percentage, optional, default=80)",
+                            },
+                            "response": {"msg": "string", "similar_coins": "list"},
+                        },
+                        "/coins/historical/price": {
+                            "method": "GET",
+                            "description": "Fetch historical daily price data for a specified cryptocurrency over the past year.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {"coin_id": "string"},
+                            "response": "list of price data",
+                        },
+                        "/coins/historical/market_cap": {
+                            "method": "GET",
+                            "description": "Fetch historical daily market cap data for a specified cryptocurrency over the past year.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {"coin_id": "string"},
+                            "response": "list of market cap data",
+                        },
+                        "/coins/historical/volume": {
+                            "method": "GET",
+                            "description": "Fetch historical daily trading volume data for a specified cryptocurrency over the past year.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {"coin_id": "string"},
+                            "response": "list of volume data",
+                        },
+                    },
+                    "News and Reddit": {
+                        "/coins/news": {
+                            "method": "GET",
+                            "description": "Fetch news articles related to a specified cryptocurrency coin.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {
+                                "coin_id": "string",
+                                "page": "integer (optional, default=1)",
+                            },
+                            "response": {"success": "string", "articles": "list"},
+                        },
+                        "/coins/reddit": {
+                            "method": "GET",
+                            "description": "Fetch Reddit posts related to a specified cryptocurrency coin.",
+                            "headers": {"Authorization": "Bearer <access_token>"},
+                            "query_params": {
+                                "coin_id": "string",
+                                "after": "string (optional)",
+                            },
+                            "response": {"success": "string", "posts": "list"},
+                        },
+                    },
+                },
+                "authentication": {
+                    "description": "All endpoints except for '/token/generate' require a valid JWT access token. Include the token in the 'Authorization' header as follows: 'Bearer <access_token>'."
                 },
             }
         ),

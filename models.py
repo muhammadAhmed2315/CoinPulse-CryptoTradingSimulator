@@ -415,7 +415,7 @@ class Transaction(db.Model):
         Cancels an open order and sets the user's balance_after to "N/A". Also updates
         the transaction status to "cancelled".
         """
-        self.balance_after = "N/A"
+        self.balance_after = -1
         self.status = "cancelled"
 
 

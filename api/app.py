@@ -6,12 +6,13 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 from extensions import db
-from models import User, Wallet, ValueHistory, Transaction
+from models import User, Wallet, ValueHistory, Transaction, TransactionLikes
 from rapidfuzz import process
 import time
 import requests
 from constants import COINGECKO_API_HEADERS
 from collections import OrderedDict
+from core.app import update_user_wallet_value_in_background
 
 
 api = Blueprint("api", __name__)
@@ -219,6 +220,26 @@ def get_total_value_history():
     return jsonify(res), 200
 
 
+@api.before_request
+def cache_coin_names():
+    # Fetch all coins from the CoinGecko API (update this cache every 5 minutes since
+    # the CoinGecko API updates the list of coins every 5 minutes)
+    current_time = time.time()
+
+    if current_time - cache["timestamp"] > 300:
+        url = "https://api.coingecko.com/api/v3/coins/list"
+
+        response = requests.get(url, headers=COINGECKO_API_HEADERS)
+        coins_list = response.json()
+        cache["coins_list"] = []
+
+        for coin in coins_list:
+            cache["coins_list"].append([coin["name"].lower(), coin["id"]])
+
+        cache["timestamp"] = current_time
+
+
+# Change this to use url parameters instead of JSON body
 @api.route("/coins/search", methods=["GET"])
 @jwt_required()
 def search_coins():
@@ -260,21 +281,7 @@ def search_coins():
     # Convert input to lowercase
     input_coin_name = input_coin_name.lower()
 
-    # Fetch all coins from the CoinGecko API (update this cache every 5 minutes since
-    # the CoinGecko API updates the list of coins every 5 minutes)
-    current_time = time.time()
-
-    if current_time - cache["timestamp"] > 300:
-        url = "https://api.coingecko.com/api/v3/coins/list"
-
-        response = requests.get(url, headers=COINGECKO_API_HEADERS)
-        coins_list = response.json()
-        cache["coins_list"] = []
-
-        for coin in coins_list:
-            cache["coins_list"].append([coin["name"].lower(), coin["id"]])
-
-        cache["timestamp"] = current_time
+    cache_coin_names()
 
     # Search for similar coins
     coin_names = [coin[0] for coin in cache["coins_list"]]
@@ -439,3 +446,136 @@ def cancel_transaction():
         jsonify({"msg": f"Success! Transaction {transaction.id} has been cancelled."}),
         200,
     )
+
+
+@api.route("/transactions/execute/buy", methods=["POST"])
+@jwt_required()
+def process_buy_transaction():
+    # Validate JSON request
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    # Validate JSON request body parameters
+    order_type = request.json.get("order_type")
+    coin_id = request.json.get("coin_id")
+    visibility = request.json.get("visibility")
+    comment = request.json.get("comment", None)
+    quantity_in_usd = request.json.get("quantity_in_usd", None)
+    quantity = request.json.get("quantity", None)
+    price_per_unit = request.json.get("price_per_unit", None)
+
+    if not order_type:
+        return jsonify({"msg": "Missing order_type"}), 400
+    if order_type not in ["market", "limit", "stop"]:
+        return jsonify({"msg": "Invalid order_type"}), 400
+
+    if not coin_id:
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    valid_coin_ids = [coin[1] for coin in cache["coins_list"]]
+    if coin_id not in valid_coin_ids:
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    if not visibility:
+        return jsonify({"msg": "Missing visibility"}), 400
+
+    if order_type == "market":
+        if not quantity_in_usd and not quantity:
+            return jsonify({"msg": "Missing quantity_in_usd/quantity"}), 400
+
+        if quantity and quantity_in_usd:
+            return (
+                jsonify(
+                    {"msg": "Provide either quantity or quantity_in_usd, not both"}
+                ),
+                400,
+            )
+
+        if quantity and quantity <= 0:
+            return jsonify({"msg": "Invalid quantity"}), 400
+
+        if quantity_in_usd and quantity_in_usd <= 0:
+            return jsonify({"msg": "Invalid quantity_in_usd"}), 400
+    elif order_type == "limit" or order_type == "stop":
+        if not quantity:
+            return jsonify({"msg": "Missing quantity"}), 400
+        if not price_per_unit:
+            return jsonify({"msg": "Missing price_per_unit"}), 400
+
+        if quantity <= 0:
+            return jsonify({"msg": "Invalid quantity"}), 400
+
+        if price_per_unit <= 0:
+            return jsonify({"msg": "Invalid price_per_unit"}), 400
+
+    # Get the current coin price from the CoinGecko API
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {
+        "vs_currency": "usd",
+        "ids": coin_id,
+    }
+
+    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    current_coin_price = data[0]["current_price"]
+
+    # Get the user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the user's wallet
+    wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
+
+    # Make sure user has enough USD balance to execute a buy order
+    if order_type == "market":
+        if quantity_in_usd:
+            if not wallet.has_enough_balance(quantity_in_usd):
+                return jsonify({"msg": "Insufficient balance to make this trade"}), 400
+        if quantity:
+            if not wallet.has_enough_balance(current_coin_price * quantity):
+                return jsonify({"msg": "Insufficient balance to make this trade"}), 400
+
+    # Execute the buy transaction
+
+    # Create transaction
+    transaction = Transaction(
+        status="finished" if order_type == "market" else "open",
+        transactionType="buy",
+        orderType=order_type,
+        coin_id=coin_id,
+        quantity=quantity if quantity else quantity_in_usd / current_coin_price,
+        price_per_unit=current_coin_price if order_type == "market" else price_per_unit,
+        wallet_id=wallet.id,
+        comment=comment,
+        balance_before=wallet.balance,
+        visibility=True if visibility == "True" else False,
+    )
+
+    if order_type == "market":
+        # Update wallet balance
+        wallet.update_balance_subtract(
+            quantity_in_usd if quantity_in_usd else quantity * current_coin_price
+        )
+        # Update wallet assets dictionary
+        wallet.update_assets_add(
+            coin_id, quantity if quantity else quantity_in_usd / current_coin_price
+        )
+
+    # Add transaction to the session
+    db.session.add(transaction)
+    db.session.commit()
+
+    # Create a TransactionLikes object for the transaction
+    transaction_likes = TransactionLikes(transaction_id=transaction.id)
+    db.session.add(transaction_likes)
+    db.session.commit()
+
+    update_user_wallet_value_in_background(wallet.id)
+
+    return jsonify({"msg": "Transaction executed successfully"}), 200

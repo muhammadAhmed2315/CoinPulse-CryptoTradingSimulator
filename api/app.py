@@ -1,13 +1,12 @@
-from flask import Flask, jsonify, request, Blueprint
+from flask import jsonify, request, Blueprint
 from flask_jwt_extended import (
-    JWTManager,
     create_access_token,
     create_refresh_token,
     jwt_required,
     get_jwt_identity,
 )
 from extensions import db
-from models import User, Wallet, ValueHistory, Transaction, TransactionLikes
+from models import User, Wallet, Transaction, TransactionLikes
 from rapidfuzz import process
 import time
 import requests
@@ -96,6 +95,17 @@ def generate_token():
 @api.route("/token/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
+    """
+    Generates a new access token for authenticated users using a valid refresh token.
+
+    The endpoint requires a POST request with a valid JWT refresh token provided in the
+    request header. It uses the `jwt_required` decorator with the `refresh=True` option
+    to ensure that only requests with a valid refresh token can access this route.
+
+    Returns:
+        json: A JSON object containing the new access token.
+        int: HTTP status code 200 indicating successful token refresh.
+    """
     current_user = get_jwt_identity()
     new_access_token = create_access_token(identity=current_user)
     return jsonify(access_token=new_access_token), 200
@@ -235,6 +245,25 @@ def get_total_value_history():
 
 @api.before_request
 def cache_coin_names():
+    """
+    Caches the names and IDs of all cryptocurrencies from the CoinGecko API before
+    handling any request.
+
+    This function is executed before each request to ensure that the cache of
+    cryptocurrency names and IDs is up-to-date. It checks if the cache has been updated
+    within the last 5 minutes. If not, it fetches the latest list of cryptocurrencies
+    from the CoinGecko API and updates the cache. This helps in minimising API calls
+    and also because the CoinGecko API updates the list of coins every 5 minutes.
+
+    The cache is stored in a dictionary with a 'timestamp' key to track the last update
+    time and a 'coins_list' key containing a list of [name, id] pairs of the coins.
+
+    No parameters.
+    No returns.
+
+    Side effects:
+        Updates the global cache dictionary with the latest cryptocurrency data from the CoinGecko API if more than 5 minutes have passed since the last update.
+    """
     # Fetch all coins from the CoinGecko API (update this cache every 5 minutes since
     # the CoinGecko API updates the list of coins every 5 minutes)
     current_time = time.time()
@@ -463,6 +492,35 @@ def cancel_transaction():
 @api.route("/transactions/execute", methods=["POST"])
 @jwt_required()
 def process_buy_transaction():
+    """
+    Processes a buy or sell transaction based on the provided JSON parameters in the
+    request body.
+
+    This endpoint is designed to execute market, limit, or stop buy/sell transactions
+    for a specified cryptocurrency. The function requires a JWT token for authorization
+    and validates the JSON in the request to ensure all required fields are provided
+    and valid. It performs checks on user balance or coin availability, and executes
+    the transaction accordingly.
+
+    Parameters:
+        transaction_type (str): Specifies the type of transaction ('buy' || 'sell')
+        order_type (str): Specifies the order type ('market' || 'limit' || or 'stop')
+        coin_id (str): A unique identifier for the cryptocurrency.
+        visibility (str): A string flag ('True' || 'False') indicating whether the
+                          transaction should be visible to other users.
+        comment (str, optional): An optional comment about the transaction.
+        quantity_in_usd (float, optional): The quantity of the transaction in USD,
+                                           applicable only to market orders.
+        quantity (float, optional): The quantity of coins to transact, required for
+                                    limit and stop orders.
+        price_per_unit (float, optional): The price per unit in USD, required for limit
+                                          and stop orders.
+
+    Returns:
+        jsonify: A JSON object containing a message about the successful execution of
+                 the transaction or any errors encountered due to invalid or
+                 insufficient parameters.
+    """
     # Validate JSON request
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -664,6 +722,24 @@ def process_buy_transaction():
 @api.route("/coins/historical/ohlc", methods=["GET"])
 @jwt_required()
 def get_coin_historical_ohlc_data():
+    """
+    Fetches the historical daily OHLC data for a specified cryptocurrency over the past
+    year.
+
+    This endpoint retrieves daily OHLC data from the CoinGecko API for a cryptocurrency
+    identified by the `coin_id` provided as a request parameter. This function requires
+    a JWT token for authorization.
+
+    Parameters:
+        coin_id (str): A unique identifier for the cryptocurrency. This should be
+                       passed as a query parameter.
+
+    Returns:
+        jsonify: A JSON object containing the historical daily OHLC data if successful.
+                 The data includes each day's timestamp and volume in USD. If there are
+                 any issues with the `coin_id` (such as missing or invalid),
+                 appropriate error messages and status codes are returned.
+    """
     coin_id = request.args.get("coin_id")
 
     if not coin_id:
@@ -693,6 +769,24 @@ def get_coin_historical_ohlc_data():
 @api.route("/coins/historical/price", methods=["GET"])
 @jwt_required()
 def get_coin_historical_price_data():
+    """
+    Fetches the historical daily price data for a specified cryptocurrency over the
+    past year.
+
+    This endpoint retrieves daily price data from the CoinGecko API for a
+    cryptocurrency identified by the `coin_id` provided as a request parameter. This
+    function requires a JWT token for authorization.
+
+    Parameters:
+        coin_id (str): A unique identifier for the cryptocurrency. This should be
+                       passed as a query parameter.
+
+    Returns:
+        jsonify: A JSON object containing the historical daily price data if
+                 successful. The data includes each day's timestamp and volume in USD.
+                 If there are any issues with the `coin_id` (such as missing or
+                 invalid), appropriate error messages and status codes are returned.
+    """
     coin_id = request.args.get("coin_id")
 
     if not coin_id:
@@ -722,6 +816,24 @@ def get_coin_historical_price_data():
 @api.route("/coins/historical/market_cap", methods=["GET"])
 @jwt_required()
 def get_coin_historical_market_cap_data():
+    """
+    Fetches the historical daily market cap data for a specified cryptocurrency
+    over the past year.
+
+    This endpoint retrieves daily trading market cap data from the CoinGecko API for a
+    cryptocurrency identified by the `coin_id` provided as a request parameter. This
+    function requires a JWT token for authorization.
+
+    Parameters:
+        coin_id (str): A unique identifier for the cryptocurrency. This should be
+                       passed as a query parameter.
+
+    Returns:
+        jsonify: A JSON object containing the historical daily market cap data if
+                 successful. The data includes each day's timestamp and market cap in
+                 USD. If there are any issues with the `coin_id` (such as missing or
+                 invalid), appropriate error messages and status codes are returned.
+    """
     coin_id = request.args.get("coin_id")
 
     if not coin_id:
@@ -751,6 +863,24 @@ def get_coin_historical_market_cap_data():
 @api.route("/coins/historical/volume", methods=["GET"])
 @jwt_required()
 def get_coin_historical_volume_data():
+    """
+    Fetches the historical daily trading volume data for a specified cryptocurrency
+    over the past year.
+
+    This endpoint retrieves daily trading volume data from the CoinGecko API for a
+    cryptocurrency identified by the `coin_id` provided as a request parameter. This
+    function requires a JWT token for authorization.
+
+    Parameters:
+        coin_id (str): A unique identifier for the cryptocurrency. This should be
+                       passed as a query parameter.
+
+    Returns:
+        jsonify: A JSON object containing the historical daily trading volumes if
+                 successful. The data includes each day's timestamp and volume in USD.
+                 If there are any issues with the `coin_id` (such as missing or
+                 invalid), appropriate error messages and status codes are returned.
+    """
     coin_id = request.args.get("coin_id")
 
     if not coin_id:
@@ -780,6 +910,26 @@ def get_coin_historical_volume_data():
 @api.route("/coins/news", methods=["GET"])
 @jwt_required()
 def get_coin_news_articles():
+    """
+    Fetches news articles from Yahoo News related to a specified cryptocurrency coin.
+
+    This endpoint retrieves news articles for a given cryptocurrency using the coin ID
+    provided in the request parameters. It uses a Yahoo news scraper to fetch relevant
+    articles. The function requires a JWT token for authorization.
+
+    Parameters:
+        coin_id (str): A unique identifier for the cryptocurrency. This should be
+                       passed as a query parameter.
+        page (int, optional): The page number of the news results to return. Defaults
+                              to 1 if not specified.
+
+    Returns:
+        jsonify: A JSON object containing a list of news articles with their details
+                 such as title, url, timestamp, description, and publisher, if
+                 successful. If there are any issues with the request parameters (such
+                 as missing or invalid `coin_id` or `page`), appropriate error messages
+                 and status codes are returned.
+    """
     coin_id = request.args.get("coin_id")
     page = int(request.args.get("page", 1))
 
@@ -832,6 +982,32 @@ def get_coin_news_articles():
 @api.route("/coins/reddit", methods=["GET"])
 @jwt_required()
 def get_coin_reddit_posts():
+    """
+    Fetches Reddit posts related to a specified cryptocurrency using its coin ID.
+
+    This endpoint requires JWT authentication and utilizes the RedditScraper object
+    to search for the most relevant posts from the past week. The coin ID must be
+    provided as a query parameter, and an optional 'after' parameter can be used
+    to paginate through the results. The value of the 'after'parameter should be the
+    'fullname' of the last post in the current list.
+
+    Parameters:
+        coin_id (str): The unique identifier for the cryptocurrency, passed as a query
+                       parameter.
+        after (str): A cursor for pagination, passed as a query parameter. Defaults to
+                     an empty string.
+
+    Returns:
+        json: A JSON response containing the fetched Reddit posts or an error message.
+            The successful response includes a list of posts with details such as title,
+            thumbnail, content, subreddit, score, comment count, post ID, post URL, post fullname,
+            and a human-readable timestamp. Each post is represented as a dictionary within the list.
+            Error responses are sent with appropriate HTTP status codes and messages indicating
+            missing or invalid parameters.
+
+    Raises:
+        HTTP 400: If 'coin_id' is missing or invalid, indicating client-side input errors.
+    """
     coin_id = request.args.get("coin_id")
     after = request.args.get("after", "")
 

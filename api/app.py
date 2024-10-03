@@ -24,6 +24,8 @@ api = Blueprint("api", __name__)
 # following format: [<coin_name>, <coin_id>].
 cache = {"coins_list": [], "timestamp": 0}
 
+# ******************** GENERAL API ENDPOINTS ********************
+
 
 @api.route("/")
 def home():
@@ -42,6 +44,47 @@ def home():
         ),
         200,
     )
+
+
+@api.before_request
+def cache_coin_names():
+    """
+    Caches the names and IDs of all cryptocurrencies from the CoinGecko API before
+    handling any request.
+
+    This function is executed before each request to ensure that the cache of
+    cryptocurrency names and IDs is up-to-date. It checks if the cache has been updated
+    within the last 5 minutes. If not, it fetches the latest list of cryptocurrencies
+    from the CoinGecko API and updates the cache. This helps in minimising API calls
+    and also because the CoinGecko API updates the list of coins every 5 minutes.
+
+    The cache is stored in a dictionary with a 'timestamp' key to track the last update
+    time and a 'coins_list' key containing a list of [name, id] pairs of the coins.
+
+    No parameters.
+    No returns.
+
+    Side effects:
+        Updates the global cache dictionary with the latest cryptocurrency data from the CoinGecko API if more than 5 minutes have passed since the last update.
+    """
+    # Fetch all coins from the CoinGecko API (update this cache every 5 minutes since
+    # the CoinGecko API updates the list of coins every 5 minutes)
+    current_time = time.time()
+
+    if current_time - cache["timestamp"] > 300:
+        url = "https://api.coingecko.com/api/v3/coins/list"
+
+        response = requests.get(url, headers=COINGECKO_API_HEADERS)
+        coins_list = response.json()
+        cache["coins_list"] = []
+
+        for coin in coins_list:
+            cache["coins_list"].append([coin["name"].lower(), coin["id"]])
+
+        cache["timestamp"] = current_time
+
+
+# ******************** TOKEN ENDPOINTS ********************
 
 
 @api.route("/token/generate", methods=["POST"])
@@ -111,6 +154,7 @@ def refresh():
     return jsonify(access_token=new_access_token), 200
 
 
+# ******************** PORTFOLIO ENDPOINTS ********************
 @api.route("/portfolio/assets", methods=["GET"])
 @jwt_required()
 def get_portfolio_assets():
@@ -243,113 +287,7 @@ def get_total_value_history():
     return jsonify(res), 200
 
 
-@api.before_request
-def cache_coin_names():
-    """
-    Caches the names and IDs of all cryptocurrencies from the CoinGecko API before
-    handling any request.
-
-    This function is executed before each request to ensure that the cache of
-    cryptocurrency names and IDs is up-to-date. It checks if the cache has been updated
-    within the last 5 minutes. If not, it fetches the latest list of cryptocurrencies
-    from the CoinGecko API and updates the cache. This helps in minimising API calls
-    and also because the CoinGecko API updates the list of coins every 5 minutes.
-
-    The cache is stored in a dictionary with a 'timestamp' key to track the last update
-    time and a 'coins_list' key containing a list of [name, id] pairs of the coins.
-
-    No parameters.
-    No returns.
-
-    Side effects:
-        Updates the global cache dictionary with the latest cryptocurrency data from the CoinGecko API if more than 5 minutes have passed since the last update.
-    """
-    # Fetch all coins from the CoinGecko API (update this cache every 5 minutes since
-    # the CoinGecko API updates the list of coins every 5 minutes)
-    current_time = time.time()
-
-    if current_time - cache["timestamp"] > 300:
-        url = "https://api.coingecko.com/api/v3/coins/list"
-
-        response = requests.get(url, headers=COINGECKO_API_HEADERS)
-        coins_list = response.json()
-        cache["coins_list"] = []
-
-        for coin in coins_list:
-            cache["coins_list"].append([coin["name"].lower(), coin["id"]])
-
-        cache["timestamp"] = current_time
-
-
-@api.route("/coins/search", methods=["GET"])
-@jwt_required()
-def search_coins():
-    """
-    Searches for coins with names similar to the input coin name, using a fuzzy
-    matching algorithm. Returns a list of similar coins in the format of a list, with
-    each element of the list being of the following format: [<coin_name>, <coin_id>].
-
-    This endpoint processes GET requests with JSON body content that must include:
-    - `coin_name`: A string representing the name of the coin to search for.
-    - `limit`: An optional integer to limit the number of similar coins returned
-      (default is 10).
-    - `similarity_threshold`: An optional integer (percentage) defining the minimum
-      similarity score for matches (default is 80).
-
-    The function fetches the list of all coins from the CoinGecko API, caching the
-    results and updating the cache every 5 minutes to minimize frequent API calls (and
-    also because the CoinGecko API updates its list of coins every 5 minutes). It then
-    performs a fuzzy search for coins with names similar to `coin_name` based on the
-    provided `similarity_threshold`.
-
-    Returns:
-        - A JSON response containing a list of similar coins in the format
-          [<coin_name>, <coin_id>], along with a message describing the format of the
-          returned data.
-    """
-    # Validate JSON request
-    if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
-
-    # Validate JSON request body parameters
-    input_coin_name = request.json.get("coin_name", None)
-    input_limit = request.json.get("limit", 10)
-    input_similarity_threshold = request.json.get("similarity_threshold", 80)
-
-    if not input_coin_name:
-        return jsonify({"msg": "Missing coin_name"}), 400
-
-    # Convert input to lowercase
-    input_coin_name = input_coin_name.lower()
-
-    cache_coin_names()
-
-    # Search for similar coins
-    coin_names = [coin[0] for coin in cache["coins_list"]]
-
-    similar_coins = process.extract(
-        query=input_coin_name,
-        choices=coin_names,
-        limit=input_limit,
-        score_cutoff=input_similarity_threshold,
-    )
-
-    # Format the output
-    res = []
-    for coin in similar_coins:
-        res.append([coin[0], cache["coins_list"][coin[2]][1]])
-
-    return (
-        jsonify(
-            {
-                "msg": "Format = <coin_name, coin_id>",
-                "similar_coins": res,
-            }
-        ),
-        200,
-    )
-
-
+# ******************** TRANSACTION ENDPOINTS ********************
 @api.route("/transactions", methods=["GET"])
 @jwt_required()
 def get_transactions():
@@ -719,6 +657,9 @@ def process_buy_transaction():
     return jsonify({"msg": "Transaction executed successfully"}), 200
 
 
+# ******************** COIN DATA ENDPOINTS ********************
+
+
 @api.route("/coins/historical/ohlc", methods=["GET"])
 @jwt_required()
 def get_coin_historical_ohlc_data():
@@ -764,6 +705,75 @@ def get_coin_historical_ohlc_data():
     data = response.json()
 
     return jsonify(data), 200
+
+
+@api.route("/coins/search", methods=["GET"])
+@jwt_required()
+def search_coins():
+    """
+    Searches for coins with names similar to the input coin name, using a fuzzy
+    matching algorithm. Returns a list of similar coins in the format of a list, with
+    each element of the list being of the following format: [<coin_name>, <coin_id>].
+
+    This endpoint processes GET requests with JSON body content that must include:
+    - `coin_name`: A string representing the name of the coin to search for.
+    - `limit`: An optional integer to limit the number of similar coins returned
+      (default is 10).
+    - `similarity_threshold`: An optional integer (percentage) defining the minimum
+      similarity score for matches (default is 80).
+
+    The function fetches the list of all coins from the CoinGecko API, caching the
+    results and updating the cache every 5 minutes to minimize frequent API calls (and
+    also because the CoinGecko API updates its list of coins every 5 minutes). It then
+    performs a fuzzy search for coins with names similar to `coin_name` based on the
+    provided `similarity_threshold`.
+
+    Returns:
+        - A JSON response containing a list of similar coins in the format
+          [<coin_name>, <coin_id>], along with a message describing the format of the
+          returned data.
+    """
+    # Validate JSON request
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    # Validate JSON request body parameters
+    input_coin_name = request.json.get("coin_name", None)
+    input_limit = request.json.get("limit", 10)
+    input_similarity_threshold = request.json.get("similarity_threshold", 80)
+
+    if not input_coin_name:
+        return jsonify({"msg": "Missing coin_name"}), 400
+
+    # Convert input to lowercase
+    input_coin_name = input_coin_name.lower()
+
+    cache_coin_names()
+
+    # Search for similar coins
+    coin_names = [coin[0] for coin in cache["coins_list"]]
+
+    similar_coins = process.extract(
+        query=input_coin_name,
+        choices=coin_names,
+        limit=input_limit,
+        score_cutoff=input_similarity_threshold,
+    )
+
+    # Format the output
+    res = []
+    for coin in similar_coins:
+        res.append([coin[0], cache["coins_list"][coin[2]][1]])
+
+    return (
+        jsonify(
+            {
+                "msg": "Format = <coin_name, coin_id>",
+                "similar_coins": res,
+            }
+        ),
+        200,
+    )
 
 
 @api.route("/coins/historical/price", methods=["GET"])
@@ -905,6 +915,9 @@ def get_coin_historical_volume_data():
     data = response.json()["total_volumes"]
 
     return jsonify(data), 200
+
+
+# ******************** NEWS AND REDDIT ENDPOINTS ********************
 
 
 @api.route("/coins/news", methods=["GET"])

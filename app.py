@@ -8,8 +8,11 @@ from constants import MAIL_USERNAME
 from constants import MAIL_PASSWORD
 from extensions import db, login_manager, jwt
 import uuid
-from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
-from constants import JWT_SECRET_KEY, JWT_ACCESS_TOKEN_EXPIRES_HOURS
+from constants import (
+    JWT_SECRET_KEY,
+    JWT_ACCESS_TOKEN_EXPIRES_HOURS,
+    JWT_REFRESH_TOKEN_EXPIRES_DAYS,
+)
 import threading
 from flask_cors import CORS
 from datetime import timedelta
@@ -58,6 +61,10 @@ def create_app():
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         hours=JWT_ACCESS_TOKEN_EXPIRES_HOURS
     )
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(
+        days=JWT_REFRESH_TOKEN_EXPIRES_DAYS
+    )
+
     # Initialize JWTManager with the app
     jwt.init_app(app)
 

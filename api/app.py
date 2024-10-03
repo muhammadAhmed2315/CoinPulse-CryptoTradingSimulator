@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, Blueprint
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
+    create_refresh_token,
     jwt_required,
     get_jwt_identity,
 )
@@ -11,7 +12,6 @@ from rapidfuzz import process
 import time
 import requests
 from constants import COINGECKO_API_HEADERS
-from collections import OrderedDict
 from core.app import update_user_wallet_value_in_background
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 from RedditScraper.RedditScraper import RedditScraper
@@ -88,7 +88,17 @@ def generate_token():
 
     # Create an access token
     access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token), 200
+    refresh_token = create_refresh_token(identity=user.id)
+
+    return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+
+
+@api.route("/token/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    current_user = get_jwt_identity()
+    new_access_token = create_access_token(identity=current_user)
+    return jsonify(access_token=new_access_token), 200
 
 
 @api.route("/portfolio/assets", methods=["GET"])
@@ -242,7 +252,6 @@ def cache_coin_names():
         cache["timestamp"] = current_time
 
 
-# Change this to use url parameters instead of JSON body
 @api.route("/coins/search", methods=["GET"])
 @jwt_required()
 def search_coins():

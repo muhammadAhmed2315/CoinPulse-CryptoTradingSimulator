@@ -475,6 +475,9 @@ function addTransactionButtonEventListeners() {
     sellButton.classList.toggle("transaction-btn-active");
 
     currentTransactionType = "buy";
+
+    document.querySelector(".nts-place-order-btn").textContent =
+      "PLACE BUY ORDER";
   });
 
   // Sell button click event listener
@@ -483,6 +486,9 @@ function addTransactionButtonEventListeners() {
     sellButton.classList.toggle("transaction-btn-active");
 
     currentTransactionType = "sell";
+
+    document.querySelector(".nts-place-order-btn").textContent =
+      "PLACE SELL ORDER";
   });
 }
 
@@ -811,7 +817,7 @@ async function main() {
   updateNewTradeCoinInfo();
 
   // Add event listeners for the various buttons in the new trade sidebar
-  await addTransactionButtonEventListeners();
+  addTransactionButtonEventListeners();
   addOrderTypeButtonEventListeners();
   addOrderTypeInputEventListeners();
   addPlaceBuyOrderButtonEventListener();

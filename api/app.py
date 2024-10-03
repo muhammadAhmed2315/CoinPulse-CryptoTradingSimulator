@@ -448,7 +448,7 @@ def cancel_transaction():
     )
 
 
-@api.route("/transactions/execute/buy", methods=["POST"])
+@api.route("/transactions/execute", methods=["POST"])
 @jwt_required()
 def process_buy_transaction():
     # Validate JSON request
@@ -456,6 +456,7 @@ def process_buy_transaction():
         return jsonify({"msg": "Missing JSON in request"}), 400
 
     # Validate JSON request body parameters
+    transaction_type = request.json.get("transaction_type")
     order_type = request.json.get("order_type")
     coin_id = request.json.get("coin_id")
     visibility = request.json.get("visibility")
@@ -464,10 +465,23 @@ def process_buy_transaction():
     quantity = request.json.get("quantity", None)
     price_per_unit = request.json.get("price_per_unit", None)
 
+    if not transaction_type:
+        return jsonify({"msg": "Missing transaction_type"}), 400
+    if transaction_type not in ["buy", "sell"]:
+        return (
+            jsonify({"msg": "Invalid transaction_type. Must be 'buy' or 'sell'."}),
+            400,
+        )
+
     if not order_type:
         return jsonify({"msg": "Missing order_type"}), 400
     if order_type not in ["market", "limit", "stop"]:
-        return jsonify({"msg": "Invalid order_type"}), 400
+        return (
+            jsonify(
+                {"msg": "Invalid order_type. Must be 'market', 'limit', or 'stop'."}
+            ),
+            400,
+        )
 
     if not coin_id:
         return jsonify({"msg": "Missing coin_id"}), 400
@@ -485,6 +499,11 @@ def process_buy_transaction():
 
     if not visibility:
         return jsonify({"msg": "Missing visibility"}), 400
+    if visibility not in ["True", "False"]:
+        return (
+            jsonify({"msg": "Invalid visibility value. Must be 'True' or 'False'."}),
+            400,
+        )
 
     if order_type == "market":
         if not quantity_in_usd and not quantity:
@@ -503,6 +522,7 @@ def process_buy_transaction():
 
         if quantity_in_usd and quantity_in_usd <= 0:
             return jsonify({"msg": "Invalid quantity_in_usd"}), 400
+
     elif order_type == "limit" or order_type == "stop":
         if not quantity:
             return jsonify({"msg": "Missing quantity"}), 400
@@ -533,22 +553,58 @@ def process_buy_transaction():
     wallet = Wallet.query.filter_by(owner_id=current_user_id).first()
 
     # Make sure user has enough USD balance to execute a buy order
-    if order_type == "market":
-        if quantity_in_usd:
-            if not wallet.has_enough_balance(quantity_in_usd):
-                return jsonify({"msg": "Insufficient balance to make this trade"}), 400
-        if quantity:
-            if not wallet.has_enough_balance(current_coin_price * quantity):
-                return jsonify({"msg": "Insufficient balance to make this trade"}), 400
-    elif order_type == "limit" or order_type == "stop":
-        if not wallet.has_enough_balance(price_per_unit * quantity):
-            return jsonify({"msg": "Insufficient balance to make this trade"}), 400
+    if transaction_type == "buy":
+        if order_type == "market":
+            if quantity_in_usd:
+                if not wallet.has_enough_balance(quantity_in_usd):
+                    return (
+                        jsonify({"msg": "Insufficient USD balance to make this trade"}),
+                        400,
+                    )
+            elif quantity:
+                if not wallet.has_enough_balance(current_coin_price * quantity):
+                    return (
+                        jsonify({"msg": "Insufficient USD balance to make this trade"}),
+                        400,
+                    )
+        elif order_type == "limit" or order_type == "stop":
+            if not wallet.has_enough_balance(price_per_unit * quantity):
+                return (
+                    jsonify({"msg": "Insufficient USD balance to make this trade"}),
+                    400,
+                )
+    elif transaction_type == "sell":
+        if order_type == "market":
+            if quantity_in_usd:
+                if not wallet.has_enough_coins(
+                    coin_id, quantity_in_usd / current_coin_price
+                ):
+                    return (
+                        jsonify(
+                            {"msg": "Insufficient coin balance to make this trade"}
+                        ),
+                        400,
+                    )
+            elif quantity:
+                if not wallet.has_enough_coins(coin_id, quantity):
+                    return (
+                        jsonify(
+                            {"msg": "Insufficient coin balance to make this trade"}
+                        ),
+                        400,
+                    )
+        elif order_type == "limit" or order_type == "stop":
+            if not wallet.has_enough_coins(coin_id, quantity):
+                return (
+                    jsonify({"msg": "Insufficient coin balance to make this trade"}),
+                    400,
+                )
 
     # Execute the buy transaction
     # Create transaction
     transaction = Transaction(
         status="finished" if order_type == "market" else "open",
-        transactionType="buy",
+        transactionType=transaction_type,
         orderType=order_type,
         coin_id=coin_id,
         quantity=quantity if quantity else quantity_in_usd / current_coin_price,
@@ -559,13 +615,23 @@ def process_buy_transaction():
         visibility=True if visibility == "True" else False,
     )
 
-    if order_type == "market":
+    if transaction_type == "buy" and order_type == "market":
         # Update wallet balance
         wallet.update_balance_subtract(
             quantity_in_usd if quantity_in_usd else quantity * current_coin_price
         )
         # Update wallet assets dictionary
         wallet.update_assets_add(
+            coin_id, quantity if quantity else quantity_in_usd / current_coin_price
+        )
+    elif transaction_type == "sell" and order_type == "market":
+        # Update wallet balance
+        wallet.update_balance_add(
+            quantity_in_usd if quantity_in_usd else quantity * current_coin_price
+        )
+
+        # Update wallet assets dictionary
+        wallet.update_assets_subtract(
             coin_id, quantity if quantity else quantity_in_usd / current_coin_price
         )
 

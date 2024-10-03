@@ -410,16 +410,17 @@ function displayTransactionData() {
         .setAttribute("title", transactionsData[i].coin_id);
 
       // Update transaction quantity
-      row.querySelector(".transaction-quantity").textContent = formatFloatToUSD(
-        transactionsData[i].quantity,
-        2
+      row.querySelector(".transaction-quantity").textContent = transactionsData[
+        i
+      ].quantity.toLocaleString("en-US", {
+        maximumFractionDigits: 100,
+      });
+      row.querySelector(".transaction-quantity").setAttribute(
+        "title",
+        transactionsData[i].quantity.toLocaleString("en-US", {
+          maximumFractionDigits: 100,
+        })
       );
-      row
-        .querySelector(".transaction-quantity")
-        .setAttribute(
-          "title",
-          formatFloatToUSD(transactionsData[i].quantity, 2)
-        );
 
       // Update transaction price
       row.querySelector(".transaction-price").textContent =

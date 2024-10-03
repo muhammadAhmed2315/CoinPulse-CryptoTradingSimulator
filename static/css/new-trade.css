@@ -211,7 +211,7 @@
 /* *************** ORDER TYPE BUTTONS *************** */
 .nts-order-type-btns {
   display: flex;
-  gap: 2.4rem;
+  gap: 1.8rem;
   margin-bottom: 1.6rem;
 }
 
@@ -234,6 +234,7 @@
   height: 1.6rem;
   filter: brightness(0) saturate(100%) invert(68%) sepia(5%) saturate(1595%)
     hue-rotate(202deg) brightness(90%) contrast(85%);
+  margin-right: 0.4rem;
 }
 
 .order-type-btn p {

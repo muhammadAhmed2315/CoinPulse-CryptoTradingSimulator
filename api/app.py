@@ -540,9 +540,11 @@ def process_buy_transaction():
         if quantity:
             if not wallet.has_enough_balance(current_coin_price * quantity):
                 return jsonify({"msg": "Insufficient balance to make this trade"}), 400
+    elif order_type == "limit" or order_type == "stop":
+        if not wallet.has_enough_balance(price_per_unit * quantity):
+            return jsonify({"msg": "Insufficient balance to make this trade"}), 400
 
     # Execute the buy transaction
-
     # Create transaction
     transaction = Transaction(
         status="finished" if order_type == "market" else "open",

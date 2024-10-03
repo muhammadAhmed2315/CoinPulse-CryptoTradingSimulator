@@ -13,6 +13,7 @@ import requests
 from constants import COINGECKO_API_HEADERS
 from collections import OrderedDict
 from core.app import update_user_wallet_value_in_background
+from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 
 
 api = Blueprint("api", __name__)
@@ -647,3 +648,168 @@ def process_buy_transaction():
     update_user_wallet_value_in_background(wallet.id)
 
     return jsonify({"msg": "Transaction executed successfully"}), 200
+
+
+@api.route("/coins/historical/ohlc", methods=["GET"])
+@jwt_required()
+def get_coin_historical_ohlc_data():
+    coin_id = request.args.get("coin_id")
+
+    if not coin_id:
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    # Check coin_id validity
+    valid_coin_ids = [coin[1] for coin in cache["coins_list"]]
+    if coin_id not in valid_coin_ids:
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    # Get OHLC data for previous year from CoinGecko API
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days=365"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+
+    return jsonify(data), 200
+
+
+@api.route("/coins/historical/price", methods=["GET"])
+@jwt_required()
+def get_coin_historical_price_data():
+    coin_id = request.args.get("coin_id")
+
+    if not coin_id:
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    # Check coin_id validity
+    valid_coin_ids = [coin[1] for coin in cache["coins_list"]]
+    if coin_id not in valid_coin_ids:
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    # Get price data for previous year from CoinGecko API
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()["prices"]
+
+    return jsonify(data), 200
+
+
+@api.route("/coins/historical/market_cap", methods=["GET"])
+@jwt_required()
+def get_coin_historical_market_cap_data():
+    coin_id = request.args.get("coin_id")
+
+    if not coin_id:
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    # Check coin_id validity
+    valid_coin_ids = [coin[1] for coin in cache["coins_list"]]
+    if coin_id not in valid_coin_ids:
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    # Get price data for previous year from CoinGecko API
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()["market_caps"]
+
+    return jsonify(data), 200
+
+
+@api.route("/coins/historical/volume", methods=["GET"])
+@jwt_required()
+def get_coin_historical_volume_data():
+    coin_id = request.args.get("coin_id")
+
+    if not coin_id:
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    # Check coin_id validity
+    valid_coin_ids = [coin[1] for coin in cache["coins_list"]]
+    if coin_id not in valid_coin_ids:
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    # Get price data for previous year from CoinGecko API
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
+
+    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    data = response.json()["total_volumes"]
+
+    return jsonify(data), 200
+
+
+@api.route("/coins/news", methods=["GET"])
+@jwt_required()
+def get_coin_news_articles():
+    coin_id = request.args.get("coin_id")
+    page = int(request.args.get("page", 1))
+
+    if not request.args.get("coin_id"):
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    # Get the coin name from the coin_id
+    query = ""
+    for id, name in cache["coins_list"]:
+        if id == coin_id:
+            query = name
+            break
+
+    if query == "":
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    # Create YahooNewsScraper object
+    scraper = YahooNewsScaper()
+
+    # Search for news articles
+    articles = scraper.search(query, page)
+
+    res = []
+
+    # Extract necessary data from each article
+    for article in articles:
+        temp = {}
+        temp["title"] = article.title
+        temp["url"] = article.url
+        temp["timestamp"] = article.timestamp
+        temp["description"] = article.description
+        temp["publisher"] = article.publisher
+        res.append(temp)
+
+    return jsonify(
+        {"success": "News articles successfully fetched", "articles": res}, 200
+    )

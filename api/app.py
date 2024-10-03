@@ -14,6 +14,8 @@ from constants import COINGECKO_API_HEADERS
 from collections import OrderedDict
 from core.app import update_user_wallet_value_in_background
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
+from RedditScraper.RedditScraper import RedditScraper
+from core.app import time_ago
 
 
 api = Blueprint("api", __name__)
@@ -775,6 +777,9 @@ def get_coin_news_articles():
     if not request.args.get("coin_id"):
         return jsonify({"msg": "Missing coin_id"}), 400
 
+    if page < 1:
+        return jsonify({"msg": "Invalid page number"}), 400
+
     # Get the coin name from the coin_id
     query = ""
     for id, name in cache["coins_list"]:
@@ -813,3 +818,57 @@ def get_coin_news_articles():
     return jsonify(
         {"success": "News articles successfully fetched", "articles": res}, 200
     )
+
+
+@api.route("/coins/reddit", methods=["GET"])
+@jwt_required()
+def get_coin_reddit_posts():
+    coin_id = request.args.get("coin_id")
+    after = request.args.get("after", "")
+
+    if not request.args.get("coin_id"):
+        return jsonify({"msg": "Missing coin_id"}), 400
+
+    # Get the coin name from the coin_id
+    query = ""
+    for id, name in cache["coins_list"]:
+        if id == coin_id:
+            query = name
+            break
+
+    if query == "":
+        return (
+            jsonify(
+                {
+                    "msg": "Invalid coin_id. Use the '/coins/search' endpoint to find the ID of the coin you wish to buy."
+                }
+            ),
+            400,
+        )
+
+    # Create a RedditScraper object
+    scraper = RedditScraper()
+
+    # Search for Reddit posts
+    posts = scraper.search_keyword_in_reddit(
+        sort="relevance", keyword=query, time="week", limit=10, after=after
+    )
+
+    res = []
+
+    # Extract the necessary data from each post
+    for post in posts:
+        temp = {}
+        temp["title"] = post.title
+        temp["thumbnail"] = post.thumbnail if post.thumbnail != "self" else ""
+        temp["content"] = post.content
+        temp["subreddit"] = post.subreddit
+        temp["score"] = post.score
+        temp["comment_count"] = post.comment_count
+        temp["id"] = post.id
+        temp["url"] = post.url
+        temp["fullname"] = post.fullname
+        temp["timestamp"] = time_ago(post.timestamp)
+        res.append(temp)
+
+    return jsonify({"success": "Reddit posts successfully fetched", "posts": res}, 200)

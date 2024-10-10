@@ -62,6 +62,9 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
 ## Deployed Site
 
 The website is deployed on [CoinPulse](https://coin-pulse-ffda7bc3f791.herokuapp.com/dashboard).
+NOTE: If you don't wish to create an account, you can use the following login and password:
+- muhahmed3758@gmail.com
+- Password123/
 
 ## Screenshots
 

@@ -4,6 +4,13 @@
 
 A Flask-based web application that allows users to simulate cryptocurrency trading in a realistic environment. Users can place different types of trades, view historical trade data, monitor their portfolio over time, and interact with other users by liking their trades. The website also offers a RESTful API to allow programmatic interaction.
 
+## Deployed Site
+
+The website is deployed on [CoinPulse](https://coin-pulse-ffda7bc3f791.herokuapp.com/dashboard).
+NOTE: If you don't wish to create an account, you can use the following login and password:
+- muhahmed3758@gmail.com
+- Password123/
+
 ## Features
 
 - **User Authentication:** Register via email or OAuth (Discord/Google), email verification, and password reset options.
@@ -58,13 +65,6 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
 - **Front-end:** HTML, CSS, JavaScript
 - **APIs:** CoinGecko API for live cryptocurrency data, Reddit API for Reddit posts about a specific coin
 - **Authentication:** OAuth (Discord, Google), JWT for API access
-
-## Deployed Site
-
-The website is deployed on [CoinPulse](https://coin-pulse-ffda7bc3f791.herokuapp.com/dashboard).
-NOTE: If you don't wish to create an account, you can use the following login and password:
-- muhahmed3758@gmail.com
-- Password123/
 
 ## Screenshots
 

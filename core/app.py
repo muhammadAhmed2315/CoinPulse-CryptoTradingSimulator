@@ -882,7 +882,8 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 # Get current total value of assets
                 curr_assets_value = 0
                 for key in wallet.assets:
-                    curr_assets_value += wallet.assets[key] * coin_market_prices[key]
+                    if key in coin_market_prices:
+                        curr_assets_value += wallet.assets[key] * coin_market_prices[key]
 
                 wallet.value_history.update_value_history(
                     wallet.balance, curr_assets_value, current_time

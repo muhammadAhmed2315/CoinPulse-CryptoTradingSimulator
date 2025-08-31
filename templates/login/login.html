@@ -14,13 +14,13 @@
 <h1 class="title title--login">Login</h1>
 
 <form method="post">
-  {{ form.hidden_tag() }} {{ form.email }}
+  {{ login_form.hidden_tag() }} {{ login_form.email }}
   <br />
 
-  {{ form.password }}
+  {{ login_form.password }}
   <br />
   <!-- PASSWORD ERROR MESSAGES -->
-  {% for error in form.password.errors %}
+  {% for error in login_form.password.errors %}
   <div class="invalid-feedback">{{ error }}</div>
   {% endfor %}
 
@@ -30,7 +30,11 @@
     >Forgot your password?</a
   >
 
-  {{ form.submit() }}
+  {{ login_form.submit_login() }}
+</form>
+
+<form method="post">
+  {{ test_form.hidden_tag() }} {{ test_form.submit_test() }}
 </form>
 
 <div class="alternative-logins">

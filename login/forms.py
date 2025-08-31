@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired
 
 
 class LoginForm(FlaskForm):
-    """Creates a form for users to log in with their email and password"""
+    """Creates a form for users to log in with their email and password."""
 
     email = StringField(
         render_kw={"placeholder": "Email", "class": "input input--email"},
@@ -17,7 +17,15 @@ class LoginForm(FlaskForm):
         },
         validators=[DataRequired()],
     )
-    submit = SubmitField("Login", render_kw={"class": "submit-btn"})
+    submit_login = SubmitField("Login", render_kw={"class": "submit-btn"})
+
+
+class TestAccountLoginForm(FlaskForm):
+    """Creates a form for users to log in to the test account."""
+
+    submit_test = SubmitField(
+        "Login to Test Account", render_kw={"class": "submit-btn submit-btn--test"}
+    )
 
 
 class PickUsernameForm(FlaskForm):

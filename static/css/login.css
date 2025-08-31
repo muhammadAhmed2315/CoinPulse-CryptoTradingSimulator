@@ -6,6 +6,20 @@ form {
   gap: 0;
 }
 
+/* ********** TEST LOGIN BUTTON ********** */
+.submit-btn--test {
+  background-color: #ff6b35 !important;
+  margin-top: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.submit-btn--test:hover,
+.submit-btn--test:active,
+.submit-btn--test:focus {
+  background-color: #e55a2b !important;
+  cursor: pointer;
+}
+
 /* ********** FORGOT PASSWORD  ********** */
 .link--forgot-password {
   margin-bottom: 1.6rem;

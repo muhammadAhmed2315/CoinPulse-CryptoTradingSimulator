@@ -16,7 +16,7 @@ from constants import DISCORD_OAUTH2_CLIENT_ID
 from constants import DISCORD_API_BASE_URL
 from constants import DISCORD_AUTHORIZATION_BASE_URL
 from constants import DISCORD_TOKEN_URL
-from login.forms import LoginForm, RegisterForm
+from login.forms import LoginForm, RegisterForm, TestAccountLoginForm
 from constants import TOKEN_GENERATOR_SECRET_KEY
 from validate_email_address import validate_email
 from constants import DISCORD_OAUTH2_CLIENT_SECRET
@@ -231,20 +231,23 @@ def login():
     if current_user.is_authenticated and current_user.verified:
         return redirect(url_for("core.dashboard"))
 
-    form = LoginForm()
+    login_form = LoginForm()
+    test_form = TestAccountLoginForm()
 
-    # Submit form handling
-    if form.is_submitted() and form.validate():
+    # Submit login form handling
+    if login_form.is_submitted() and login_form.validate():
         # Get user info from database
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.query.filter_by(email=login_form.email.data).first()
 
         if not user:
             # If user doesn't exist
-            form.password.errors.append("Incorrect email or password")
-            return render_template("login/login.html", form=form)
+            login_form.password.errors.append("Incorrect email or password")
+            return render_template(
+                "login/login.html", login_form=login_form, test_form=test_form
+            )
 
         # If user exists and their password is correct
-        if user.check_password(form.password.data):
+        if user.check_password(login_form.password.data):
             if user.verified == True:
                 # If user is already verified
                 login_user(user)
@@ -265,10 +268,29 @@ def login():
                     user_email=user.email,
                 )
         else:
-            form.password.errors.append("Incorrect email or password")
-            return render_template("login/login.html", form=form)
+            login_form.password.errors.append("Incorrect email or password")
+            return render_template(
+                "login/login.html", login_form=login_form, test_form=test_form
+            )
 
-    return render_template("login/login.html", form=form)
+    # Submit test account login form handling
+    if test_form.is_submitted():
+        test_email = "muhahmed3758@gmail.com"
+        test_password = "Password123/"
+
+        user = User.query.filter_by(email=test_email).first()
+
+        if user and user.check_password(test_password):
+            if user.verified:
+                login_user(user)
+                next = request.args.get("next")
+                if next == None or next[0] != "/":
+                    next = url_for("core.dashboard")
+                return redirect(next)
+
+    return render_template(
+        "login/login.html", login_form=login_form, test_form=test_form
+    )
 
 
 @user_authentication.route("/register", methods=["get", "post"])

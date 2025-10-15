@@ -44,13 +44,19 @@ class RedditScraper:
         # Name + version of application making the request
         self.headers = {"User-Agent": REDDIT_USER_AGENT}
 
-        # Requests access token from Reddit API
-        access_token = requests.post(
+        response = requests.post(
             "https://www.reddit.com/api/v1/access_token",
             auth=self.auth,
             data=self.data,
             headers=self.headers,
-        ).json()["access_token"]
+        )
+
+        # Requests access token from Reddit API
+        try:
+            access_token = response.json()["access_token"]
+        except:
+            print("Error: Reddit token request failed. Response was:", response.text)
+            access_token = None
 
         # Adds access token to header so that subsequent requests to the Reddit API
         # are made with the access token included

@@ -449,7 +449,7 @@ function resetPaginationButtons(): void {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   // Get top 100 coins data
   coinData.market_cap_desc = await fetchCoinsData();
 

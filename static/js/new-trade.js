@@ -71,7 +71,7 @@ function addNewTradeSidebarSearchEventListeners() {
     .addEventListener("input", function () {
       const input = this.value.trim();
       const resultsContainer = document.querySelector(
-        ".nts-search-box__results"
+        ".nts-search-box__results",
       );
 
       if (!input) {
@@ -83,7 +83,7 @@ function addNewTradeSidebarSearchEventListeners() {
 
       // Filter data based on input
       const filteredData = data.filter((item) =>
-        item.toLowerCase().includes(input.toLowerCase())
+        item.toLowerCase().includes(input.toLowerCase()),
       );
 
       // Display results
@@ -248,7 +248,7 @@ function updateNewTradeCoinInfo() {
   document.querySelector(".nts-trade-info__coin-balance div .coin-image").src =
     currentCoin.image;
   document.querySelector(
-    ".nts-trade-info__coin-balance .coin-balance"
+    ".nts-trade-info__coin-balance .coin-balance",
   ).textContent = currentCoin.balance.toFixed(4);
 
   // Update coin symbol images for the market, limit, and stop orders input fields
@@ -318,21 +318,21 @@ function addPlaceBuyOrderButtonEventListener() {
       // Get user input data based on order type
       if (orderType === "market") {
         quantity = parseFloat(
-          document.querySelector(".market-order--amount input").value
+          document.querySelector(".market-order--amount input").value,
         );
       } else if (orderType == "limit") {
         quantity = parseFloat(
-          document.querySelector(".limit-order--amount input").value
+          document.querySelector(".limit-order--amount input").value,
         );
         price_per_unit = parseFloat(
-          document.querySelector(".limit-order--price input").value
+          document.querySelector(".limit-order--price input").value,
         );
       } else if (orderType == "stop") {
         quantity = parseFloat(
-          document.querySelector(".stop-order--amount input").value
+          document.querySelector(".stop-order--amount input").value,
         );
         price_per_unit = parseFloat(
-          document.querySelector(".stop-order--price input").value
+          document.querySelector(".stop-order--price input").value,
         );
       }
 
@@ -795,7 +795,7 @@ export async function showNewTradeSidebarForSpecificCoin(coinId) {
 async function updatePortfolioBalanceElement() {
   const balance = await fetchPortfolioBalance();
   document.querySelector(
-    ".nts-trade-info__usd-balance .usd-balance"
+    ".nts-trade-info__usd-balance .usd-balance",
   ).textContent = "$" + formatFloatToUSD(balance, 2);
 }
 

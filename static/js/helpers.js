@@ -127,4 +127,3 @@ export function addMessagePopupCloseEventListener() {
         .querySelector(".message-popup-close-btn")
         ?.addEventListener("click", hideMessagePopup);
 }
-//# sourceMappingURL=helpers.js.map

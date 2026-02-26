@@ -419,7 +419,7 @@ function displayTransactionData() {
         "title",
         transactionsData[i].quantity.toLocaleString("en-US", {
           maximumFractionDigits: 100,
-        })
+        }),
       );
 
       // Update transaction price
@@ -429,7 +429,7 @@ function displayTransactionData() {
         .querySelector(".transaction-price")
         .setAttribute(
           "title",
-          "$" + formatFloatToUSD(transactionsData[i].price_per_unit, 2)
+          "$" + formatFloatToUSD(transactionsData[i].price_per_unit, 2),
         );
 
       // Update transaction price at execution
@@ -446,13 +446,13 @@ function displayTransactionData() {
 
       // Update transaction time
       row.querySelector(".transaction-time").textContent = formatUNIXTimestamp(
-        transactionsData[i].timestamp
+        transactionsData[i].timestamp,
       );
       row
         .querySelector(".transaction-time")
         .setAttribute(
           "title",
-          formatUNIXTimestamp(transactionsData[i].timestamp)
+          formatUNIXTimestamp(transactionsData[i].timestamp),
         );
 
       // Update action
@@ -469,7 +469,7 @@ function displayTransactionData() {
           .querySelector(".transaction-action img")
           .addEventListener("click", async function () {
             const result = await requestOpenTradeCancellation(
-              transactionsData[i].id
+              transactionsData[i].id,
             );
 
             if (result) {
@@ -479,7 +479,7 @@ function displayTransactionData() {
 
               // Change colour of status bubble
               row.querySelector(
-                ".transaction-status-bubble"
+                ".transaction-status-bubble",
               ).style.backgroundColor = "#EB5757";
             }
           });
@@ -721,7 +721,7 @@ function addSortingEventListeners() {
   // Adds a click event listener to each header for sorting functionality
   for (const heading of headingInfo) {
     const headerP = document.querySelector(
-      `.my-trades-table__header-${heading.cssClass} p`
+      `.my-trades-table__header-${heading.cssClass} p`,
     );
     headerP.addEventListener("click", async function () {
       resetAllTableHeadings();

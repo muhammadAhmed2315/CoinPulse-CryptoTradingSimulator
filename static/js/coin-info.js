@@ -73,7 +73,7 @@ function addSearchBarEventListeners() {
     .addEventListener("input", function () {
       const input = this.value.trim();
       const resultsContainer = document.querySelector(
-        ".coin-info__search-results"
+        ".coin-info__search-results",
       );
 
       if (!input) {
@@ -85,7 +85,7 @@ function addSearchBarEventListeners() {
 
       // Filter data based on input
       const filteredData = data.filter((item) =>
-        item.toLowerCase().includes(input.toLowerCase())
+        item.toLowerCase().includes(input.toLowerCase()),
       );
 
       // Display results
@@ -554,9 +554,8 @@ function updateCoinInfo() {
       "brightness(0) saturate(100%) invert(38%) sepia(8%) saturate(7345%) hue-rotate(322deg) brightness(111%) contrast(82%)";
     document.querySelector(".coin-price-change p").style.color = "#EB5757";
   }
-  document.querySelector(
-    ".coin-price-change p"
-  ).textContent = `${currentCoin.price_change_percentage_24h.toFixed(2)}% (1d)`;
+  document.querySelector(".coin-price-change p").textContent =
+    `${currentCoin.price_change_percentage_24h.toFixed(2)}% (1d)`;
 
   // Last updated text
   document.querySelector(".coin-last-updated").textContent =
@@ -580,14 +579,10 @@ function updateCoinInfo() {
     document.querySelector(".coin-market-cap .percentage-change").style.color =
       "#EB5757";
   }
-  document.querySelector(
-    ".coin-market-cap .percentage-change"
-  ).textContent = `${currentCoin.market_cap_change_percentage_24h.toFixed(
-    2
-  )}% (1d)`;
-  document.querySelector(
-    ".coin-market-cap .value"
-  ).textContent = `$${currentCoin.market_cap.toLocaleString()}`;
+  document.querySelector(".coin-market-cap .percentage-change").textContent =
+    `${currentCoin.market_cap_change_percentage_24h.toFixed(2)}% (1d)`;
+  document.querySelector(".coin-market-cap .value").textContent =
+    `$${currentCoin.market_cap.toLocaleString()}`;
 
   // Market cap rank
   const market_cap_rank = currentCoin.market_cap_rank
@@ -619,18 +614,16 @@ function updateCoinInfo() {
   document.querySelector(".coin-max-supply .value").textContent = max_supply;
 
   // Fully diluted market cap
-  document.querySelector(
-    ".coin-fully-diluted-market-cap .value"
-  ).textContent = `$${currentCoin.fully_diluted_valuation.toLocaleString()}`;
+  document.querySelector(".coin-fully-diluted-market-cap .value").textContent =
+    `$${currentCoin.fully_diluted_valuation.toLocaleString()}`;
 
   // All time high
   document.querySelector(".coin-ath img").style.filter =
     "brightness(0) saturate(100%) invert(38%) sepia(8%) saturate(7345%) hue-rotate(322deg) brightness(111%) contrast(82%)";
   document.querySelector(".coin-ath .percentage-change").style.color =
     "#EB5757";
-  document.querySelector(
-    ".coin-ath .percentage-change"
-  ).textContent = `${currentCoin.ath_change_percentage}%`;
+  document.querySelector(".coin-ath .percentage-change").textContent =
+    `${currentCoin.ath_change_percentage}%`;
   document.querySelector(".coin-ath .value").textContent = `$${currentCoin.ath
     .toFixed(2)
     .toLocaleString()}`;
@@ -642,9 +635,8 @@ function updateCoinInfo() {
     "brightness(0) saturate(100%) invert(55%) sepia(91%) saturate(414%) hue-rotate(98deg) brightness(94%) contrast(90%)";
   document.querySelector(".coin-atl .percentage-change").style.color =
     "#17C671";
-  document.querySelector(
-    ".coin-atl .percentage-change"
-  ).textContent = `${currentCoin.atl_change_percentage}%`;
+  document.querySelector(".coin-atl .percentage-change").textContent =
+    `${currentCoin.atl_change_percentage}%`;
   document.querySelector(".coin-atl .value").textContent = `$${currentCoin.atl
     .toFixed(2)
     .toLocaleString()}`;
@@ -652,9 +644,8 @@ function updateCoinInfo() {
     "(" + currentCoin.atl_date + ")";
 
   // Recent Coin News Heading
-  document.querySelector(
-    ".recent-news__title"
-  ).textContent = `Recent ${currentCoin.name} News`;
+  document.querySelector(".recent-news__title").textContent =
+    `Recent ${currentCoin.name} News`;
 }
 
 /**
@@ -764,7 +755,7 @@ function renderNewsArticles() {
 async function getAndRenderNewsArticles() {
   newsArticlesToRender = await getNewsArticles(
     currentCoin.name,
-    newsArticlesCurrentPage
+    newsArticlesCurrentPage,
   );
 
   renderNewsArticles();
@@ -922,9 +913,8 @@ function renderRedditPosts() {
   });
 
   // Recent Reddit Posts Heading
-  document.querySelector(
-    ".reddit-posts__title"
-  ).textContent = `Recent Reddit Posts on ${currentCoin.name}`;
+  document.querySelector(".reddit-posts__title").textContent =
+    `Recent Reddit Posts on ${currentCoin.name}`;
 }
 
 /**

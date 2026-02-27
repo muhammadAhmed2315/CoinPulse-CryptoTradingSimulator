@@ -71,6 +71,8 @@ export function scrollToSection(
 }
 
 // //////////////////// GET DICT OF ALL COIN NAMES + SYMBOLS + IDS ////////////////////
+export type CoinNamesDict = Record<string, [string, string]>;
+
 /**
  * Asynchronously retrieves all coin names from the CoinGecko API and organizes them
  * into a dictionary. Each key in the resulting dictionary is a unique coin name,
@@ -81,7 +83,9 @@ export function scrollToSection(
  * names and values are arrays of [symbol, API-specific ID]. If an error occurs during
  * fetch, logs the error to the console.
  */
-export async function getAllCoinNamesDict(): Promise<{} | undefined> {
+export async function getAllCoinNamesDict(): Promise<
+  CoinNamesDict | undefined
+> {
   const fetchOptions = {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -91,7 +95,7 @@ export async function getAllCoinNamesDict(): Promise<{} | undefined> {
     const response = await fetch("/get_all_coin_names", fetchOptions);
     const data = await response.json();
 
-    const result: Record<string, [string, string]> = {};
+    const result: CoinNamesDict = {};
 
     for (const coin of data) {
       // IMPORTANT: ID = API SPECIFIC ID, TICKERS = NOT UNIQUE, NAMES = UNIQUE, this

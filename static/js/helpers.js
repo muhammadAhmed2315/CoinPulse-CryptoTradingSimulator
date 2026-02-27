@@ -57,7 +57,6 @@ export function scrollToSection(event, sectionId, offset) {
         behavior: "smooth", // Optional smooth scrolling
     });
 }
-// //////////////////// GET DICT OF ALL COIN NAMES + SYMBOLS + IDS ////////////////////
 /**
  * Asynchronously retrieves all coin names from the CoinGecko API and organizes them
  * into a dictionary. Each key in the resulting dictionary is a unique coin name,
@@ -127,3 +126,4 @@ export function addMessagePopupCloseEventListener() {
         .querySelector(".message-popup-close-btn")
         ?.addEventListener("click", hideMessagePopup);
 }
+//# sourceMappingURL=helpers.js.map

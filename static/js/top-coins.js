@@ -360,3 +360,4 @@ async function main() {
     addSortDropdownEventListeners();
 }
 main();
+//# sourceMappingURL=top-coins.js.map

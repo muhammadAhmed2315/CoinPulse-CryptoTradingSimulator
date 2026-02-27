@@ -225,13 +225,15 @@ function renderFeedPosts(type: string): void {
     // Update the feedpost content
     // Update profile image
     (div.querySelector(".profile-img") as HTMLImageElement).src =
-      `../../static/img/profileLetters/${currFeedPost.username[0].toUpperCase()}.png`;
+      `../../static/img/profileLetters/${currFeedPost.username[0]!.toUpperCase()}.png`;
 
     // Update username
     div.querySelector(".username")!.textContent = currFeedPost.username;
 
     // Update timestamp
-    div.querySelector(".timestamp")!.textContent = String(currFeedPost.timestamp);
+    div.querySelector(".timestamp")!.textContent = String(
+      currFeedPost.timestamp,
+    );
 
     // Update order quantity
     if (currFeedPost.transaction_type === "buy") {
@@ -266,7 +268,8 @@ function renderFeedPosts(type: string): void {
     if (currFeedPost.comment) {
       div.querySelector(".feedpost-comment p")!.textContent =
         currFeedPost.comment;
-      (div.querySelector(".feedpost-comment p") as HTMLElement).style.fontSize = "2.6rem";
+      (div.querySelector(".feedpost-comment p") as HTMLElement).style.fontSize =
+        "2.6rem";
       (div.querySelector(".feedpost-comment p") as HTMLElement).style.color =
         "#000000";
     } else {
@@ -291,7 +294,9 @@ function renderFeedPosts(type: string): void {
           const response = (await updateLikeCounter(true, currFeedPost.id))[0];
 
           if (response.success) {
-            div.querySelector(".likes-count")!.textContent = String(response.currLikes);
+            div.querySelector(".likes-count")!.textContent = String(
+              response.currLikes,
+            );
           } else {
             showMessagePopup("Like count could not be updated", false);
           }
@@ -300,7 +305,9 @@ function renderFeedPosts(type: string): void {
           const response = (await updateLikeCounter(false, currFeedPost.id))[0];
 
           if (response.success) {
-            div.querySelector(".likes-count")!.textContent = String(response.currLikes);
+            div.querySelector(".likes-count")!.textContent = String(
+              response.currLikes,
+            );
           } else {
             showMessagePopup("Like count could not be updated", false);
           }
@@ -892,7 +899,10 @@ function getOpenTradesMarkup(): string {
  */
 function renderOpenTrades(
   trades: OpenTradesInfo,
-  coinData: Record<string, { name: string; img: string; current_price: number }>,
+  coinData: Record<
+    string,
+    { name: string; img: string; current_price: number }
+  >,
 ) {
   const markup = getOpenTradesMarkup();
 
@@ -951,8 +961,7 @@ function renderOpenTrades(
       tradeInfoDiv.querySelector(
         ".current-price-info p:first-of-type",
       )!.textContent =
-        "Current Price: $" +
-        formatFloatToUSD(coinInfo.current_price, 2);
+        "Current Price: $" + formatFloatToUSD(coinInfo.current_price, 2);
 
       // Update spread
       tradeInfoDiv.querySelector(
@@ -960,9 +969,7 @@ function renderOpenTrades(
       )!.textContent =
         "Spread: $" +
         formatFloatToUSD(
-          Math.abs(
-            coinInfo.current_price - trade.price_per_unit,
-          ),
+          Math.abs(coinInfo.current_price - trade.price_per_unit),
           2,
         );
 
@@ -1055,7 +1062,10 @@ async function getAndRenderOpenTradesData(): Promise<void> {
   const uniqueCoins = getUniqueCoins(formattedTrades);
   const coinData = await getCoinDataFromAPI(uniqueCoins);
 
-  const res: Record<string, { name: string; img: string; current_price: number }> = {};
+  const res: Record<
+    string,
+    { name: string; img: string; current_price: number }
+  > = {};
   for (const coin of coinData) {
     res[coin.id] = {
       name: coin.name,

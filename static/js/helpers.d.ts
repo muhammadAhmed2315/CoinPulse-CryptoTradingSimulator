@@ -35,6 +35,7 @@ export declare function formatUNIXTimestamp(timestamp: number): string;
  *                          headers or other elements.
  */
 export declare function scrollToSection(event: Event, sectionId: string, offset: number): void;
+export type CoinNamesDict = Record<string, [string, string]>;
 /**
  * Asynchronously retrieves all coin names from the CoinGecko API and organizes them
  * into a dictionary. Each key in the resulting dictionary is a unique coin name,
@@ -45,7 +46,7 @@ export declare function scrollToSection(event: Event, sectionId: string, offset:
  * names and values are arrays of [symbol, API-specific ID]. If an error occurs during
  * fetch, logs the error to the console.
  */
-export declare function getAllCoinNamesDict(): Promise<{} | undefined>;
+export declare function getAllCoinNamesDict(): Promise<CoinNamesDict | undefined>;
 /**
  * Displays a message popup with customizable text and background color based on
  * success or failure.

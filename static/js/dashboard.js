@@ -191,7 +191,8 @@ function renderFeedPosts(type) {
         if (currFeedPost.comment) {
             div.querySelector(".feedpost-comment p").textContent =
                 currFeedPost.comment;
-            div.querySelector(".feedpost-comment p").style.fontSize = "2.6rem";
+            div.querySelector(".feedpost-comment p").style.fontSize =
+                "2.6rem";
             div.querySelector(".feedpost-comment p").style.color =
                 "#000000";
         }
@@ -781,8 +782,7 @@ function renderOpenTrades(trades, coinData) {
             tradeInfoDiv.querySelector(".order-price-info p:last-of-type").textContent = formatFloatToUSD(trade.price_per_unit, 2);
             // Update coin current price
             tradeInfoDiv.querySelector(".current-price-info p:first-of-type").textContent =
-                "Current Price: $" +
-                    formatFloatToUSD(coinInfo.current_price, 2);
+                "Current Price: $" + formatFloatToUSD(coinInfo.current_price, 2);
             // Update spread
             tradeInfoDiv.querySelector(".current-price-info p:last-of-type").textContent =
                 "Spread: $" +
@@ -1157,3 +1157,4 @@ async function main() {
     addMessagePopupCloseEventListener();
 }
 main();
+//# sourceMappingURL=dashboard.js.map

@@ -47,7 +47,7 @@ class YahooNewsScaper:
         articles = []
         for article in news_articles:
             title = article.find(
-                "h4", class_="s-title fz-20 lh-m fw-500 ls-027 mt-8 mb-2"
+                "h4", class_="s-title fz-20 lh-m fw-500 ls-027 mt-6 mb-2"
             ).text
             author = article.find("span", class_="s-source fw-l").text
             timestamp = article.find(
@@ -57,7 +57,7 @@ class YahooNewsScaper:
                 "p", class_="s-desc fz-14 lh-1_45x fc-444444"
             ).text
             url = (
-                article.find("h4", class_="s-title fz-20 lh-m fw-500 ls-027 mt-8 mb-2")
+                article.find("h4", class_="s-title fz-20 lh-m fw-500 ls-027 mt-6 mb-2")
                 .find("a")
                 .get("href")
             )

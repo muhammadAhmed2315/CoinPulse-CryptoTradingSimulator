@@ -1,2 +1,2 @@
-import "highcharts/modules/stock";
+export {};
 //# sourceMappingURL=my-trades.d.ts.map

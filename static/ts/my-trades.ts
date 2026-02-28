@@ -5,8 +5,7 @@ import {
   type CoinNamesDict,
 } from "./helpers.js";
 
-import Highcharts from "highcharts";
-import "highcharts/modules/stock";
+declare const Highcharts: any;
 
 // ==============================
 // ===== TYPES + INTERFACES =====
@@ -162,7 +161,7 @@ function drawChart(chartType = "totalValueHistory") {
 
     yAxis: {
       labels: {
-        formatter: function () {
+        formatter: function (this: any) {
           return "$" + Highcharts.numberFormat(this.value as number, 2);
         },
       },

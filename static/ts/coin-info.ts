@@ -1,4 +1,4 @@
-import Highcharts from "highcharts/highstock";
+declare const Highcharts: any;
 import {
   getAllCoinNamesDict,
   formatFloatToUSD,

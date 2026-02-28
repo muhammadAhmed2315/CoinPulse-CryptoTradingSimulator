@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Initialises the particlesJS library with the given configuration. This library is
  * used as the background for the login, register, password reset, and email
@@ -60,5 +61,4 @@ document.addEventListener("DOMContentLoaded", function () {
         retina_detect: true,
     });
 });
-export {};
 //# sourceMappingURL=login-base.js.map

@@ -1,4 +1,4 @@
-declare function particlesJS(id: string, config: object): void;
+declare function particlesJS(elementId: string, config: object): void;
 
 /**
  * Initialises the particlesJS library with the given configuration. This library is

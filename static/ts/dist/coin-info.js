@@ -1,5 +1,5 @@
 import Highcharts from "highcharts/highstock";
-import { getAllCoinNamesDict, formatFloatToUSD, scrollToSection, } from "../js/helpers.js";
+import { getAllCoinNamesDict, formatFloatToUSD, scrollToSection, } from "./helpers.js";
 // ========================
 // ===== INITIAL DATA =====
 // ========================

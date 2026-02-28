@@ -3,9 +3,9 @@ import {
   getAllCoinNamesDict,
   formatFloatToUSD,
   type CoinNamesDict,
-} from "../js/helpers.js";
-import { fetchPortfolioBalance } from "../js/core-base.js";
-import { getAndRenderPortfolioTotalValue } from "../js/core-base.js";
+} from "./helpers.js";
+import { fetchPortfolioBalance } from "./core-base.js";
+import { getAndRenderPortfolioTotalValue } from "./core-base.js";
 
 type CurrentCoinInfo = {
   id: string;

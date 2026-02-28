@@ -3,7 +3,7 @@ import {
   formatFloatToUSD,
   formatUNIXTimestamp,
   type CoinNamesDict,
-} from "../js/helpers.js";
+} from "./helpers.js";
 
 import Highcharts from "highcharts";
 import "highcharts/modules/stock";

@@ -1,4 +1,4 @@
-import { getAllCoinNamesDict, formatFloatToUSD, formatUNIXTimestamp, } from "../js/helpers.js";
+import { getAllCoinNamesDict, formatFloatToUSD, formatUNIXTimestamp, } from "./helpers.js";
 import Highcharts from "highcharts";
 import "highcharts/modules/stock";
 // ========================

@@ -1,4 +1,4 @@
-import { formatFloatToUSD } from "../js/helpers.js";
+import { formatFloatToUSD } from "./helpers.js";
 
 /**
  * Fetches the current USD balance from the user's wallet.

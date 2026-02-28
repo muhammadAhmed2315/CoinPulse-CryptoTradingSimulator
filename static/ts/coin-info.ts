@@ -3,7 +3,7 @@ import {
   getAllCoinNamesDict,
   formatFloatToUSD,
   scrollToSection,
-} from "../js/helpers.js";
+} from "./helpers.js";
 
 // ==============================
 // ===== TYPES + INTERFACES =====

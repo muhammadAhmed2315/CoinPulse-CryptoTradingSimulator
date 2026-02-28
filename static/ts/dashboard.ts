@@ -3,8 +3,8 @@ import {
   formatFloatToUSD,
   addMessagePopupCloseEventListener,
   showMessagePopup,
-} from "../js/helpers.js";
-import { showNewTradeSidebarForSpecificCoin } from "../js/new-trade.js";
+} from "./helpers.js";
+import { showNewTradeSidebarForSpecificCoin } from "./new-trade.js";
 
 let globalFeedPosts: GlobalFeedPost[] = [];
 let ownFeedPosts: PrivateFeedPost[] = [];

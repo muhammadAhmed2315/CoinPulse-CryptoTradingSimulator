@@ -1,5 +1,5 @@
-import { toTitleCase, formatFloatToUSD, addMessagePopupCloseEventListener, showMessagePopup, } from "../js/helpers.js";
-import { showNewTradeSidebarForSpecificCoin } from "../js/new-trade.js";
+import { toTitleCase, formatFloatToUSD, addMessagePopupCloseEventListener, showMessagePopup, } from "./helpers.js";
+import { showNewTradeSidebarForSpecificCoin } from "./new-trade.js";
 let globalFeedPosts = [];
 let ownFeedPosts = [];
 let globalPageCount = 1;

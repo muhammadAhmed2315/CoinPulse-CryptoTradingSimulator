@@ -1318,7 +1318,7 @@ function addOverviewOpenButtonsEventListeners(): void {
 // **************************************************************************
 // ******************** GET COIN DATA FROM API FUNCTION *********************
 // **************************************************************************
-type CoinInfo = {
+export type CoinInfo = {
   ath: number;
   ath_change_percentage: number;
   ath_date: string;

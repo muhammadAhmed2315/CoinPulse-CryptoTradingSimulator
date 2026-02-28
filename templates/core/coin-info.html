@@ -137,13 +137,10 @@
     {% endblock %}
     <!-- prettier-ignore -->
     {% block js_scripts %}
-    <script defer src="https://code.highcharts.com/stock/highstock.js"></script>
-    <script
-      defer
-      src="https://code.highcharts.com/stock/modules/exporting.js"
-    ></script>
-    <script type="module" src="../../static/js/core-base.js"></script>
-    <script type="module" src="../../static/js/coin-info.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script type="module" src="../../static/ts/dist/core-base.js"></script>
+    <script type="module" src="../../static/ts/dist/coin-info.js"></script>
     {% endblock %}
   </div>
 </div>

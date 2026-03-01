@@ -7,6 +7,7 @@ import ResetPassword from "@/components/authentication/ResetPassword";
 import InvalidResetLinkPage from "@/components/authentication/InvalidResetLinkPage";
 import NavBar from "@/components/NavBar";
 import TrendingCoins from "@/components/TrendingCoins";
+import Dashboard from "./Dashboard";
 
 export default function AuthenticationBase() {
   return (
@@ -14,7 +15,7 @@ export default function AuthenticationBase() {
     <>
       <NavBar />
       <div className="p-20">
-        <TrendingCoins />
+        <Dashboard />
       </div>
     </>
     // </Ripple>

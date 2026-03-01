@@ -11,14 +11,6 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "./ui/button";
 
-const placeholderProps: TrendingCoinCardProps = {
-  img: "",
-  name: "",
-  ticker: "",
-  delta: "",
-  value: "",
-};
-
 const arr = Array.from({ length: 15 }, (_, i) => i);
 
 export default function TrendingCoins() {
@@ -33,10 +25,10 @@ export default function TrendingCoins() {
       <div className="relative px-10">
         <Carousel opts={{ dragFree: true }}>
           <CarouselContent>
-            {arr.map((_) => {
+            {arr.map((i) => {
               return (
-                <CarouselItem className="basis-auto">
-                  <TrendingCoinCard {...placeholderProps} />
+                <CarouselItem className="basis-auto" key={i}>
+                  <TrendingCoinCard />
                 </CarouselItem>
               );
             })}

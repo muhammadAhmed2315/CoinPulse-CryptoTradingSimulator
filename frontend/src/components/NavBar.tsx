@@ -5,7 +5,6 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 
 import HomeIcon from "@/assets/icons/home.svg";
 import InfoIcon from "@/assets/icons/info.svg";
@@ -15,7 +14,7 @@ import PlaceHolderIcon from "@/assets/icons/placeholder.svg";
 
 export default function NavBar() {
   return (
-    <div className="flex justify-between items-center text-lg pt-2 pb-2">
+    <div className="flex justify-between items-center text-lg pt-2 pb-2 mr-4 ml-4">
       <h1>Portfolio Value: $1,214,865.16</h1>
 
       <NavigationMenu>

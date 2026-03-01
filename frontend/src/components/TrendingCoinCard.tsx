@@ -15,13 +15,7 @@ export type TrendingCoinCardProps = {
   value: string;
 };
 
-export default function TrendingCoinCard({
-  img,
-  name,
-  ticker,
-  delta,
-  value,
-}: TrendingCoinCardProps) {
+export default function TrendingCoinCard() {
   return (
     <Card className="w-55 h-30 p-2 gap-2 cursor-pointer">
       <CardHeader className="flex items-center">

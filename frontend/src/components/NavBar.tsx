@@ -4,13 +4,14 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
+import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 
 import HomeIcon from "@/assets/icons/home.svg";
 import InfoIcon from "@/assets/icons/info.svg";
 import BarChartIcon from "@/assets/icons/bar-chart.svg";
 import LineChartAscendingIcon from "@/assets/icons/line-chart-ascending.svg";
 import PlaceHolderIcon from "@/assets/icons/placeholder.svg";
-import { Button } from "./ui/button";
 
 export default function NavBar() {
   return (
@@ -57,9 +58,10 @@ export default function NavBar() {
         </NavigationMenuList>
       </NavigationMenu>
 
-      <div className="flex gap-1 items-center">
+      <div className="flex gap-3 items-center">
         <img src={PlaceHolderIcon} className="cursor-pointer" />
         <p>muhahmed3758</p>
+        <div className="h-6 w-px bg-gray-400" />
         <Button variant="ghost" className="cursor-pointer text-lg">
           Log out
         </Button>

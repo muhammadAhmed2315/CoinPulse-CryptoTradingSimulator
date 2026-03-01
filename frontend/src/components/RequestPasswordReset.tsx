@@ -12,7 +12,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-export default function ForgotPassword() {
+export default function RequestPasswordReset() {
   const [email, setEmail] = useState("");
 
   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {

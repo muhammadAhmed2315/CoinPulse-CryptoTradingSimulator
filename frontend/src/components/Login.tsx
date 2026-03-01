@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from "react";
-import discordLogo from "@/assets/logo-discord.svg";
-import googleLogo from "@/assets/logo-google.svg";
+import discordLogo from "@/assets/logos/discord.svg";
+import googleLogo from "@/assets/logos/google.svg";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +31,9 @@ export default function Login() {
     <Card className="w-96">
       <CardHeader className="text-center">
         <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Authenticate to continue</CardDescription>
+        <CardDescription>
+          Sign in to continue where you left off.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Field>
@@ -70,21 +72,35 @@ export default function Login() {
         </Button>
 
         <Button className="w-full cursor-pointer" variant="outline">
-          Login to Test Account
+          Login to test account
         </Button>
 
-        <div className="flex gap-2">
-          <Label htmlFor="email">Or login with: </Label>
-          <img
-            className="h-6 w-6 cursor-pointer"
-            src={discordLogo}
-            alt="Discord logo"
-          />
-          <img
-            className="h-5.5 w-5.5 cursor-pointer"
-            src={googleLogo}
-            alt="Google logo"
-          />
+        <div className="flex w-full items-center">
+          <div className="flex-1 border-t border-gray-400" />
+          <span className="mx-4 text-sm text-muted-foreground">
+            or login with
+          </span>
+          <div className="flex-1 border-t border-gray-400" />
+        </div>
+
+        <div className="flex gap-2 justify-center">
+          <Button className="cursor-pointer" variant="outline">
+            <img
+              className="h-6 w-6 cursor-pointer"
+              src={discordLogo}
+              alt="Discord logo"
+            />
+            Discord
+          </Button>
+
+          <Button className="cursor-pointer" variant="outline">
+            <img
+              className="h-5.5 w-5.5 cursor-pointer"
+              src={googleLogo}
+              alt="Google logo"
+            />
+            Google
+          </Button>
         </div>
 
         <div className="flex items-center">

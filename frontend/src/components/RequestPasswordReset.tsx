@@ -49,7 +49,7 @@ export default function RequestPasswordReset() {
             href="#"
             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
           >
-            ← Back to sign in
+            ← Back to login
           </a>
         </div>
       </CardFooter>

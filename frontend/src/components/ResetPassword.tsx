@@ -12,6 +12,9 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
+// TODO: Have a quick "✓ Password updated, go sign in" for 2-3 seconds and then
+//       re-direct to the sign in page
+
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
 
@@ -62,7 +65,7 @@ export default function ResetPassword() {
             href="#"
             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
           >
-            ← Back to sign in
+            ← Back to login
           </a>
         </div>
       </CardFooter>

@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "./ui/label";
+import { Label } from "../ui/label";
 
 export default function InvalidResetLinkPage() {
   return (

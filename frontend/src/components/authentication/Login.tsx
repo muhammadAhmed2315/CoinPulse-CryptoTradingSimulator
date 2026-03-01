@@ -13,35 +13,27 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "./ui/label";
+import { Label } from "../ui/label";
 
-export default function Register() {
+export default function Login() {
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
     setEmail(e.target.value);
-  }
-
-  function handleUsernameInput(e: ChangeEvent<HTMLInputElement>): void {
-    setUsername(e.target.value);
   }
 
   function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
     setPassword(e.target.value);
   }
 
-  function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-    setConfirmPassword(e.target.value);
-  }
-
   return (
     <Card className="w-96">
       <CardHeader className="text-center">
-        <CardTitle>Create an account</CardTitle>
-        <CardDescription>Join us. It only takes a moment.</CardDescription>
+        <CardTitle>Welcome back</CardTitle>
+        <CardDescription>
+          Sign in to continue where you left off.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Field>
@@ -56,51 +48,37 @@ export default function Register() {
         </Field>
         <br />
         <Field>
-          <FieldLabel htmlFor="input-username">Username</FieldLabel>
-          <Input
-            id="input-username"
-            type="text"
-            placeholder="JohnDoe2315"
-            value={username}
-            onChange={handleUsernameInput}
-          />
-        </Field>
-        <br />
-        <Field>
           <div className="flex items-center">
             <Label htmlFor="input-password">Password</Label>
+            <a
+              href="#"
+              className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+            >
+              Forgot your password?
+            </a>
           </div>
           <Input
             id="input-password"
             type="password"
-            placeholder="Min. 8 characters"
+            placeholder="**********"
             value={password}
             onChange={handlePasswordInput}
-          />
-        </Field>
-        <br />
-        <Field>
-          <div className="flex items-center">
-            <Label htmlFor="input-confirm-password">Confirm password</Label>
-          </div>
-          <Input
-            id="input-confirm-password"
-            type="password"
-            placeholder="Re-enter password"
-            value={confirmPassword}
-            onChange={handleConfirmPasswordInput}
           />
         </Field>
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
         <Button className="w-full cursor-pointer" variant="outline">
-          Create account
+          Login
+        </Button>
+
+        <Button className="w-full cursor-pointer" variant="outline">
+          Login to test account
         </Button>
 
         <div className="flex w-full items-center">
           <div className="flex-1 border-t border-gray-400" />
           <span className="mx-4 text-sm text-muted-foreground">
-            or sign up with
+            or login with
           </span>
           <div className="flex-1 border-t border-gray-400" />
         </div>
@@ -130,7 +108,7 @@ export default function Register() {
             href="#"
             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
           >
-            Already have an account? Login here
+            Don't have an account? Sign up here
           </a>
         </div>
       </CardFooter>

@@ -15,16 +15,26 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "./ui/label";
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
     setEmail(e.target.value);
   }
 
+  function handleUsernameInput(e: ChangeEvent<HTMLInputElement>): void {
+    setUsername(e.target.value);
+  }
+
   function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
     setPassword(e.target.value);
+  }
+
+  function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
+    setConfirmPassword(e.target.value);
   }
 
   return (
@@ -46,14 +56,19 @@ export default function Login() {
         </Field>
         <br />
         <Field>
+          <FieldLabel htmlFor="input-username">Username</FieldLabel>
+          <Input
+            id="input-username"
+            type="text"
+            placeholder="JohnDoe2315"
+            value={email}
+            onChange={handleUsernameInput}
+          />
+        </Field>
+        <br />
+        <Field>
           <div className="flex items-center">
             <Label htmlFor="input-password">Password</Label>
-            <a
-              href="#"
-              className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
           </div>
           <Input
             id="input-password"
@@ -63,18 +78,27 @@ export default function Login() {
             onChange={handlePasswordInput}
           />
         </Field>
+        <br />
+        <Field>
+          <div className="flex items-center">
+            <Label htmlFor="input-confirm-password">Confirm password</Label>
+          </div>
+          <Input
+            id="input-confirm-password"
+            type="password"
+            placeholder="**********"
+            value={password}
+            onChange={handlePasswordInput}
+          />
+        </Field>
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
         <Button className="w-full cursor-pointer" variant="outline">
-          Login
-        </Button>
-
-        <Button className="w-full cursor-pointer" variant="outline">
-          Login to Test Account
+          Create Account
         </Button>
 
         <div className="flex gap-2">
-          <Label htmlFor="email">Or login with: </Label>
+          <Label htmlFor="email">Or sign up with: </Label>
           <img
             className="h-6 w-6 cursor-pointer"
             src={discordLogo}
@@ -92,7 +116,7 @@ export default function Login() {
             href="#"
             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
           >
-            Don't have an account? Sign up here
+            Already have an account? Login here
           </a>
         </div>
       </CardFooter>

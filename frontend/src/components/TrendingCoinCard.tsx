@@ -7,7 +7,7 @@ import {
 
 import PlaceholderIcon from "@/assets/icons/placeholder.svg";
 
-type TrendingCoinCardProps = {
+export type TrendingCoinCardProps = {
   img: string;
   name: string;
   ticker: string;
@@ -23,7 +23,7 @@ export default function TrendingCoinCard({
   value,
 }: TrendingCoinCardProps) {
   return (
-    <Card className="w-55 h-30 p-2 gap-2">
+    <Card className="w-55 h-30 p-2 gap-2 cursor-pointer">
       <CardHeader className="flex items-center">
         <img src={PlaceholderIcon} />
         <img src={PlaceholderIcon} />

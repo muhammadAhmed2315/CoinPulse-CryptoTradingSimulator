@@ -6,15 +6,15 @@ import RequestPasswordReset from "@/components/authentication/RequestPasswordRes
 import ResetPassword from "@/components/authentication/ResetPassword";
 import InvalidResetLinkPage from "@/components/authentication/InvalidResetLinkPage";
 import NavBar from "@/components/NavBar";
-import TrendingCoinCard from "@/components/TrendingCoinCard";
+import TrendingCoins from "@/components/TrendingCoins";
 
 export default function AuthenticationBase() {
   return (
     // <Ripple>
     <>
       <NavBar />
-      <div className="flex">
-        <TrendingCoinCard />
+      <div className="p-20">
+        <TrendingCoins />
       </div>
     </>
     // </Ripple>

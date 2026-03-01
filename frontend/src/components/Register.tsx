@@ -94,7 +94,7 @@ export default function Register() {
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
         <Button className="w-full cursor-pointer" variant="outline">
-          Create Account
+          Create account
         </Button>
 
         <div className="flex gap-2">

@@ -8,6 +8,7 @@ import InvalidResetLinkPage from "@/components/authentication/InvalidResetLinkPa
 import NavBar from "@/components/NavBar";
 import TrendingCoins from "@/components/TrendingCoins";
 import Dashboard from "./Dashboard";
+import TopCoins from "./TopCoins";
 
 export default function AuthenticationBase() {
   return (
@@ -15,7 +16,7 @@ export default function AuthenticationBase() {
     <>
       <NavBar />
       <div className="pl-12 pr-12 pt-6 pb-6">
-        <Dashboard />
+        <TopCoins />
       </div>
     </>
     // </Ripple>

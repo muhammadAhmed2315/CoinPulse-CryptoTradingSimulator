@@ -41,7 +41,7 @@ export default function NavBar() {
             <NavigationMenuLink className="cursor-pointer text-lg">
               <div className="flex gap-1">
                 <img src={LineChartAscendingIcon} />
-                <p>Top Coin</p>
+                <p>Top Coins</p>
               </div>
             </NavigationMenuLink>
           </NavigationMenuItem>

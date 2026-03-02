@@ -14,7 +14,7 @@ import PlaceHolderIcon from "@/assets/icons/placeholder.svg";
 
 export default function NavBar() {
   return (
-    <div className="flex justify-between items-center text-lg pt-2 pb-2 mr-4 ml-4">
+    <div className="flex justify-between items-center text-lg p-6 mr-4 ml-4">
       <h1>Portfolio Value: $1,214,865.16</h1>
 
       <NavigationMenu>
@@ -58,7 +58,7 @@ export default function NavBar() {
       </NavigationMenu>
 
       <div className="flex gap-3 items-center">
-        <img src={PlaceHolderIcon} className="cursor-pointer" />
+        <img src={PlaceHolderIcon} className="cursor-pointer size-11.25" />
         <p>muhahmed3758</p>
         <div className="h-6 w-px bg-gray-400" />
         <Button variant="ghost" className="cursor-pointer text-lg">

@@ -14,7 +14,7 @@ export default function AuthenticationBase() {
     // <Ripple>
     <>
       <NavBar />
-      <div className="p-20">
+      <div className="pl-12 pr-12 pt-6 pb-6">
         <Dashboard />
       </div>
     </>

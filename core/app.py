@@ -24,12 +24,14 @@ from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 from RedditScraper.RedditScraper import RedditScraper
 from datetime import datetime
 from sqlalchemy import or_, and_
+from flask_jwt_extended import jwt_required
+
 
 core = Blueprint("core", __name__)
 
 
 @core.route("/dashboard")
-@login_required
+@jwt_required()
 def dashboard():
     """
     Route to display the dashboard page for logged-in users.
@@ -52,7 +54,7 @@ def dashboard():
 
 
 @core.route("/top_coins")
-@login_required
+@jwt_required()
 def top_coins():
     """
     Route to display the top 100 coins available on the market (default = market cap
@@ -73,7 +75,7 @@ def top_coins():
 
 
 @core.route("/my_trades")
-@login_required
+@jwt_required()
 def my_trades():
     """
     Route to display the user's trade history page.
@@ -105,7 +107,7 @@ def my_trades():
 
 
 @core.route("/get_trades_info", methods=["POST"])
-@login_required
+@jwt_required()
 def get_trades_info():
     """
     Fetches the transaction history for the currently logged-in user and returns (as a
@@ -257,7 +259,7 @@ def sort_transactions(transactions, sort="timestamp_desc"):
 
 
 @core.route("/get_feedposts", methods=["POST"])
-@login_required
+@jwt_required()
 def get_feedposts():
     """
     Fetches and returns a list of feed posts (transactions) based on the specified type
@@ -342,7 +344,7 @@ def get_feedposts():
 
 
 @core.route("/update_likes", methods=["POST"])
-@login_required
+@jwt_required()
 def update_likes():
     """
     Updates the like count for a specific transaction.
@@ -379,7 +381,7 @@ def update_likes():
 
 
 @core.route("/process_transaction", methods=["POST"])
-@login_required
+@jwt_required()
 def process_transaction():
     """
     Processes a cryptocurrency transaction submitted via a POST request containing JSON
@@ -536,7 +538,7 @@ def process_transaction():
 
 
 @core.route("/get_wallet_history", methods=["POST"])
-@login_required
+@jwt_required()
 def get_wallet_history():
     """
     Retrieves the wallet value history for the currently logged-in user.
@@ -572,7 +574,7 @@ def get_wallet_history():
 
 
 @core.route("/get_wallet_total_current_value", methods=["GET"])
-@login_required
+@jwt_required()
 def get_wallet_total_current_value():
     """
     Retrieves the current total value of the current user's wallet (i.e., returns
@@ -619,7 +621,7 @@ def get_wallet_total_current_value():
 
 
 @core.route("/get_wallet_usd_balance", methods=["GET"])
-@login_required
+@jwt_required()
 def get_wallet_usd_balance():
     """
     Retrieves the current USD balance from the user's wallet.
@@ -659,7 +661,7 @@ def get_wallet_usd_balance():
 
 
 @core.route("/coin_info")
-@login_required
+@jwt_required()
 def coin_info():
     """
     Renders the coin information page for the logged-in user. This page allows the user
@@ -680,7 +682,7 @@ def coin_info():
 
 
 @core.route("/get_news", methods=["POST"])
-@login_required
+@jwt_required()
 def get_news():
     """
     Fetch news articles based on a user-specified query and page number.
@@ -721,7 +723,7 @@ def get_news():
 
 
 @core.route("/get_reddit_posts", methods=["POST"])
-@login_required
+@jwt_required()
 def get_reddit_posts():
     """
     Fetches posts from Reddit based on a user-specified query and pagination parameter.
@@ -883,7 +885,9 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 curr_assets_value = 0
                 for key in wallet.assets:
                     if key in coin_market_prices:
-                        curr_assets_value += wallet.assets[key] * coin_market_prices[key]
+                        curr_assets_value += (
+                            wallet.assets[key] * coin_market_prices[key]
+                        )
 
                 wallet.value_history.update_value_history(
                     wallet.balance, curr_assets_value, current_time
@@ -1093,7 +1097,7 @@ def update_open_trades_in_background():
 
 
 @core.route("/get_wallet_assets", methods=["GET"])
-@login_required
+@jwt_required()
 def get_wallet_assets():
     """
     Retrieves and returns the assets and balance of the currently logged-in user's
@@ -1122,7 +1126,7 @@ def get_wallet_assets():
 
 
 @core.route("/get_open_trades", methods=["GET"])
-@login_required
+@jwt_required()
 def get_open_trades():
     """
     Retrieves and returns a list of open trade transactions (i.e., limit or stop orders
@@ -1159,7 +1163,7 @@ def get_open_trades():
 
 
 @core.route("/cancel_open_trade", methods=["POST"])
-@login_required
+@jwt_required()
 def cancel_open_trade():
     """
     Cancels an open trade transaction (i.e., a limit or stop order that is currently
@@ -1221,9 +1225,16 @@ def get_top_coins_data():
 
     response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
     data = response.json()
-    data = jsonify(data)
-
-    return data
+    temp = []
+    for coin in data:
+        temp.append(
+            {
+                **coin,
+                "identity": {"name": coin["name"], "symbol": coin["symbol"]},
+                "sparkline_in_7d": coin["sparkline_in_7d"]["price"],
+            }
+        )
+    return jsonify(temp)
 
 
 @core.route("/get_single_coin_data", methods=["POST"])

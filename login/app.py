@@ -1,7 +1,9 @@
 import os
 from models import User, Wallet, ValueHistory
-from flask import jsonify
+from flask import jsonify, make_response
 from extensions import db
+from jose import jwt
+from datetime import datetime, timedelta
 from constants import GOOGLE_CLIENT_ID
 from constants import GOOGLE_CLIENT_SECRET
 from constants import TOKEN_GENERATOR_SALT
@@ -33,6 +35,15 @@ from flask_login import (
 from flask import render_template, redirect, request, url_for, Blueprint, session
 from flask_mail import Message
 from login.forms import RequestPasswordResetForm, PasswordResetForm, PickUsernameForm
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    set_access_cookies,
+    set_refresh_cookies,
+    jwt_required,
+    get_jwt_identity,
+    unset_jwt_cookies,
+)
 
 # This URLSafeTimedSerializer object will handle generating and verifying tokens
 serializer = URLSafeTimedSerializer(TOKEN_GENERATOR_SECRET_KEY)
@@ -219,7 +230,7 @@ def callback_google():
 
 
 # #################### DEFAULT AUTHENTICATION ####################
-@user_authentication.route("/", methods=["get", "post"])
+@user_authentication.route("/login", methods=["post"])
 def login():
     """
     Endpoint to handle login requests. Redirects users who are already logged in to the
@@ -227,73 +238,71 @@ def login():
     validated users are redirected to either the home page, or the restricted page
     they were trying to access.
     """
-    # Redirect user if already logged in
-    if current_user.is_authenticated and current_user.verified:
-        return redirect(url_for("core.dashboard"))
+    data = request.get_json()
+    email, password = data["email"], data["password"]
 
-    login_form = LoginForm()
-    test_form = TestAccountLoginForm()
+    user = User.query.filter_by(email=email).first()
 
-    # Submit login form handling
-    if login_form.is_submitted() and login_form.validate():
-        # Get user info from database
-        user = User.query.filter_by(email=login_form.email.data).first()
+    if not user:
+        return {"error": "Invalid email or password"}, 401
 
-        if not user:
-            # If user doesn't exist
-            login_form.password.errors.append("Incorrect email or password")
-            return render_template(
-                "login/login.html", login_form=login_form, test_form=test_form
-            )
+    if not user.check_password(password):
+        return {"error": "Invalid email or password"}, 401
 
-        # If user exists and their password is correct
-        if user.check_password(login_form.password.data):
-            if user.verified == True:
-                # If user is already verified
-                login_user(user)
+    # Generate access token
+    access_token = create_access_token(identity=user.id)
 
-                next = request.args.get("next")
+    if not user.verified:
+        send_verification_email(user.mail, access_token, user.username)
+        return {"message": "Verification email sent. Please check your inbox."}, 200
 
-                if next == None or next[0] != "/":
-                    next = url_for("core.dashboard")
+    refresh_token = create_refresh_token(identity=user.id)
 
-                return redirect(next)
-            else:
-                # If user is not verified, resend verification link
-                logout_user()
-                token = generate_token(user.email, user.id)
-                send_verification_email(user.email, token)
-                return render_template(
-                    "emailVerification/verification-link-sent.html",
-                    user_email=user.email,
-                )
-        else:
-            login_form.password.errors.append("Incorrect email or password")
-            return render_template(
-                "login/login.html", login_form=login_form, test_form=test_form
-            )
-
-    # Submit test account login form handling
-    if test_form.is_submitted():
-        test_email = "muhahmed3758@gmail.com"
-        test_password = "Password123/"
-
-        user = User.query.filter_by(email=test_email).first()
-
-        if user and user.check_password(test_password):
-            if user.verified:
-                login_user(user)
-                next = request.args.get("next")
-                if next == None or next[0] != "/":
-                    next = url_for("core.dashboard")
-                return redirect(next)
-
-    return render_template(
-        "login/login.html", login_form=login_form, test_form=test_form
-    )
+    response = make_response({"message": "Login successful"})
+    set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
+    return response
 
 
-@user_authentication.route("/register", methods=["get", "post"])
+@user_authentication.route("/login_test_account", methods=["get"])
+def login_test_account():
+    TEST_EMAIL = "muhahmed3758@gmail.com"
+    TEST_PASSWORD = "Password123/"
+
+    user = User.query.filter_by(email=TEST_EMAIL).first()
+
+    if not user:
+        return {"error": "Invalid email or password"}, 401
+
+    if not user.check_password(TEST_PASSWORD):
+        return {"error": "Invalid email or password"}, 401
+
+    # Generate access token
+    access_token = create_access_token(identity=user.id)
+
+    if not user.verified:
+        send_verification_email(user.mail, access_token, user.username)
+        return {"message": "Verification email sent. Please check your inbox."}, 200
+
+    refresh_token = create_refresh_token(identity=user.id)
+
+    response = make_response({"message": "Login successful"})
+    set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
+    return response
+
+
+@user_authentication.route("/refresh", methods=["post"])
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    response = make_response({"message": "Token refreshed"})
+    set_access_cookies(response, access_token)
+    return response
+
+
+@user_authentication.route("/register", methods=["post"])
 def register():
     """
     Endpoint to handle registration requests. Redirects users who are already logged in
@@ -302,88 +311,65 @@ def register():
     password meets the complexity requirements. Register the user and add them to the
     database if successful, and then redirect them to the home page.
     """
-    if current_user.is_authenticated:
-        return redirect(url_for("core.dashboard"))
+    data = request.get_json()
+    email: str = data["email"]
+    username: str = data["username"]
+    password: str = data["password"]
+    confirm_password: str = data["confirm_password"]
 
-    form = RegisterForm()
+    if not validate_email(email):
+        return {"error": "Invalid email format"}, 401
 
-    if form.is_submitted() and form.validate():
-        input_email = form.email.data
-        input_password = form.password.data
-        input_pass_confirm = form.pass_confirm.data
-        input_username = form.username.data
+    user = User.query.filter_by(email=email).first()
+    if user:
+        return {"error": "Email already in use"}, 401
 
-        # Confirm email is valid format
-        if not validate_email(input_email):
-            form.email.errors.append("Email is invalid")
-            return render_template("login/register.html", form=form)
+    if not username[0].is_alpha():
+        return {"error": "Username must begin with a letter"}, 401
 
-        # Confirm email is not already in use
-        user = User.query.filter_by(email=input_email).first()
-        if user:
-            form.email.errors.append("Email is already registered")
-            return render_template("login/register.html", form=form)
+    for char in username:
+        if not char.isalnum():
+            return {"error": "Username can only contain alphanumeric characters"}, 401
 
-        # Confirm username is in valid format
-        if not input_username[0].isalpha():
-            form.username.errors.append("Username must begin with a letter")
-            return render_template("/login/register.html", form=form)
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return {"error": "Username already taken"}, 401
 
-        for char in input_username:
-            if not char.isalpha() and not char.isdigit():
-                form.username.errors.append("Username must be alphanumeric")
-                return render_template("login/register.html", form=form)
+    if password.lower() in MOST_COMMON_PASSWORDS:
+        return {
+            "error": "Password is too common. Please choose a more unique password."
+        }, 401
 
-        # Confirm username is not already in use
-        user = User.query.filter_by(username=input_username).first()
-        if user:
-            form.username.errors.append("Username is already in use")
-            return render_template("login/register.html", form=form)
+    password_errors = validate_password_format(password).join(",")
+    if password_errors:
+        return {"error": password_errors}, 401
 
-        # Confirm password is not in too common list
-        if input_password.lower() in MOST_COMMON_PASSWORDS:
-            form.password.errors.append("This password is too common")
-            form.password.errors.append(
-                "Choose a less common password for better security"
-            )
-            return render_template("login/register.html", form=form)
+    if password != confirm_password:
+        return {"error": "Passwords do not match"}, 401
 
-        # Confirm password is correct format
-        password_errors = check_password_format(input_password)
+    # Save user information to database, create a wallet for them, and log them in
+    user = User(email=email, username=username, password=password)
+    db.session.add(user)
+    db.session.commit()
 
-        if password_errors:
-            for error in password_errors:
-                form.password.errors.append(error)
-            return render_template("login/register.html", form=form)
+    wallet = Wallet(user.id)
+    db.session.add(wallet)
+    db.session.commit()
 
-        # Confirm passwords match
-        if input_password != input_pass_confirm:
-            form.password.errors.append("Passwords do not match")
-            form.pass_confirm.errors.append("Passwords do not match")
-            return render_template("login/register.html", form=form)
+    valueHistory = ValueHistory(wallet.id)
+    db.session.add(valueHistory)
+    db.session.commit()
 
-        # Save user information to database, create a wallet for them, and log them in
-        user = User(email=input_email, username=input_username, password=input_password)
-        db.session.add(user)
-        db.session.commit()
-
-        wallet = Wallet(user.id)
-        db.session.add(wallet)
-        db.session.commit()
-
-        valueHistory = ValueHistory(wallet.id)
-        db.session.add(valueHistory)
-        db.session.commit()
-
-        login_user(user)
-
-        # Redirect user to "You need to verify your email" page
-        return redirect(url_for("user_authentication.verification_sent"))
-    return render_template("login/register.html", form=form)
+    # Send verification email
+    token = create_access_token(identity=user.id)
+    send_verification_email(user.email, token, user.username)
+    return {
+        "message": "User registered successfully. Please check your email to verify your account."
+    }, 201
 
 
 @user_authentication.route("/pick_username", methods=["get", "post"])
-@login_required
+@jwt_required()
 def pick_username():
     """
     Allows a newly registered (OAuth) user to pick a username after signing up.
@@ -450,14 +436,11 @@ def pick_username():
     return render_template("login/pick-username.html", form=form)
 
 
-@user_authentication.route("/logout")
+@user_authentication.route("/logout", methods=["get"])
 def logout():
-    """
-    View function for logging out the current user and redirecting them to the log in
-    page.
-    """
-    logout_user()
-    return redirect(url_for("user_authentication.login"))
+    response = make_response({"message": "Logged out"})
+    unset_jwt_cookies(response)
+    return response
 
 
 # #################### VERIFY USER'S EMAIL ####################
@@ -476,7 +459,7 @@ def verification_sent():
     else:
         return redirect(url_for("user_authentication.login"))
 
-    token = generate_token(current_user.email, current_user.id)
+    token = create_access_token(identity=current_user.id)
     send_verification_email(current_user.email, token, current_user.username)
     return render_template(
         "emailVerification/verification-link-sent.html", user_email=current_user.email
@@ -536,7 +519,7 @@ def verify_user(token):
         return render_template("emailVerification/verification-token-invalid.html")
 
 
-def send_verification_email(user_email, token, username):
+def send_verification_email(user_email: str, token: str, username: str) -> None:
     """
     Sends a verification email to the specified user.
 
@@ -628,7 +611,7 @@ def reset_password(token):
                 )
 
             # Confirm password is correct format
-            password_errors = check_password_format(input_password)
+            password_errors = validate_password_format(input_password)
 
             if password_errors:
                 for error in password_errors:
@@ -703,7 +686,7 @@ def forgot_password():
         # If user exists and isn't using OAuth for login
         user = User.query.filter_by(email=form.email.data).first()
         if user and not user.provider:
-            token = generate_token(user_email=user.email, user_id=user.id)
+            token = generate_access_token(user_email=user.email, user_id=user.id)
             send_password_reset_email(
                 user_email=user.email, token=token, username=user.username
             )
@@ -751,29 +734,7 @@ def send_password_reset_email(user_email, token, username):
 
 
 # #################### HELPER FUNCTIONS ####################
-def generate_token(user_email, user_id):
-    """
-    Generates a verification token for a user based on their email and user ID.
-
-    This function encodes the user's email and ID into a token using a serializer with
-    a specified salt. The resulting token can be used for verifying the user' email
-    address.
-
-    Parameters:
-        user_email: Email address of the user for whom the token is being generated.
-        user_id (int): The unique identifier of the user in the database (the primary
-                       key)
-
-    Returns:
-        str: A serialized token that contains the user's email, ID, and the timestamp
-             for when the token was generated, secured with a salt
-    """
-    data_to_encode = {"email": user_email, "id": str(user_id)}
-    token = serializer.dumps(data_to_encode, salt=TOKEN_GENERATOR_SALT)
-    return token
-
-
-def check_password_format(input_password):
+def validate_password_format(input_password: str) -> list[str]:
     """
     Validates the format of a user's password based on several criteria.
 

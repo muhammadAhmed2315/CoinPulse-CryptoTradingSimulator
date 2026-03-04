@@ -34,7 +34,7 @@ def create_app():
     """
     # Initialize Flask app
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
 
     # Configure app
     database_url = os.environ.get("DATABASE_URL")
@@ -57,13 +57,10 @@ def create_app():
     mail_server = Mail(app)
 
     # Configure JWT manager
-    app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
-        hours=JWT_ACCESS_TOKEN_EXPIRES_HOURS
-    )
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(
-        days=JWT_REFRESH_TOKEN_EXPIRES_DAYS
-    )
+    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+    app.config["JWT_COOKIE_HTTPONLY"] = True
+    app.config["JWT_COOKIE_SAMESITE"] = "Strict"
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 
     # Initialize JWTManager with the app
     jwt.init_app(app)

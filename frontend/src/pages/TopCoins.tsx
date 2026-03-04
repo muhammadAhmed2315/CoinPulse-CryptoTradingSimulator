@@ -25,7 +25,7 @@ type Coin = {
   price_change_1h: number;
   price_change_7d: number;
   price_change_24h: number;
-  sparkline_7d: number[];
+  sparkline_in_7d: number[];
   total_volume: number;
 };
 
@@ -34,13 +34,6 @@ export type ApiSorts =
   | "market_cap_desc"
   | "volume_asc"
   | "volume_desc";
-
-function moneyFormatter(value: number): string {
-  return new Intl.NumberFormat("en-GB", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
 
 async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
   const URL = "http://127.0.0.1:5000/get_top_coins_data";
@@ -52,6 +45,7 @@ async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
       "Content-Type": "application/json",
     },
   });
+  console.log(response.data.at(0));
   return response.data;
 }
 
@@ -139,7 +133,7 @@ export default function TopCoins() {
         flex: 1,
       },
       {
-        field: "sparkline_7d",
+        field: "sparkline_in_7d",
         cellRenderer: sparklineRenderer,
         autoHeight: true,
         headerName: "Price History (7d)",

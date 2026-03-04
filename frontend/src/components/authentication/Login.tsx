@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import discordLogo from "@/assets/logos/discord.svg";
 import googleLogo from "@/assets/logos/google.svg";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +15,54 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const loginMutation = useMutation({
+    mutationFn: (data: { email: string; password: string }) =>
+      axios.post("http://127.0.0.1:5000/login", data, {
+        withCredentials: true,
+      }),
+
+    onSuccess: () => {
+      navigate("/dashboard");
+    },
+  });
+
+  const loginTestMutation = useMutation({
+    mutationFn: () =>
+      axios.get(`http://127.0.0.1:5000/login_test_account`, {
+        withCredentials: true,
+      }),
+
+    onSuccess: () => {
+      navigate("/dashboard");
+    },
+  });
+
+  async function handleLogin(): Promise<void> {
+    loginMutation.mutate({
+      email,
+      password,
+    });
+  }
+
+  async function handleTestAccountLogin(): Promise<void> {
+    loginTestMutation.mutate();
+  }
+
+  function handleForgotPassword() {
+    navigate("/reset_password");
+  }
+
+  function handleRegister() {
+    navigate("/register");
+  }
 
   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
     setEmail(e.target.value);
@@ -53,6 +98,7 @@ export default function Login() {
             <a
               href="#"
               className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+              onClick={handleForgotPassword}
             >
               Forgot your password?
             </a>
@@ -67,11 +113,19 @@ export default function Login() {
         </Field>
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
-        <Button className="w-full cursor-pointer" variant="outline">
+        <Button
+          className="w-full cursor-pointer"
+          variant="outline"
+          onClick={handleLogin}
+        >
           Login
         </Button>
 
-        <Button className="w-full cursor-pointer" variant="outline">
+        <Button
+          className="w-full cursor-pointer"
+          variant="outline"
+          onClick={handleTestAccountLogin}
+        >
           Login to test account
         </Button>
 
@@ -107,6 +161,7 @@ export default function Login() {
           <a
             href="#"
             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+            onClick={handleRegister}
           >
             Don't have an account? Sign up here
           </a>

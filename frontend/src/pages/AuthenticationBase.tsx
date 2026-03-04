@@ -1,25 +1,10 @@
 import Ripple from "@/components/authentication/Ripple";
-
-import Login from "@/components/authentication/Login";
-import Register from "@/components/authentication/Register";
-import RequestPasswordReset from "@/components/authentication/RequestPasswordReset";
-import ResetPassword from "@/components/authentication/ResetPassword";
-import InvalidResetLinkPage from "@/components/authentication/InvalidResetLinkPage";
-import NavBar from "@/components/NavBar";
-import TrendingCoins from "@/components/TrendingCoins";
-import Dashboard from "./Dashboard";
-import TopCoins from "./TopCoins";
-import MyTrades from "./MyTrades";
+import { Outlet } from "react-router-dom";
 
 export default function AuthenticationBase() {
   return (
-    // <Ripple>
-    <>
-      <NavBar />
-      <div className="pl-12 pr-12 pt-6 pb-6">
-        <MyTrades />
-      </div>
-    </>
-    // </Ripple>
+    <Ripple>
+      <Outlet />
+    </Ripple>
   );
 }

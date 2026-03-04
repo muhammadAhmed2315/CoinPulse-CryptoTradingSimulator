@@ -11,12 +11,18 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 export default function RequestPasswordReset() {
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
     setEmail(e.target.value);
+  }
+
+  function handleLogin() {
+    navigate("/login");
   }
 
   return (
@@ -48,6 +54,7 @@ export default function RequestPasswordReset() {
           <a
             href="#"
             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+            onClick={handleLogin}
           >
             ← Back to login
           </a>

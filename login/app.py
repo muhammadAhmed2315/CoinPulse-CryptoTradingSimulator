@@ -1,9 +1,10 @@
-import os
+from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError
+import time
+from datetime import timedelta
+
 from models import User, Wallet, ValueHistory
 from flask import jsonify, make_response
 from extensions import db
-from jose import jwt
-from datetime import datetime, timedelta
 from constants import GOOGLE_CLIENT_ID
 from constants import GOOGLE_CLIENT_SECRET
 from constants import TOKEN_GENERATOR_SALT
@@ -18,7 +19,6 @@ from constants import DISCORD_OAUTH2_CLIENT_ID
 from constants import DISCORD_API_BASE_URL
 from constants import DISCORD_AUTHORIZATION_BASE_URL
 from constants import DISCORD_TOKEN_URL
-from login.forms import LoginForm, RegisterForm, TestAccountLoginForm
 from constants import TOKEN_GENERATOR_SECRET_KEY
 from validate_email_address import validate_email
 from constants import DISCORD_OAUTH2_CLIENT_SECRET
@@ -28,16 +28,16 @@ from constants import TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_login import (
     login_user,
-    login_required,
     logout_user,
     current_user,
 )
 from flask import render_template, redirect, request, url_for, Blueprint, session
 from flask_mail import Message
-from login.forms import RequestPasswordResetForm, PasswordResetForm, PickUsernameForm
+from login.forms import RequestPasswordResetForm, PasswordResetForm
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
+    decode_token,
     set_access_cookies,
     set_refresh_cookies,
     jwt_required,
@@ -244,16 +244,22 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if not user:
-        return {"error": "Invalid email or password"}, 401
+        return {
+            "error": "Invalid email or password",
+            "description": "Please check your credentials and try again",
+        }, 401
 
     if not user.check_password(password):
-        return {"error": "Invalid email or password"}, 401
+        return {
+            "error": "Invalid email or password",
+            "description": "Please check your credentials and try again",
+        }, 401
 
     # Generate access token
     access_token = create_access_token(identity=user.id)
 
     if not user.verified:
-        send_verification_email(user.mail, access_token, user.username)
+        send_activation_email(user.mail, access_token, user.username)
         return {"message": "Verification email sent. Please check your inbox."}, 200
 
     refresh_token = create_refresh_token(identity=user.id)
@@ -281,7 +287,7 @@ def login_test_account():
     access_token = create_access_token(identity=user.id)
 
     if not user.verified:
-        send_verification_email(user.mail, access_token, user.username)
+        send_activation_email(user.mail, access_token, user.username)
         return {"message": "Verification email sent. Please check your inbox."}, 200
 
     refresh_token = create_refresh_token(identity=user.id)
@@ -302,8 +308,8 @@ def refresh():
     return response
 
 
-@user_authentication.route("/register", methods=["post"])
-def register():
+@user_authentication.route("/create_account", methods=["post"])
+def create_account():
     """
     Endpoint to handle registration requests. Redirects users who are already logged in
     to the home page. Handles form submission, and validates the input by checking the
@@ -315,37 +321,59 @@ def register():
     email: str = data["email"]
     username: str = data["username"]
     password: str = data["password"]
-    confirm_password: str = data["confirm_password"]
+    confirm_password: str = data["confirmPassword"]
 
     if not validate_email(email):
-        return {"error": "Invalid email format"}, 401
+        return {
+            "error": "Invalid email address",
+            "description": "Please enter a valid email address (e.g., john.doe@gmail.com)",
+        }, 401
 
     user = User.query.filter_by(email=email).first()
     if user:
-        return {"error": "Email already in use"}, 401
+        return {
+            "error": "Email already in use",
+            "description": "An account with this email address already exists. Please use a different email or login.",
+        }, 401
 
-    if not username[0].is_alpha():
-        return {"error": "Username must begin with a letter"}, 401
+    if not username[0].isalpha():
+        return {
+            "error": "Invalid username",
+            "description": "Username must begin with a letter.",
+        }, 401
 
     for char in username:
         if not char.isalnum():
-            return {"error": "Username can only contain alphanumeric characters"}, 401
+            return {
+                "error": "Invalid username",
+                "description": "Username can only contain alphanumeric characters.",
+            }, 401
 
     user = User.query.filter_by(username=username).first()
     if user:
-        return {"error": "Username already taken"}, 401
+        return {
+            "error": "Username already taken",
+            "description": "Please choose a different username.",
+        }, 401
 
     if password.lower() in MOST_COMMON_PASSWORDS:
         return {
-            "error": "Password is too common. Please choose a more unique password."
+            "error": "Password too common",
+            "description": "Please choose a more unique password.",
         }, 401
 
-    password_errors = validate_password_format(password).join(",")
+    password_errors = " ".join(validate_password_format(password))
     if password_errors:
-        return {"error": password_errors}, 401
+        return {
+            "error": "Invalid password format",
+            "description": password_errors,
+        }, 401
 
     if password != confirm_password:
-        return {"error": "Passwords do not match"}, 401
+        return {
+            "error": "Passwords do not match",
+            "description": "Please make sure both passwords are identical.",
+        }, 401
 
     # Save user information to database, create a wallet for them, and log them in
     user = User(email=email, username=username, password=password)
@@ -362,13 +390,13 @@ def register():
 
     # Send verification email
     token = create_access_token(identity=user.id)
-    send_verification_email(user.email, token, user.username)
+    send_activation_email(user.email, token, user.username)
     return {
         "message": "User registered successfully. Please check your email to verify your account."
     }, 201
 
 
-@user_authentication.route("/pick_username", methods=["get", "post"])
+@user_authentication.route("/pick_username", methods=["post"])
 @jwt_required()
 def pick_username():
     """
@@ -391,49 +419,35 @@ def pick_username():
       models, logs in the user, and redirects them to the dashboard.
     - If the form is submitted but invalid: Renders the form again with error messages.
     """
-    # Redirect to the dashboard if user already has a username
-    if current_user.username:
-        return redirect(url_for("core.dashboard"))
+    data = request.get_json()
+    username = data["username"]
 
-    form = PickUsernameForm()
+    # Check if username is in a valid format
+    if not username[0].isalpha():
+        return {"error": "Username must begin with a letter"}, 401
 
-    if form.is_submitted() and form.validate():
-        input_username = form.username.data
+    if any([not char.isalnum() for char in username]):
+        return {"error": "Username can only contain alphanumeric characters"}
 
-        # Check username is in valid format
-        if not input_username[0].isalpha():
-            form.username.errors.append("Username must begin with a letter")
-            return render_template("login/pick-username.html", form=form)
+    # Check username is not already taken
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return {"error": "This username has already been taken"}, 401
 
-        for char in input_username:
-            if not char.isalpha() and not char.isdigit():
-                form.username.errors.append("Username must be alphanumeric")
-                return render_template("login/pick-username.html", form=form)
+    # Save username to database
+    current_user.update_username(username)
+    db.session.add(current_user)
+    db.session.commit()
 
-        # Confirm username is not already in use
-        user = User.query.filter_by(username=input_username).first()
-        if user:
-            form.username.errors.append("Username is already in use")
-            return render_template("login/pick-username.html", form=form)
+    wallet = Wallet(current_user.id)
+    db.session.add(wallet)
+    db.session.commit()
 
-        # Save username to database and redirect user to the home page
-        current_user.update_username(input_username)
-        db.session.add(current_user)
-        db.session.commit()
+    valueHistory = ValueHistory(wallet.id)
+    db.session.add(valueHistory)
+    db.session.commit()
 
-        wallet = Wallet(current_user.id)
-        db.session.add(wallet)
-        db.session.commit()
-
-        valueHistory = ValueHistory(wallet.id)
-        db.session.add(valueHistory)
-        db.session.commit()
-
-        login_user(current_user)
-
-        return redirect(url_for("core.dashboard"))
-
-    return render_template("login/pick-username.html", form=form)
+    return {"success": "Username has been successfully picked"}, 200
 
 
 @user_authentication.route("/logout", methods=["get"])
@@ -444,8 +458,8 @@ def logout():
 
 
 # #################### VERIFY USER'S EMAIL ####################
-@user_authentication.route("/verification_sent")
-def verification_sent():
+@user_authentication.route("/retry_verification_from_email", methods=["post"])
+def retry_verification_from_email():
     """
     Endpoint to handle the process of sending a verification email to a user.
 
@@ -453,21 +467,21 @@ def verification_sent():
     email to them. It then renders a template to display a confirmation message that
     the verification email has been sent.
     """
-    if current_user.is_authenticated:
-        if current_user.verified:
-            return redirect(url_for("core.dashboard"))
-    else:
-        return redirect(url_for("user_authentication.login"))
+    data = request.get_json()
+    email = data["email"]
 
-    token = create_access_token(identity=current_user.id)
-    send_verification_email(current_user.email, token, current_user.username)
-    return render_template(
-        "emailVerification/verification-link-sent.html", user_email=current_user.email
-    )
+    user = User.query.filter_by(email=email).first()
+    if user and not user.provider:
+        token = create_access_token(identity=user.id)
+        send_activation_email(user.email, token, user.username)
+
+    return {
+        "message": "Account activation email sent. Please check your email to verify your account."
+    }, 200
 
 
-@user_authentication.route("/verify_user/<token>")
-def verify_user(token):
+@user_authentication.route("/verify_email/<token>", methods=["get"])
+def verify_email(token):
     """
     Endpoint to verify a user's email address using a provided token.
 
@@ -485,41 +499,89 @@ def verify_user(token):
     """
     # Verify the token
     try:
-        data = serializer.loads(
-            token,
-            salt=TOKEN_GENERATOR_SALT,
-            max_age=TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS,
-        )
+        # Decode the token back into a Python object
+        data = decode_token(token)
 
-        user = User.query.filter_by(email=data["email"]).first()
+        user = User.query.filter_by(id=data["sub"]).first()
         # Token is valid and matches data
-        if user and str(user.id) == data["id"] and not user.verified:
+        if user and str(user.id) == data["sub"] and not user.verified:
             user.verified = True
             db.session.add(user)
             db.session.commit()
-            return render_template(
-                "emailVerification/verification-successful.html",
-                user_email=data["email"],
-            )
+            return {
+                "message": "Account verification successful",
+                "email": user.email,
+            }, 200
         else:
-            return render_template("emailVerification/verification-token-invalid.html")
+            return {
+                "error": "Unauthorised",
+                "message": "Invalid or expired verification token",
+            }, 201
 
-    except SignatureExpired:
-        # Token has expired
-        logout_user()
-        data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
-        return render_template(
-            "emailVerification/verification-token-expired.html",
-            user_email=data["email"],
-        )
-
-    except BadSignature:
+    except ExpiredSignatureError:
+        # Expired token
+        return {
+            "error": "Unauthorised",
+            "message": "Invalid or expired verification token",
+        }, 401
+    except InvalidSignatureError:
         # Token has been corrupted or tampered with or is invalid token
-        logout_user()
-        return render_template("emailVerification/verification-token-invalid.html")
+        return {
+            "error": "Unauthorised",
+            "message": "Invalid or expired verification token",
+        }, 401
 
 
-def send_verification_email(user_email: str, token: str, username: str) -> None:
+@user_authentication.route("/retry_verification_from_token", methods=["post"])
+def retry_verification_from_token():
+    """
+    This function is used on the /email_verification_unsuccessful component. This
+    function requires a token to be sent as input.
+
+    There are three cases this function deals with:
+    - The token is valid but expired within the last 24 hours, in which case we can
+      simply send a new verification email
+    - The token is valid but did not expire within the last 24 hours, in which case the
+      frontend redirects the user to the "put in your email to request the verification
+      email again" page
+    - The token is invalid (e.g., has been tampered with), in which case the frontend
+      redirects the user to the "put in your email to request the verification email
+      again" page
+    """
+
+    token = request.get_json()
+
+    try:
+        decoded = decode_token(token, allow_expired=True)
+        user_id = decoded["sub"]
+        token_expiry_time = decoded["exp"]
+
+        # If token did not expire within last 24 hours
+        if not (0 < time.time() - token_expiry_time <= 86400):
+            return {
+                "error": "Invalid token",
+                "message": "This token is invalid. Please request a new verification email.",
+            }, 401
+
+        # Otherwise resend the verification email
+        user = User.query.filter_by(id=user_id).first()
+        if user:
+            new_token = create_access_token(identity=user.id)
+            send_activation_email(user.email, new_token, user.username)
+
+        return {
+            "message": "Account activation email sent. Please check your email to verify your account."
+        }, 200
+
+    except InvalidSignatureError:
+        # Token has been tampered with
+        return {
+            "error": "Invalid token",
+            "message": "This token is invalid. Please request a new verification email.",
+        }, 401
+
+
+def send_activation_email(user_email: str, token: str, username: str) -> None:
     """
     Sends a verification email to the specified user.
 
@@ -546,8 +608,10 @@ def send_verification_email(user_email: str, token: str, username: str) -> None:
 
 
 # #################### RESET USER'S PASSWORD ####################
-@user_authentication.route("/reset_password/<token>", methods=["get", "post"])
-def reset_password(token):
+@user_authentication.route(
+    "/verify_password_reset_token/<token>", methods=["get", "post"]
+)
+def verify_password_reset_token(token: str):
     """
     Handles the password reset process using a provided security token.
 
@@ -574,74 +638,83 @@ def reset_password(token):
     """
     # Verify the token
     try:
-        data = serializer.loads(
-            token,
-            salt=TOKEN_GENERATOR_SALT,
-            max_age=TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS,
-        )
-    except SignatureExpired:
-        # Token has expired
-        data = serializer.loads_unsafe(token, salt=TOKEN_GENERATOR_SALT)[1]
-        return render_template(
-            "passwordReset/password-reset-token-expired.html", user_email=data["email"]
-        )
-    except BadSignature:
+        # Decode the token back into a Python object
+        data = decode_token(token)
+
+    except ExpiredSignatureError:
+        # Expired token
+        return {
+            "error": "Unauthorised",
+            "message": "Invalid or expired verification token",
+        }, 201
+
+    except InvalidSignatureError:
         # Token has been corrupted or tampered with or is invalid token
-        return render_template("passwordReset/password-reset-token-invalid.html")
+        return {
+            "error": "Unauthorised",
+            "message": "Invalid or expired verification token",
+        }, 201
 
     # Token is valid
-    user = User.query.filter_by(email=data["email"]).first()
+    user_id = data["sub"]
+    user = User.query.filter_by(id=user_id).first()
 
-    if user and str(user.id) == str(data["id"]):
-        # Show password reset form
-        form = PasswordResetForm()
-
-        if form.is_submitted() and form.validate():
-            input_password = form.password.data
-            input_pass_confirm = form.pass_confirm.data
-
-            # Confirm password is not in too common list
-            if input_password.lower() in MOST_COMMON_PASSWORDS:
-                form.password.errors.append("This password is too common")
-                form.password.errors.append(
-                    "Choose a less common password for better security"
-                )
-                return render_template(
-                    "passwordReset/password-reset-form.html", form=form
-                )
-
-            # Confirm password is correct format
-            password_errors = validate_password_format(input_password)
-
-            if password_errors:
-                for error in password_errors:
-                    form.password.errors.append(error)
-                return render_template(
-                    "passwordReset/password-reset-form.html", form=form
-                )
-
-            # Check passwords match
-            if input_password != input_pass_confirm:
-                form.pass_confirm.errors.append("Passwords do not match")
-                return render_template(
-                    "passwordReset/password-reset-form.html", form=form
-                )
-
-            # Update user password in the database
-            user = db.session.get(User, data["id"])
-            user.update_password(input_password)
-            db.session.add(user)
-            db.session.commit()
-
-            return render_template("passwordReset/password-reset-successful.html")
-
-        return render_template("passwordReset/password-reset-form.html", form=form)
-    else:
-        return render_template("passwordReset/password-reset-token-invalid.html")
+    return {
+        "message": "Account verification successful",
+        "email": user.email,
+    }, 200
 
 
-@user_authentication.route("/forgot_password", methods=["get", "post"])
-def forgot_password():
+@user_authentication.route("/reset_password", methods=["post"])
+def reset_password():
+    data = request.get_json()
+    email = data["email"]
+    password, confirm_password = data["password"], data["confirm_password"]
+
+    if not validate_email(email):
+        return {
+            "error": "Invalid email address",
+            "description": "Please enter a valid email address (e.g., john.doe@gmail.com)",
+        }, 401
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return {
+            "error": "Email already in use",
+            "description": "An account with this email address already exists. Please use a different email or login.",
+        }, 401
+
+    if password.lower() in MOST_COMMON_PASSWORDS:
+        return {
+            "error": "Password too common",
+            "description": "Please choose a more unique password.",
+        }, 401
+
+    password_errors = " ".join(validate_password_format(password))
+    if password_errors:
+        return {
+            "error": "Invalid password format",
+            "description": password_errors,
+        }, 401
+
+    # Confirm passwords match
+    if password != confirm_password:
+        return {
+            "error": "Passwords do not match",
+            "description": "Please make sure both passwords are identical.",
+        }, 401
+
+    # Update user password in the database
+    user = db.session.get(User, user.id)
+    user.update_password(password)
+    db.session.add(user)
+    db.session.commit()
+
+    return {"message": "Password updated successfully"}, 200
+
+
+@user_authentication.route("/request_password_reset", methods=["post"])
+def request_password_reset():
     """
     Handles the password reset request process for users who have forgotten their
     password.
@@ -666,42 +739,32 @@ def forgot_password():
     - If the reset email is sent successfully: Renders a confirmation page indicating
       the email has been sent.
     """
-    # Redirect user if already logged in
-    if current_user.is_authenticated:
-        return redirect(url_for("core.dashboard"))
+    data = request.get_json()
+    email = data["email"]
 
-    form = RequestPasswordResetForm()
+    if not validate_email(email):
+        return {"error": "Invalid email format"}, 201
 
-    # Submit form handling
-    if form.is_submitted() and form.validate():
-        input_email = form.email.data
-
-        # Confirm email is valid format
-        if not validate_email(input_email):
-            form.email.errors.append("Email is invalid")
-            return render_template(
-                "passwordReset/password-reset-request-email-form.html", form=form
-            )
-
-        # If user exists and isn't using OAuth for login
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and not user.provider:
-            token = generate_access_token(user_email=user.email, user_id=user.id)
-            send_password_reset_email(
-                user_email=user.email, token=token, username=user.username
-            )
-
-        # Redirect user to email sent page
-        return render_template(
-            "passwordReset/password-reset-email-successfully-sent.html"
+    # If user exists and isn't using OAuth for login
+    user = User.query.filter_by(email=email).first()
+    if user and not user.provider:
+        token = create_access_token(
+            identity=user.id, expires_delta=timedelta(seconds=600)
+        )
+        send_password_reset_email(
+            user_email=user.email, token=token, username=user.username
         )
 
-    return render_template(
-        "passwordReset/password-reset-request-email-form.html", form=form
-    )
+    return {"sucess": "Verification email (potentially) sent"}, 200
 
 
-def send_password_reset_email(user_email, token, username):
+@user_authentication.route("/auth/me", methods=["get"])
+@jwt_required()
+def authenticate_user():
+    return {"email": get_jwt_identity()}
+
+
+def send_password_reset_email(user_email: str, token: str, username: str) -> None:
     """
     Sends a password reset email to a user.
 
@@ -756,14 +819,16 @@ def validate_password_format(input_password: str) -> list[str]:
     password_errors = []
 
     if not any(char.isupper() for char in input_password):
-        password_errors.append("Password must include at least one uppercase letter")
+        password_errors.append("Password must include at least one uppercase letter.")
     if not any(char.islower() for char in input_password):
-        password_errors.append("Password must include at least one lowercase character")
+        password_errors.append(
+            "Password must include at least one lowercase character."
+        )
     if not any(char.isdigit() for char in input_password):
-        password_errors.append("Password must include at least one digit (0-9)")
+        password_errors.append("Password must include at least one digit (0-9).")
     if not any(char in PASSWORD_ALLOWED_SPECIAL_CHARS for char in input_password):
-        password_errors.append("Password must include at least one special character")
+        password_errors.append("Password must include at least one special character.")
     if not len(input_password) >= 8:
-        password_errors.append("Password must be at least 8 characters long")
+        password_errors.append("Password must be at least 8 characters long.")
 
     return password_errors

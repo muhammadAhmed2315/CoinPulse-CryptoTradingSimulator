@@ -34,7 +34,7 @@ def create_app():
     """
     # Initialize Flask app
     app = Flask(__name__)
-    CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
     # Configure app
     database_url = os.environ.get("DATABASE_URL")

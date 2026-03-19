@@ -1,6 +1,9 @@
 import { useState, type ChangeEvent } from "react";
 
-import { Button } from "@/components/ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 import {
   Card,
   CardContent,
@@ -11,15 +14,67 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 
-// TODO: Have a quick "✓ Password updated, go sign in" for 2-3 seconds and then
-//       re-direct to the sign in page
+// TODO: - Have a quick "✓ Password updated, go sign in" for 2-3 seconds and then
+//         re-direct to the sign in page
+//       - Update the "You won't be able to reuse your previous password." copy since
+//         that's not true.
+
+async function resetPassword(data: {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  const response = await fetch("http://127.0.0.1:5000/reset_password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+
+  console.log(response);
+
+  if (!response.ok) throw await response.json();
+
+  return await response.json();
+}
 
 export default function ResetPassword() {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("Password12/");
+  const [confirmPassword, setConfirmPassword] = useState("Password12/");
+  const email = useLocation().state?.email;
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: () => {
+      return resetPassword({
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+      });
+    },
+
+    onSuccess: () => {
+      console.log("PASSWORD SUCCESSFULLY UPDATED");
+    },
+
+    onError: (err) => {
+      console.log(err);
+      console.log("PASSWORD NOT SUCCESSFULLY UPDATED");
+    },
+  });
+
+  function handleSubmit() {
+    resetPasswordMutation.mutate();
+  }
 
   function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
     setPassword(e.target.value);
+  }
+
+  function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
+    setConfirmPassword(e.target.value);
   }
 
   return (
@@ -51,22 +106,24 @@ export default function ResetPassword() {
             id="input-confirm-password"
             type="password"
             placeholder="Re-enter password"
-            value={password}
-            onChange={handlePasswordInput}
+            value={confirmPassword}
+            onChange={handleConfirmPasswordInput}
           />
         </Field>
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
-        <Button className="w-full cursor-pointer" variant="outline">
+        <RippleButton
+          className="w-full cursor-pointer"
+          variant="outline"
+          onClick={handleSubmit}
+        >
           Set new password
-        </Button>
+          <RippleButtonRipples />
+        </RippleButton>
         <div className="flex items-center">
-          <a
-            href="#"
-            className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-          >
+          <p className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer">
             ← Back to login
-          </a>
+          </p>
         </div>
       </CardFooter>
     </Card>

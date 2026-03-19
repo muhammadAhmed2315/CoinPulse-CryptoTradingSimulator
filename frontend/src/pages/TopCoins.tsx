@@ -12,6 +12,9 @@ import SparklineGraph from "@/components/SparklineGraph";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+// TODO:
+// - Clicking on a coin should take you to its coin info page
+
 type Coin = {
   current_price: number;
   image: string;
@@ -45,7 +48,6 @@ async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
       "Content-Type": "application/json",
     },
   });
-  console.log(response.data.at(0));
   return response.data;
 }
 

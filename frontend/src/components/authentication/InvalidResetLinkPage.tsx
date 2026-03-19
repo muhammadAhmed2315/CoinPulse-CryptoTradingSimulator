@@ -1,4 +1,7 @@
-import { Button } from "@/components/ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 import {
   Card,
   CardContent,
@@ -15,7 +18,7 @@ export default function InvalidResetLinkPage() {
       <CardHeader className="text-center">
         <CardTitle>Reset link invalid</CardTitle>
         <CardDescription>
-          his password reset link can't be used. This usually happens because:
+          This password reset link can't be used. This usually happens because:
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -34,17 +37,18 @@ export default function InvalidResetLinkPage() {
         </ul>
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
-        <Button className="w-full cursor-pointer" variant="outline">
+        <RippleButton className="w-full cursor-pointer" variant="outline">
           Reset password reset email
-        </Button>
+          <RippleButtonRipples />
+        </RippleButton>
         <div className="flex w-full items-center justify-between">
-          <a href="#" className="text-sm underline-offset-4 hover:underline">
+          <p className="text-sm underline-offset-4 hover:underline cursor-pointer">
             Need help? Contact support
-          </a>
+          </p>
 
-          <a href="#" className="text-sm underline-offset-4 hover:underline">
-            Back to login
-          </a>
+          <p className="text-sm underline-offset-4 hover:underline cursor-pointer">
+            ← Back to login
+          </p>
         </div>
       </CardFooter>
     </Card>

@@ -8,7 +8,10 @@ import {
 import { Separator } from "./ui/separator";
 import PlaceholderIcon from "@/assets/icons/placeholder.svg";
 import HeartIcon from "@/assets/icons/heart.svg";
-import { Button } from "./ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 
 type FeedPostProps = {
   img: string;
@@ -44,9 +47,10 @@ export default function FeedPost() {
       <Separator />
       <CardFooter className="p-0 flex justify-between">
         <p>Just now</p>
-        <Button variant="outline" className="cursor-pointer">
+        <RippleButton variant="outline" className="cursor-pointer">
           <img src={HeartIcon} />0 likes
-        </Button>
+          <RippleButtonRipples />
+        </RippleButton>
       </CardFooter>
     </Card>
   );

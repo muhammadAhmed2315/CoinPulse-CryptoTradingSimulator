@@ -4,7 +4,10 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import { Button } from "./ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 
 import HomeIcon from "@/assets/icons/home.svg";
 import InfoIcon from "@/assets/icons/info.svg";
@@ -88,13 +91,14 @@ export default function NavBar() {
         <img src={PlaceHolderIcon} className="cursor-pointer size-11.25" />
         <p>muhahmed3758</p>
         <div className="h-6 w-px bg-gray-400" />
-        <Button
+        <RippleButton
           variant="ghost"
           className="cursor-pointer text-lg"
           onClick={handleLogout}
         >
           Log out
-        </Button>
+          <RippleButtonRipples />
+        </RippleButton>
       </div>
     </div>
   );

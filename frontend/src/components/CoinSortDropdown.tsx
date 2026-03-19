@@ -1,4 +1,7 @@
-import { Button } from "@/components/ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,7 +51,7 @@ export default function CoinSortDropDown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="cursor-pointer w-56">
+        <RippleButton variant="outline" className="cursor-pointer w-56">
           <img
             src={
               sortBy === "market_cap_asc" || sortBy == "volume_asc"
@@ -58,7 +61,8 @@ export default function CoinSortDropDown({
             className="size-6"
           />
           {sortByMap[sortBy]}
-        </Button>
+          <RippleButtonRipples />
+        </RippleButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>

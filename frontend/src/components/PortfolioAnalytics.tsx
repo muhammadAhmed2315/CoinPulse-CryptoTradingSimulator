@@ -1,4 +1,7 @@
-import { Button } from "./ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -44,7 +47,10 @@ export default function PortfolioAnalytics() {
             </Tabs>
           </CardDescription>
           <CardAction>
-            <Button className="text-xl cursor-pointer">New Trade</Button>
+            <RippleButton className="text-xl cursor-pointer" variant="default">
+              New Trade
+              <RippleButtonRipples />
+            </RippleButton>
           </CardAction>
         </CardHeader>
         <CardContent>

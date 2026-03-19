@@ -7,7 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "./ui/button";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
 
 import DotGreen from "@/assets/dot-green.svg";
 import DotAmber from "@/assets/dot-amber.svg";
@@ -27,21 +30,25 @@ export default function TradesTable() {
       </CardHeader>
       <CardContent>
         <CardAction className="flex gap-1.5">
-          <Button variant="secondary" className="cursor-pointer">
+          <RippleButton variant="secondary" className="cursor-pointer">
             All
-          </Button>
-          <Button variant="secondary" className="cursor-pointer">
+            <RippleButtonRipples />
+          </RippleButton>
+          <RippleButton variant="secondary" className="cursor-pointer">
             <img src={DotGreen} />
             Active
-          </Button>
-          <Button variant="secondary" className="cursor-pointer">
+            <RippleButtonRipples />
+          </RippleButton>
+          <RippleButton variant="secondary" className="cursor-pointer">
             <img src={DotAmber} />
             Finished
-          </Button>
-          <Button variant="secondary" className="cursor-pointer">
+            <RippleButtonRipples />
+          </RippleButton>
+          <RippleButton variant="secondary" className="cursor-pointer">
             <img src={DotRed} />
             Cancelled
-          </Button>
+            <RippleButtonRipples />
+          </RippleButton>
         </CardAction>
         <p>Card Content</p>
       </CardContent>

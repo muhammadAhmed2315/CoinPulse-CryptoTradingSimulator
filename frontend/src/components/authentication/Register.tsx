@@ -1,163 +1,248 @@
-// import { useState, type ChangeEvent } from "react";
-// import discordLogo from "@/assets/logos/discord.svg";
-// import googleLogo from "@/assets/logos/google.svg";
-// import axios from "axios";
+import { useState, type ChangeEvent } from "react";
+import discordLogo from "@/assets/logos/discord.svg";
+import googleLogo from "@/assets/logos/google.svg";
 
-// import { Button } from "@/components/ui/button";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-// import { Field, FieldLabel } from "@/components/ui/field";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "../ui/label";
-// import { useNavigate } from "react-router-dom";
-// import { useMutation } from "@tanstack/react-query";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "@/components/animate-ui/components/buttons/ripple";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Label } from "../ui/label";
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { AlertCircleIcon } from "lucide-react";
+import { validateEmail } from "@/utils";
+import { Spinner } from "../ui/spinner";
 
-// export default function Register() {
-//   const [email, setEmail] = useState("");
-//   const [username, setUsername] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-//   const navigate = useNavigate();
+async function createAccountFunction(data: {
+  email: string;
+  username: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  const response = await fetch("http://127.0.0.1:5000/create_account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
 
-//   const registerMutation = useMutation({
-//     mutationFn: (data: {
-//       email: string;
-//       username: string;
-//       password: string;
-//       confirm_password: string;
-//     }) =>
-//       axios.post("http://127.0.0.1:5000/register", data)
-//     }),
-//   };
+  if (!response.ok) throw await response.json();
 
-//   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
-//     setEmail(e.target.value);
-//   }
+  return await response.json();
+}
 
-//   function handleUsernameInput(e: ChangeEvent<HTMLInputElement>): void {
-//     setUsername(e.target.value);
-//   }
+export default function CreateAccount() {
+  const [email, setEmail] = useState("muhahmed3758@gmail.com");
+  const [username, setUsername] = useState("muhahmed3758");
+  const [password, setPassword] = useState("Password123/");
+  const [confirmPassword, setConfirmPassword] = useState("Password123/");
+  const [error, setError] = useState<[string, string]>(["", ""]);
+  const navigate = useNavigate();
 
-//   function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-//     setPassword(e.target.value);
-//   }
+  const createAccountMutation = useMutation({
+    mutationFn: (data: {
+      email: string;
+      username: string;
+      password: string;
+      confirmPassword: string;
+    }) => createAccountFunction(data),
 
-//   function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-//     setConfirmPassword(e.target.value);
-//   }
+    onSuccess: () => {
+      navigate("/activation_email_sent", { state: { email: email } });
+    },
 
-//   function handleLogin() {
-//     navigate("/login");
-//   }
+    onError: (error) => {
+      const err = error as unknown as { error: string; description: string };
+      setError([err.error ?? "Login failed", err.description ?? ""]);
+    },
+  });
 
-//   return (
-//     <Card className="w-96">
-//       <CardHeader className="text-center">
-//         <CardTitle>Create an account</CardTitle>
-//         <CardDescription>Join us. It only takes a moment.</CardDescription>
-//       </CardHeader>
-//       <CardContent>
-//         <Field>
-//           <FieldLabel htmlFor="input-email">Email</FieldLabel>
-//           <Input
-//             id="input-email"
-//             type="email"
-//             placeholder="john.doe@gmail.com"
-//             value={email}
-//             onChange={handleEmailInput}
-//           />
-//         </Field>
-//         <br />
-//         <Field>
-//           <FieldLabel htmlFor="input-username">Username</FieldLabel>
-//           <Input
-//             id="input-username"
-//             type="text"
-//             placeholder="JohnDoe2315"
-//             value={username}
-//             onChange={handleUsernameInput}
-//           />
-//         </Field>
-//         <br />
-//         <Field>
-//           <div className="flex items-center">
-//             <Label htmlFor="input-password">Password</Label>
-//           </div>
-//           <Input
-//             id="input-password"
-//             type="password"
-//             placeholder="Min. 8 characters"
-//             value={password}
-//             onChange={handlePasswordInput}
-//           />
-//         </Field>
-//         <br />
-//         <Field>
-//           <div className="flex items-center">
-//             <Label htmlFor="input-confirm-password">Confirm password</Label>
-//           </div>
-//           <Input
-//             id="input-confirm-password"
-//             type="password"
-//             placeholder="Re-enter password"
-//             value={confirmPassword}
-//             onChange={handleConfirmPasswordInput}
-//           />
-//         </Field>
-//       </CardContent>
-//       <CardFooter className="flex flex-col gap-2.5">
-//         <Button className="w-full cursor-pointer" variant="outline">
-//           Create account
-//         </Button>
+  function handleCreateAccount() {
+    if (!validateEmail(email)) {
+      setError([
+        "Invalid email address",
+        "Please enter a valid email address (e.g., john.doe@gmail.com)",
+      ]);
+    } else if (!username.charAt(0).match(/[a-z]/i)) {
+      setError(["Invalid username", "Username must begin with a letter."]);
+    } else if (!/^[a-zA-Z0-9]+$/.test(username)) {
+      setError([
+        "Invalid username",
+        "Username can only contain alphanumeric characters.",
+      ]);
+    } else if (password.length < 8) {
+      setError([
+        "Invalid password",
+        "Password must be at least 8 characters long",
+      ]);
+    } else if (password !== confirmPassword) {
+      setError([
+        "Passwords do not match",
+        "Please make sure both passwords are identical.",
+      ]);
+    } else {
+      createAccountMutation.mutate({
+        email,
+        username,
+        password,
+        confirmPassword,
+      });
+    }
+  }
 
-//         <div className="flex w-full items-center">
-//           <div className="flex-1 border-t border-gray-400" />
-//           <span className="mx-4 text-sm text-muted-foreground">
-//             or sign up with
-//           </span>
-//           <div className="flex-1 border-t border-gray-400" />
-//         </div>
+  function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
+    setEmail(e.target.value);
+  }
 
-//         <div className="flex gap-2 justify-center">
-//           <Button className="cursor-pointer" variant="outline">
-//             <img
-//               className="h-6 w-6 cursor-pointer"
-//               src={discordLogo}
-//               alt="Discord logo"
-//             />
-//             Discord
-//           </Button>
+  function handleUsernameInput(e: ChangeEvent<HTMLInputElement>): void {
+    setUsername(e.target.value);
+  }
 
-//           <Button className="cursor-pointer" variant="outline">
-//             <img
-//               className="h-5.5 w-5.5 cursor-pointer"
-//               src={googleLogo}
-//               alt="Google logo"
-//             />
-//             Google
-//           </Button>
-//         </div>
+  function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
+    setPassword(e.target.value);
+  }
 
-//         <div className="flex items-center">
-//           <a
-//             href="#"
-//             className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-//             onClick={handleLogin}
-//           >
-//             Already have an account? Login here
-//           </a>
-//         </div>
-//       </CardFooter>
-//     </Card>
-//   );
-// }
+  function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
+    setConfirmPassword(e.target.value);
+  }
 
-export default function Register() {
-  return <h1>Register</h1>;
+  function handleLogin() {
+    navigate("/login");
+  }
+
+  return (
+    <Card className="w-96">
+      <CardHeader className="text-center">
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Join us. It only takes a moment.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Field>
+          <FieldLabel htmlFor="input-email">Email</FieldLabel>
+          <Input
+            id="input-email"
+            type="email"
+            placeholder="john.doe@gmail.com"
+            value={email}
+            onChange={handleEmailInput}
+          />
+        </Field>
+        <br />
+        <Field>
+          <FieldLabel htmlFor="input-username">Username</FieldLabel>
+          <Input
+            id="input-username"
+            type="text"
+            placeholder="JohnDoe2315"
+            value={username}
+            onChange={handleUsernameInput}
+          />
+          <FieldDescription>
+            Must start with a letter. Letters and numbers only.
+          </FieldDescription>
+        </Field>
+        <br />
+        <Field>
+          <div className="flex items-center">
+            <Label htmlFor="input-password">Password</Label>
+          </div>
+          <Input
+            id="input-password"
+            type="password"
+            placeholder="Min. 8 characters"
+            value={password}
+            onChange={handlePasswordInput}
+          />
+          <FieldDescription>
+            At least 8 characters with an uppercase letter, lowercase letter,
+            number, and special character.
+          </FieldDescription>
+        </Field>
+        <br />
+        <Field>
+          <div className="flex items-center">
+            <Label htmlFor="input-confirm-password">Confirm password</Label>
+          </div>
+          <Input
+            id="input-confirm-password"
+            type="password"
+            placeholder="Re-enter password"
+            value={confirmPassword}
+            onChange={handleConfirmPasswordInput}
+          />
+        </Field>
+        {error.at(0) !== "" && error.at(1) !== "" && (
+          <>
+            <br />
+            <Alert variant="destructive" className="max-w-md">
+              <AlertCircleIcon />
+              <AlertTitle>{error.at(0)}</AlertTitle>
+              <AlertDescription>{error.at(1)}</AlertDescription>
+            </Alert>
+          </>
+        )}
+      </CardContent>
+      <CardFooter className="flex flex-col gap-2.5">
+        <RippleButton
+          className="w-full cursor-pointer"
+          variant="outline"
+          onClick={handleCreateAccount}
+        >
+          {createAccountMutation.isPending ? <Spinner /> : <>Create account</>}
+          <RippleButtonRipples />
+        </RippleButton>
+
+        <div className="flex w-full items-center">
+          <div className="flex-1 border-t border-gray-400" />
+          <span className="mx-4 text-sm text-muted-foreground">
+            or sign up with
+          </span>
+          <div className="flex-1 border-t border-gray-400" />
+        </div>
+
+        <div className="flex gap-2 justify-center">
+          <RippleButton className="cursor-pointer" variant="outline">
+            <img
+              className="h-6 w-6 cursor-pointer"
+              src={discordLogo}
+              alt="Discord logo"
+            />
+            Discord
+            <RippleButtonRipples />
+          </RippleButton>
+
+          <RippleButton className="cursor-pointer" variant="outline">
+            <img
+              className="h-5.5 w-5.5 cursor-pointer"
+              src={googleLogo}
+              alt="Google logo"
+            />
+            Google
+            <RippleButtonRipples />
+          </RippleButton>
+        </div>
+
+        <div className="flex items-center text-sm">
+          <span>Already have an account?&nbsp;</span>
+          <p
+            className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
+            onClick={handleLogin}
+          >
+            Login here
+          </p>
+        </div>
+      </CardFooter>
+    </Card>
+  );
 }

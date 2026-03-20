@@ -8,7 +8,6 @@ from extensions import db
 from constants import GOOGLE_CLIENT_ID
 from constants import GOOGLE_CLIENT_SECRET
 from constants import TOKEN_GENERATOR_SALT
-from constants import MOST_COMMON_PASSWORDS
 from constants import GOOGLE_AUTHORIZATION_BASE_URL
 from constants import GOOGLE_TOKEN_URL
 from constants import GOOGLE_REDIRECT_URI
@@ -312,9 +311,9 @@ def create_account():
     """
     Endpoint to handle registration requests. Redirects users who are already logged in
     to the home page. Handles form submission, and validates the input by checking the
-    email is in the correct format, checking against common passwords, and ensuring the
-    password meets the complexity requirements. Register the user and add them to the
-    database if successful, and then redirect them to the home page.
+    email is in the correct format, and ensuring the password meets the complexity
+    requirements. Register the user and add them to the database if successful, and
+    then redirect them to the home page.
     """
     data = request.get_json()
     email: str = data["email"]
@@ -353,12 +352,6 @@ def create_account():
         return {
             "error": "Username already taken",
             "description": "Please choose a different username.",
-        }, 401
-
-    if password.lower() in MOST_COMMON_PASSWORDS:
-        return {
-            "error": "Password too common",
-            "description": "Please choose a more unique password.",
         }, 401
 
     password_errors = " ".join(validate_password_format(password))
@@ -681,12 +674,6 @@ def reset_password():
         return {
             "error": "Email already in use",
             "description": "An account with this email address already exists. Please use a different email or login.",
-        }, 401
-
-    if password.lower() in MOST_COMMON_PASSWORDS:
-        return {
-            "error": "Password too common",
-            "description": "Please choose a more unique password.",
         }, 401
 
     password_errors = " ".join(validate_password_format(password))

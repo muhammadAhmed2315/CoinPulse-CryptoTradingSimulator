@@ -100,8 +100,8 @@ export default function EmailVerificationForm() {
         </Field>
 
         {errorVisible && (
-          <Alert variant="destructive" className="max-w-md">
-            <AlertCircleIcon />
+          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
             <AlertTitle>Invalid email address</AlertTitle>
             <AlertDescription>
               Please enter a valid email address (e.g., john.doe@gmail.com)

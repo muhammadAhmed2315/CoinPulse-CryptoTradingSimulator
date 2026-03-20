@@ -34,12 +34,11 @@ export default function VerifyPasswordResetToken() {
       navigate("/reset_password", {
         state: { email: data.email },
       });
-      // navigate("/login");
+      navigate("/login");
     },
 
     onError: () => {
-      console.log("ERROR");
-      // navigate("/email_verification_unsuccessful", { state: { token: token } });
+      navigate("/email_verification_unsuccessful", { state: { token: token } });
     },
   });
 

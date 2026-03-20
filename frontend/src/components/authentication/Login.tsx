@@ -151,8 +151,8 @@ export default function Login() {
         {error.at(0) !== "" && error.at(1) !== "" && (
           <>
             <br />
-            <Alert variant="destructive" className="max-w-md">
-              <AlertCircleIcon />
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
               <AlertTitle>{error.at(0)}</AlertTitle>
               <AlertDescription>{error.at(1)}</AlertDescription>
             </Alert>

@@ -18,7 +18,6 @@ import EmailVerificationSuccessful from "./components/authentication/EmailVerifi
 import EmailVerificationUnsuccessful from "./components/authentication/EmailVerificationUnsuccessful";
 import EmailVerificationForm from "./components/authentication/EmailVerificationForm";
 import VerifyPasswordResetToken from "./components/authentication/VerifyPasswordResetToken";
-import InvalidPasswordResetToken from "./components/authentication/InvalidPasswordResetToken";
 
 function App() {
   return (

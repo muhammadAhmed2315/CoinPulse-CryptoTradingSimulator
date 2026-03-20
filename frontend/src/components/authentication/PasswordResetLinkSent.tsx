@@ -2,20 +2,62 @@ import { Card } from "@/components/ui/card";
 import TickIcon from "@/assets/icons/tick.svg";
 import { Separator } from "../ui/separator";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  RippleButton,
+  RippleButtonRipples,
+} from "../animate-ui/components/buttons/ripple";
+import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { Spinner } from "../ui/spinner";
+import { formatTime } from "@/utils";
 
 // TODO:
 // - Clicking contact support should open an email client
 
+async function sendPasswordResetEmail(
+  email: string,
+): Promise<{ error: string } | { success: string }> {
+  const response = await fetch("http://127.0.0.1:5000/request_password_reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
 export default function PasswordResetLinkSent() {
   const navigate = useNavigate();
   const email = useLocation().state?.email;
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    if (timer === 0) return;
+
+    const id = setTimeout(() => setTimer((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [timer]);
+
+  const mutation = useMutation({
+    mutationFn: () => {
+      return sendPasswordResetEmail(email);
+    },
+
+    onSuccess: () => {
+      setTimer(33);
+    },
+  });
+
+  function handleResendEmail() {
+    mutation.mutate();
+  }
 
   function handleBackToLogin() {
     navigate("/login");
-  }
-
-  function handleRequestEmail() {
-    navigate("/request_password_reset", { state: { email: email } });
   }
 
   return (
@@ -38,22 +80,31 @@ export default function PasswordResetLinkSent() {
         <Separator />
 
         <div className="flex flex-col items-center">
+          <RippleButton
+            className="w-full cursor-pointer"
+            variant="outline"
+            onClick={handleResendEmail}
+            disabled={timer > 0}
+          >
+            {mutation.isPending ? (
+              <Spinner />
+            ) : timer > 30 ? (
+              <>Email sent!</>
+            ) : timer !== 0 ? (
+              <>Resend in {formatTime(timer)}</>
+            ) : (
+              <>Resend email</>
+            )}
+            <RippleButtonRipples />
+          </RippleButton>
+
           <a
             className="inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
             onClick={handleBackToLogin}
           >
             ← Back to login
           </a>
-          <div>
-            <span>Didn't receive an email? </span>
-            <span
-              className="hover:underline cursor-pointer"
-              onClick={handleRequestEmail}
-            >
-              Send again
-            </span>
-          </div>
-          <div>
+          <div className="text-sm">
             <span>Need help? </span>
             <span className="hover:underline cursor-pointer">
               Contact support

@@ -33,7 +33,6 @@ from flask_login import (
 )
 from flask import render_template, redirect, request, url_for, Blueprint, session
 from flask_mail import Message
-from login.forms import RequestPasswordResetForm, PasswordResetForm
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -749,7 +748,7 @@ def request_password_reset():
     user = User.query.filter_by(email=email).first()
     if user and not user.provider:
         token = create_access_token(
-            identity=user.id, expires_delta=timedelta(seconds=600)
+            identity=user.id, expires_delta=timedelta(seconds=1)
         )
         send_password_reset_email(
             user_email=user.email, token=token, username=user.username

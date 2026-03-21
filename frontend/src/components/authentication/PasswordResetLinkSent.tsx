@@ -35,9 +35,11 @@ export default function PasswordResetLinkSent() {
   const email = useLocation().state?.email;
   const [timer, setTimer] = useState(0);
 
-  useEffect(() => {
-    if (!email) navigate("/request_password_reset", { replace: true });
-  }, [email, navigate]);
+  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
+  if (!email) {
+    navigate("/request_password_reset", { replace: true });
+    return null;
+  }
 
   useEffect(() => {
     if (timer === 0) return;
@@ -52,6 +54,10 @@ export default function PasswordResetLinkSent() {
     },
 
     onSuccess: () => {
+      setTimer(33);
+    },
+
+    onError: () => {
       setTimer(33);
     },
   });
@@ -92,6 +98,8 @@ export default function PasswordResetLinkSent() {
           >
             {mutation.isPending ? (
               <Spinner />
+            ) : mutation.isError && timer > 30 ? (
+              <>Failed to send</>
             ) : timer > 30 ? (
               <>Email sent!</>
             ) : timer !== 0 ? (

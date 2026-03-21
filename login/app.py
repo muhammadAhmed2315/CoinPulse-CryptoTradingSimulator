@@ -540,8 +540,8 @@ def retry_verification_from_token():
       redirects the user to the "put in your email to request the verification email
       again" page
     """
-
-    token = request.get_json()
+    data = request.get_json()
+    token = data["token"]
 
     try:
         decoded = decode_token(token, allow_expired=True)
@@ -739,7 +739,10 @@ def request_password_reset():
     email = data["email"]
 
     if not validate_email(email):
-        return {"error": "Invalid email format"}, 201
+        return {
+            "error": "Invalid email",
+            "description": "Please enter a valid email address.",
+        }, 201
 
     # If user exists and isn't using OAuth for login
     user = User.query.filter_by(email=email).first()
@@ -751,7 +754,7 @@ def request_password_reset():
             user_email=user.email, token=token, username=user.username
         )
 
-    return {"sucess": "Verification email (potentially) sent"}, 200
+    return {"success": "Verification email (potentially) sent"}, 200
 
 
 @user_authentication.route("/auth/me", methods=["get"])

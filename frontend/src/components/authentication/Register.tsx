@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
-import { validateEmail } from "@/utils";
+import { validateEmail, validatePassword } from "@/utils";
 import { Spinner } from "../ui/spinner";
 
 async function createAccountFunction(data: {
@@ -43,10 +43,10 @@ async function createAccountFunction(data: {
 }
 
 export default function CreateAccount() {
-  const [email, setEmail] = useState("muhahmed3758@gmail.com");
-  const [username, setUsername] = useState("muhahmed3758");
-  const [password, setPassword] = useState("Password123/");
-  const [confirmPassword, setConfirmPassword] = useState("Password123/");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<[string, string]>(["", ""]);
   const navigate = useNavigate();
 
@@ -64,7 +64,7 @@ export default function CreateAccount() {
 
     onError: (error) => {
       const err = error as unknown as { error: string; description: string };
-      setError([err.error ?? "Login failed", err.description ?? ""]);
+      setError([err.error ?? "Registration failed", err.description ?? ""]);
     },
   });
 
@@ -81,10 +81,10 @@ export default function CreateAccount() {
         "Invalid username",
         "Username can only contain alphanumeric characters.",
       ]);
-    } else if (password.length < 8) {
+    } else if (validatePassword(password).length !== 0) {
       setError([
-        "Invalid password",
-        "Password must be at least 8 characters long",
+        "Invalid password format",
+        "Please check the password requirements and try again",
       ]);
     } else if (password !== confirmPassword) {
       setError([

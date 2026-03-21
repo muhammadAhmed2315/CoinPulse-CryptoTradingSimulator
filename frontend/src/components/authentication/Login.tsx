@@ -54,8 +54,7 @@ export default function Login() {
       navigate("/dashboard");
     },
 
-    onError: (error) => {
-      const err = error as unknown as { error: string; description: string };
+    onError: (err: { error: string; description: string }) => {
       setError([err.error ?? "Login failed", err.description ?? ""]);
     },
   });
@@ -94,22 +93,6 @@ export default function Login() {
     loginTestMutation.mutate();
   }
 
-  function handleForgotPassword() {
-    navigate("/request_password_reset");
-  }
-
-  function handleRegister() {
-    navigate("/create_account");
-  }
-
-  function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
-    setEmail(e.target.value);
-  }
-
-  function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-    setPassword(e.target.value);
-  }
-
   return (
     <Card className="w-96">
       <CardHeader className="text-center">
@@ -126,7 +109,7 @@ export default function Login() {
             type="email"
             placeholder="john.doe@gmail.com"
             value={email}
-            onChange={handleEmailInput}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
         <br />
@@ -135,7 +118,7 @@ export default function Login() {
             <Label htmlFor="input-password">Password</Label>
             <p
               className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
-              onClick={handleForgotPassword}
+              onClick={() => navigate("/request_password_reset")}
             >
               Forgot your password?
             </p>
@@ -145,7 +128,7 @@ export default function Login() {
             type="password"
             placeholder="**********"
             value={password}
-            onChange={handlePasswordInput}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
         {error.at(0) !== "" && error.at(1) !== "" && (
@@ -212,7 +195,7 @@ export default function Login() {
           <span>Don't have an account?&nbsp;</span>
           <p
             className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
-            onClick={handleRegister}
+            onClick={() => navigate("/create_account")}
           >
             Sign up here
           </p>

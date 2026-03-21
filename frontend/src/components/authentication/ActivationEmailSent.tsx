@@ -9,14 +9,16 @@ import DotGreen from "@/assets/dot-green.svg";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Spinner } from "../ui/spinner";
+import { useEffect, useState } from "react";
+import { formatTime } from "@/utils";
 
-async function resendActivationEmail(data: { email: string }) {
+async function resendActivationEmail(email: string) {
   const response = await fetch(
     "http://127.0.0.1:5000/retry_verification_from_email",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ email: email }),
       credentials: "include",
     },
   );
@@ -30,20 +32,36 @@ export default function ActivationEmailSent() {
   const navigate = useNavigate();
   const email = useLocation().state?.email;
   const canResend = useLocation().state?.canResend ?? true;
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    if (timer === 0) return;
+    const id = setTimeout(() => setTimer((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [timer]);
 
   const resendActivationEmailMutation = useMutation({
     mutationFn: () => {
       return resendActivationEmail(email);
     },
 
-    // TODO: Keep this?
-    // onSuccess: () => {
-    // navigate("/login");
-    // },
+    onSuccess: () => {
+      setTimer(33);
+    },
+
+    onError: () => {
+      setTimer(33);
+    },
   });
 
+  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
+  if (!email) {
+    navigate("/login", { replace: true });
+    return null;
+  }
+
   function handleResendEmail() {
-    resendActivationEmailMutation.mutate(email);
+    resendActivationEmailMutation.mutate();
   }
 
   function handleBackToLogin() {
@@ -77,9 +95,16 @@ export default function ActivationEmailSent() {
           <RippleButton
             className="w-full cursor-pointer"
             onClick={handleResendEmail}
+            disabled={timer > 0}
           >
             {resendActivationEmailMutation.isPending ? (
               <Spinner />
+            ) : resendActivationEmailMutation.isError && timer > 30 ? (
+              <>Failed to send</>
+            ) : timer > 30 ? (
+              <>Email sent!</>
+            ) : timer !== 0 ? (
+              <>Resend in {formatTime(timer)}</>
             ) : (
               <>Resend verification email</>
             )}

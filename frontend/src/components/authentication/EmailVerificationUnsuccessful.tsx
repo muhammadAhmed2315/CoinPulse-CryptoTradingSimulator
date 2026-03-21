@@ -8,6 +8,9 @@ import { Separator } from "../ui/separator";
 import DotRed from "@/assets/dot-red.svg";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Spinner } from "../ui/spinner";
+import { formatTime } from "@/utils";
 
 async function resendEmail(token: string) {
   const response = await fetch(
@@ -15,13 +18,10 @@ async function resendEmail(token: string) {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(token),
+      body: JSON.stringify({ token: token }),
       credentials: "include",
     },
   );
-
-  const foo = await response.json();
-  console.log(foo);
 
   if (!response.ok) throw await response.json();
 
@@ -31,18 +31,33 @@ async function resendEmail(token: string) {
 export default function EmailVerificationUnsuccessful() {
   const navigate = useNavigate();
   const token = useLocation().state?.token;
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    if (timer === 0) return;
+    const id = setTimeout(() => setTimer((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [timer]);
 
   const mutation = useMutation({
     mutationFn: () => {
       return resendEmail(token);
     },
 
-    onSuccess: () => {},
+    onSuccess: () => {
+      setTimer(33);
+    },
 
     onError: () => {
       navigate("/email_verification_form");
     },
   });
+
+  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
+  if (!token) {
+    navigate("/email_verification_form", { replace: true });
+    return null;
+  }
 
   function handleBackToLogin() {
     navigate("/login");
@@ -78,8 +93,17 @@ export default function EmailVerificationUnsuccessful() {
         <RippleButton
           className="w-full cursor-pointer"
           onClick={handleResendEmail}
+          disabled={timer > 0}
         >
-          Resend verification email
+          {mutation.isPending ? (
+            <Spinner />
+          ) : timer > 30 ? (
+            <>Email sent!</>
+          ) : timer !== 0 ? (
+            <>Resend in {formatTime(timer)}</>
+          ) : (
+            <>Resend verification email</>
+          )}
           <RippleButtonRipples />
         </RippleButton>
         <div className="flex">

@@ -33,17 +33,13 @@ async function sendPasswordResetEmail(
     body: JSON.stringify({ email: email }),
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  if (!response.ok) throw await response.json();
 
   return await response.json();
 }
 
 export default function RequestPasswordReset() {
-  const [email, setEmail] = useState(
-    useLocation().state?.email || "muhahmed3758@gmail.com",
-  );
+  const [email, setEmail] = useState(useLocation().state?.email);
   const [invalidEmail, setInvalidEmail] = useState(false);
   const navigate = useNavigate();
 
@@ -100,6 +96,16 @@ export default function RequestPasswordReset() {
               <AlertDescription>
                 Please enter a valid email address (e.g., john.doe@gmail.com)
               </AlertDescription>
+            </Alert>
+          </>
+        )}
+        {sendResetEmailMutation.isError && (
+          <>
+            <br />
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>Something went wrong</AlertTitle>
+              <AlertDescription>Please try again later.</AlertDescription>
             </Alert>
           </>
         )}

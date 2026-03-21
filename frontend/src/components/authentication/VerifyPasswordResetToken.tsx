@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import LoadingSpinner from "../LoadingSpinner";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 async function sendVerificationRequest(token: string) {
   const response = await fetch(
@@ -41,7 +41,10 @@ export default function VerifyPasswordResetToken() {
     },
   });
 
+  const hasFired = useRef(false);
   useEffect(() => {
+    if (hasFired.current) return;
+    hasFired.current = true;
     mutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

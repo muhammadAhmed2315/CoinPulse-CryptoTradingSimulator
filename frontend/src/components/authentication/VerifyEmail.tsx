@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import LoadingSpinner from "../LoadingSpinner";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 async function sendVerificationRequest(token: string) {
   const response = await fetch(`http://127.0.0.1:5000/verify_email/${token}`, {
@@ -28,9 +28,6 @@ export default function VerifyEmail() {
     },
 
     onSuccess: (data) => {
-      console.log("VERIFY EMAIL");
-      console.log(data.email);
-      console.log("VERIFY EMAIL");
       navigate("/email_verification_successful", {
         state: { email: data.email },
       });
@@ -42,7 +39,10 @@ export default function VerifyEmail() {
     },
   });
 
+  const hasFired = useRef(false);
   useEffect(() => {
+    if (hasFired.current) return;
+    hasFired.current = true;
     mutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

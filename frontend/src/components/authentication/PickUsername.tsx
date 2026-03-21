@@ -11,6 +11,9 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useState, type ChangeEvent } from "react";
 
+// TODO:
+// - Username validation needs to be done here
+
 export default function PickUsername() {
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
@@ -23,10 +26,6 @@ export default function PickUsername() {
 
     onSuccess: () => {
       navigate("/dashboard");
-    },
-
-    onError: (error) => {
-      console.log(error.message);
     },
   });
 

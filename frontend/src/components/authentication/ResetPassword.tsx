@@ -46,13 +46,19 @@ async function resetPassword(data: {
 }
 
 export default function ResetPassword() {
-  const [password, setPassword] = useState("Password123/");
-  const [confirmPassword, setConfirmPassword] = useState("Password123/");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<[string, string]>(["", ""]);
   const [successTimer, setSuccessTimer] = useState(0);
   const email = useLocation().state?.email;
   const token = useLocation().state?.token;
   const navigate = useNavigate();
+
+  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
+  useEffect(() => {
+    if (!email || !token)
+      navigate("/request_password_reset", { replace: true });
+  }, [email, navigate, token]);
 
   useEffect(() => {
     if (successTimer === 0) return;

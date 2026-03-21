@@ -12,7 +12,11 @@ export default function EmailVerificationSuccessful() {
   const navigate = useNavigate();
   const email = useLocation().state?.email;
 
-  console.log(email);
+  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
+  if (!email) {
+    navigate("/login", { replace: true });
+    return null;
+  }
 
   function handleLogin() {
     // TODO: This should go straight to the dashboard, you'll have to update the

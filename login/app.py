@@ -638,18 +638,25 @@ def verify_password_reset_token(token: str):
         return {
             "error": "Unauthorised",
             "message": "Invalid or expired verification token",
-        }, 201
+        }, 401
 
     except InvalidSignatureError:
         # Token has been corrupted or tampered with or is invalid token
         return {
             "error": "Unauthorised",
             "message": "Invalid or expired verification token",
-        }, 201
+        }, 401
 
     # Token is valid
     user_id = data["sub"]
     user = User.query.filter_by(id=user_id).first()
+
+    # Check if token has already been used
+    if user.last_password_reset_token == token:
+        return {
+            "error": "Invalid token",
+            "description": "This password reset link has already been used.",
+        }, 401
 
     return {
         "message": "Account verification successful",
@@ -660,8 +667,8 @@ def verify_password_reset_token(token: str):
 @user_authentication.route("/reset_password", methods=["post"])
 def reset_password():
     data = request.get_json()
-    email = data["email"]
-    password, confirm_password = data["password"], data["confirm_password"]
+    email, token = data["email"], data["token"]
+    password, confirm_password = data["password"], data["confirmPassword"]
 
     if not validate_email(email):
         return {
@@ -670,10 +677,12 @@ def reset_password():
         }, 401
 
     user = User.query.filter_by(email=email).first()
-    if not user:
+
+    # Check if reset link has already been used
+    if user.last_password_reset_token == token:
         return {
-            "error": "Email already in use",
-            "description": "An account with this email address already exists. Please use a different email or login.",
+            "error": "Invalid token",
+            "description": "This password reset link has already been used.",
         }, 401
 
     password_errors = " ".join(validate_password_format(password))
@@ -693,6 +702,7 @@ def reset_password():
     # Update user password in the database
     user = db.session.get(User, user.id)
     user.update_password(password)
+    user.update_last_password_reset_token(token)
     db.session.add(user)
     db.session.commit()
 
@@ -735,7 +745,7 @@ def request_password_reset():
     user = User.query.filter_by(email=email).first()
     if user and not user.provider:
         token = create_access_token(
-            identity=user.id, expires_delta=timedelta(seconds=1)
+            identity=user.id, expires_delta=timedelta(seconds=600)
         )
         send_password_reset_email(
             user_email=user.email, token=token, username=user.username

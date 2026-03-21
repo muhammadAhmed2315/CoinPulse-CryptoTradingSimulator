@@ -36,6 +36,10 @@ export default function PasswordResetLinkSent() {
   const [timer, setTimer] = useState(0);
 
   useEffect(() => {
+    if (!email) navigate("/request_password_reset", { replace: true });
+  }, [email, navigate]);
+
+  useEffect(() => {
     if (timer === 0) return;
 
     const id = setTimeout(() => setTimer((s) => s - 1), 1000);

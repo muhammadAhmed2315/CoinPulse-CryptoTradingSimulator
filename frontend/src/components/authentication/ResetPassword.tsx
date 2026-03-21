@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 
 import {
   RippleButton,
@@ -15,7 +15,12 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { validatePassword } from "@/utils";
+import NewPassword from "../NewPassword";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { AlertCircle } from "lucide-react";
+import { Spinner } from "../ui/spinner";
 
 // TODO: - Have a quick "✓ Password updated, go sign in" for 2-3 seconds and then
 //         re-direct to the sign in page
@@ -26,6 +31,7 @@ async function resetPassword(data: {
   email: string;
   password: string;
   confirmPassword: string;
+  token: string;
 }) {
   const response = await fetch("http://127.0.0.1:5000/reset_password", {
     method: "POST",
@@ -34,17 +40,34 @@ async function resetPassword(data: {
     credentials: "include",
   });
 
-  console.log(response);
-
   if (!response.ok) throw await response.json();
 
   return await response.json();
 }
 
 export default function ResetPassword() {
-  const [password, setPassword] = useState("Password12/");
-  const [confirmPassword, setConfirmPassword] = useState("Password12/");
+  const [password, setPassword] = useState("Password123/");
+  const [confirmPassword, setConfirmPassword] = useState("Password123/");
+  const [error, setError] = useState<[string, string]>(["", ""]);
+  const [successTimer, setSuccessTimer] = useState(0);
   const email = useLocation().state?.email;
+  const token = useLocation().state?.token;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (successTimer === 0) return;
+
+    if (successTimer === 1) {
+      const id = setTimeout(() => {
+        setSuccessTimer(0);
+        navigate("/login", { state: { prefillEmail: email } });
+      }, 1000);
+      return () => clearTimeout(id);
+    }
+
+    const id = setTimeout(() => setSuccessTimer((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [email, navigate, successTimer]);
 
   const resetPasswordMutation = useMutation({
     mutationFn: () => {
@@ -52,29 +75,36 @@ export default function ResetPassword() {
         email: email,
         password: password,
         confirmPassword: confirmPassword,
+        token: token,
       });
     },
 
     onSuccess: () => {
-      console.log("PASSWORD SUCCESSFULLY UPDATED");
+      setSuccessTimer(4);
     },
 
-    onError: (err) => {
-      console.log(err);
-      console.log("PASSWORD NOT SUCCESSFULLY UPDATED");
+    onError: (err: { error: string; description: string }) => {
+      if (err.error === "Invalid token")
+        navigate("/password_reset_link_invalid");
+      setError([err.error, err.description]);
     },
   });
 
   function handleSubmit() {
-    resetPasswordMutation.mutate();
-  }
-
-  function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-    setPassword(e.target.value);
-  }
-
-  function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-    setConfirmPassword(e.target.value);
+    const errors = validatePassword(password);
+    if (errors.length !== 0) {
+      setError([
+        "Invalid password format",
+        "Please check the password requirements and try again",
+      ]);
+    } else if (password !== confirmPassword) {
+      setError([
+        "Passwords do not match",
+        "Please make sure both passwords are identical",
+      ]);
+    } else {
+      resetPasswordMutation.mutate();
+    }
   }
 
   return (
@@ -87,16 +117,7 @@ export default function ResetPassword() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Field>
-          <FieldLabel htmlFor="input-password">New password</FieldLabel>
-          <Input
-            id="input-password"
-            type="password"
-            placeholder="Min. 8 characters"
-            value={password}
-            onChange={handlePasswordInput}
-          />
-        </Field>
+        <NewPassword password={password} setPassword={setPassword} />
         <br />
         <Field>
           <FieldLabel htmlFor="input-confirm-password">
@@ -107,20 +128,42 @@ export default function ResetPassword() {
             type="password"
             placeholder="Re-enter password"
             value={confirmPassword}
-            onChange={handleConfirmPasswordInput}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </Field>
+        {error.at(0) !== "" && error.at(1) !== "" && (
+          <>
+            <br />
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircle className="text-red-600 dark:text-red-400" />
+              <AlertTitle>{error.at(0)}</AlertTitle>
+              <AlertDescription>{error.at(1)}</AlertDescription>
+            </Alert>
+          </>
+        )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"
           onClick={handleSubmit}
+          disabled={successTimer > 0}
         >
-          Set new password
+          {resetPasswordMutation.isPending ? (
+            <Spinner />
+          ) : successTimer > 2 ? (
+            "✓ Password successfully updated"
+          ) : successTimer > 0 ? (
+            "Taking you back to log in..."
+          ) : (
+            "Set new password"
+          )}
           <RippleButtonRipples />
         </RippleButton>
-        <div className="flex items-center">
+        <div
+          className="flex items-center"
+          onClick={() => navigate("/login", { state: { prefillEmail: email } })}
+        >
           <p className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer">
             ← Back to login
           </p>

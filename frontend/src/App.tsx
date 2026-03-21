@@ -5,7 +5,6 @@ import MyTrades from "./pages/MyTrades";
 import TopCoins from "./pages/TopCoins";
 import Login from "./components/authentication/Login";
 import RequestPasswordReset from "./components/authentication/RequestPasswordReset";
-import InvalidResetLinkPage from "./components/authentication/InvalidResetLinkPage";
 import ResetPassword from "./components/authentication/ResetPassword";
 import AuthenticatedBase from "./pages/AuthenticatedBase";
 import ActivationEmailSent from "./components/authentication/ActivationEmailSent";
@@ -18,6 +17,7 @@ import EmailVerificationSuccessful from "./components/authentication/EmailVerifi
 import EmailVerificationUnsuccessful from "./components/authentication/EmailVerificationUnsuccessful";
 import EmailVerificationForm from "./components/authentication/EmailVerificationForm";
 import VerifyPasswordResetToken from "./components/authentication/VerifyPasswordResetToken";
+import PasswordResetLinkInvalid from "./components/authentication/PasswordResetLinkInvalid";
 
 function App() {
   return (
@@ -30,10 +30,6 @@ function App() {
           <Route
             path="/request_password_reset"
             element={<RequestPasswordReset />}
-          />
-          <Route
-            path="/invalid_reset_link"
-            element={<InvalidResetLinkPage />}
           />
           <Route path="/reset_password" element={<ResetPassword />} />
           <Route
@@ -61,6 +57,10 @@ function App() {
           <Route
             path="/verify_password_reset_token/:token"
             element={<VerifyPasswordResetToken />}
+          />
+          <Route
+            path="/password_reset_link_invalid"
+            element={<PasswordResetLinkInvalid />}
           />
         </Route>
 

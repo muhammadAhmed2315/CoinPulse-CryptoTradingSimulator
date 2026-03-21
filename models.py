@@ -33,6 +33,7 @@ class User(db.Model, UserMixin):
     provider = db.Column(db.Text, nullable=True)
     provider_id = db.Column(db.Text, nullable=True)
     verified = db.Column(Boolean, default=False, nullable=False)
+    last_password_reset_token = db.Column(db.Text, nullable=True)
     wallet = db.relationship("Wallet", backref="owner", uselist=False)
 
     def __init__(
@@ -57,7 +58,7 @@ class User(db.Model, UserMixin):
             self.provider = provider
             self.provider_id = provider_id
 
-    def update_username(self, username):
+    def update_username(self, username: str) -> None:
         """
         Updates the username for the user.
 
@@ -66,7 +67,7 @@ class User(db.Model, UserMixin):
         """
         self.username = username
 
-    def update_password(self, password):
+    def update_password(self, password: str) -> None:
         """
         Updates the password for the user. If the user is not authenticated via an
         an external provider (e.g., OAuth), this function will update the user's
@@ -77,6 +78,9 @@ class User(db.Model, UserMixin):
         """
         if not self.provider and not self.provider_id:
             self.password_hash = generate_password_hash(password)
+
+    def update_last_password_reset_token(self, token: str) -> None:
+        self.last_password_reset_token = token
 
     def check_password(self, password):
         """

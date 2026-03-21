@@ -32,13 +32,12 @@ export default function VerifyPasswordResetToken() {
 
     onSuccess: (data) => {
       navigate("/reset_password", {
-        state: { email: data.email },
+        state: { email: data.email, token: token },
       });
-      navigate("/login");
     },
 
     onError: () => {
-      navigate("/email_verification_unsuccessful", { state: { token: token } });
+      navigate("/password_reset_link_invalid");
     },
   });
 

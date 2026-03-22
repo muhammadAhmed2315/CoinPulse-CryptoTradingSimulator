@@ -1,7 +1,6 @@
 import { useState, type ChangeEvent } from "react";
 import discordLogo from "@/assets/logos/discord.svg";
 import googleLogo from "@/assets/logos/google.svg";
-import axios from "axios";
 
 import {
   RippleButton,
@@ -18,7 +17,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
@@ -26,7 +25,7 @@ import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
 
 async function loginFunction(data: { email: string; password: string }) {
-  const response = await fetch("http://127.0.0.1:5000/login", {
+  const response = await fetch("http://localhost:5000/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -44,13 +43,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<[string, string]>(["", ""]);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const loginMutation = useMutation({
     mutationFn: (data: { email: string; password: string }) => {
       return loginFunction(data);
     },
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       navigate("/dashboard");
     },
 
@@ -71,7 +72,8 @@ export default function Login() {
       });
     },
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       navigate("/dashboard");
     },
   });

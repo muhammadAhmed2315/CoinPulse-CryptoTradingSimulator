@@ -9,6 +9,7 @@ import CoinSortDropdown from "@/components/CoinSortDropdown";
 
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import SparklineGraph from "@/components/SparklineGraph";
+import { Spinner } from "@/components/ui/spinner";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -39,7 +40,7 @@ export type ApiSorts =
   | "volume_desc";
 
 async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
-  const URL = "http://127.0.0.1:5000/get_top_coins_data";
+  const URL = "http://localhost:5000/get_top_coins_data";
   const body = {
     sort_coins_by: sort_coins_by,
   };
@@ -164,7 +165,7 @@ export default function TopCoins() {
         <p className="text-lg">See the 100 top performing cryptocurrencies</p>
         <CoinSortDropdown sortBy={apiSort} setSortBy={setApiSort} />
       </div>
-      {isLoading && <div>Loading...</div>}
+      {isLoading && <Spinner />}
       {isError && <div>{(error as Error).message}</div>}
       {data && (
         <div className="ag-theme-alpine h-200">

@@ -27,7 +27,7 @@ import { validateEmail } from "@/utils";
 async function sendPasswordResetEmail(
   email: string,
 ): Promise<{ error: string } | { success: string }> {
-  const response = await fetch("http://127.0.0.1:5000/request_password_reset", {
+  const response = await fetch("http://localhost:5000/request_password_reset", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: email }),

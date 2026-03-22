@@ -7,7 +7,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import { useEffect, useRef } from "react";
 
 async function sendVerificationRequest(token: string) {
-  const response = await fetch(`http://127.0.0.1:5000/verify_email/${token}`, {
+  const response = await fetch(`http://localhost:5000/verify_email/${token}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

@@ -23,7 +23,7 @@ import { Spinner } from "../ui/spinner";
 
 async function requestVerificationEmail(email: string) {
   const response = await fetch(
-    "http://127.0.0.1:5000/retry_verification_from_email",
+    "http://localhost:5000/retry_verification_from_email",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

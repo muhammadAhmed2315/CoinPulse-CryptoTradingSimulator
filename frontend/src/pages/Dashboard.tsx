@@ -1,21 +1,8 @@
 import TrendingCoins from "@/components/TrendingCoins";
 import FeedPost from "@/components/FeedPost";
 import PortfolioOverview from "@/components/PortfolioOverview";
-import { useEffect } from "react";
-import axios from "axios";
 
 export default function Dashboard() {
-  useEffect(() => {
-    async function callback() {
-      const res = await axios.get("http://127.0.0.1:5000/auth/me", {
-        withCredentials: true,
-      });
-      const data = res.data;
-      console.log(data);
-    }
-
-    callback();
-  }, []);
 
   return (
     <div className="flex flex-col gap-4">

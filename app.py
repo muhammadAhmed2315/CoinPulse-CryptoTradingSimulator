@@ -34,7 +34,7 @@ def create_app():
     """
     # Initialize Flask app
     app = Flask(__name__)
-    CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://127.0.0.1:5173"])
 
     # Configure app
     database_url = os.environ.get("DATABASE_URL")
@@ -59,7 +59,7 @@ def create_app():
     # Configure JWT manager
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     app.config["JWT_COOKIE_HTTPONLY"] = True
-    app.config["JWT_COOKIE_SAMESITE"] = "Strict"
+    app.config["JWT_COOKIE_SAMESITE"] = "Lax"
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 
     # Initialize JWTManager with the app

@@ -16,19 +16,22 @@ import LineChartAscendingIcon from "@/assets/icons/line-chart-ascending.svg";
 import PlaceHolderIcon from "@/assets/icons/placeholder.svg";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/context/auth-context";
 
 export default function NavBar() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const logoutMutation = useMutation({
     mutationFn: () =>
-      axios.get("http://127.0.0.1:5000/logout", {
+      axios.get("http://localhost:5000/logout", {
         withCredentials: true,
       }),
 
     onSuccess: () => {
-      console.log("SUCCESS");
+      queryClient.setQueryData(["auth", "me"], null);
       navigate("/login");
     },
   });
@@ -89,7 +92,7 @@ export default function NavBar() {
 
       <div className="flex gap-3 items-center">
         <img src={PlaceHolderIcon} className="cursor-pointer size-11.25" />
-        <p>muhahmed3758</p>
+        <p>{user?.username}</p>
         <div className="h-6 w-px bg-gray-400" />
         <RippleButton
           variant="ghost"

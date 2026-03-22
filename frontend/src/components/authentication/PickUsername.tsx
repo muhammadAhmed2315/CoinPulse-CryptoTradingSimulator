@@ -20,7 +20,7 @@ export default function PickUsername() {
 
   const PickUsernameMutation = useMutation({
     mutationFn: (data: { username: string }) =>
-      axios.post("http://127.0.0.1:5000/pick_username", data, {
+      axios.post("http://localhost:5000/pick_username", data, {
         withCredentials: true,
       }),
 

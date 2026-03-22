@@ -33,7 +33,7 @@ async function resetPassword(data: {
   confirmPassword: string;
   token: string;
 }) {
-  const response = await fetch("http://127.0.0.1:5000/reset_password", {
+  const response = await fetch("http://localhost:5000/reset_password", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

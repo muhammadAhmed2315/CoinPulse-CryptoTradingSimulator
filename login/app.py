@@ -271,34 +271,6 @@ def login():
     return response
 
 
-@user_authentication.route("/login_test_account", methods=["get"])
-def login_test_account():
-    TEST_EMAIL = "muhahmed3758@gmail.com"
-    TEST_PASSWORD = "Password123/"
-
-    user = User.query.filter_by(email=TEST_EMAIL).first()
-
-    if not user:
-        return {"error": "Invalid email or password"}, 401
-
-    if not user.check_password(TEST_PASSWORD):
-        return {"error": "Invalid email or password"}, 401
-
-    # Generate access token
-    access_token = create_access_token(identity=user.id)
-
-    if not user.verified:
-        send_activation_email(user.mail, access_token, user.username)
-        return {"message": "Verification email sent. Please check your inbox."}, 200
-
-    refresh_token = create_refresh_token(identity=user.id)
-
-    response = make_response({"message": "Login successful"})
-    set_access_cookies(response, access_token)
-    set_refresh_cookies(response, refresh_token)
-    return response
-
-
 @user_authentication.route("/refresh", methods=["post"])
 @jwt_required(refresh=True)
 def refresh():

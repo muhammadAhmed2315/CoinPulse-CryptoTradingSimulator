@@ -64,10 +64,12 @@ export default function Login() {
   });
 
   const loginTestMutation = useMutation({
-    mutationFn: () =>
-      axios.get(`http://127.0.0.1:5000/login_test_account`, {
-        withCredentials: true,
-      }),
+    mutationFn: () => {
+      return loginFunction({
+        email: "muhahmed3758@gmail.com",
+        password: "Password123/",
+      });
+    },
 
     onSuccess: () => {
       navigate("/dashboard");

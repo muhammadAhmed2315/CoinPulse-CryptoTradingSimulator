@@ -55,6 +55,10 @@ export default function Login() {
     },
 
     onError: (err: { error: string; description: string }) => {
+      if (err.error === "Email not verified")
+        navigate("/activation_email_sent", {
+          state: { email: email },
+        });
       setError([err.error ?? "Login failed", err.description ?? ""]);
     },
   });

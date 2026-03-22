@@ -257,8 +257,11 @@ def login():
     access_token = create_access_token(identity=user.id)
 
     if not user.verified:
-        send_activation_email(user.mail, access_token, user.username)
-        return {"message": "Verification email sent. Please check your inbox."}, 200
+        send_activation_email(user.email, access_token, user.username)
+        return {
+            "error": "Email not verified",
+            "description": "A verification email has been sent. Please check your inbox and verify your account before logging in.",
+        }, 401
 
     refresh_token = create_refresh_token(identity=user.id)
 

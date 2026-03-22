@@ -43,6 +43,10 @@ function isSpecialChar(char: string) {
   );
 }
 
+function isLetter(char: string) {
+  return (char.length === 1 && isUppercase(char)) || isLowercase(char);
+}
+
 export const PASSWORD_RULES = [
   { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
   {
@@ -64,4 +68,36 @@ export function validatePassword(password: string) {
   return PASSWORD_RULES.filter((rule) => !rule.test(password)).map(
     (rule) => rule.label,
   );
+}
+
+export function validatePasswordRule(password: string, rule: string) {
+  return PASSWORD_RULES.some((x) => x.label === rule && x.test(password));
+}
+
+//=====
+export const USERNAME_RULES = [
+  { label: "At least 3 characters", test: (p: string) => p.length >= 3 },
+  {
+    label: "No more than 20 characters",
+    test: (p: string) => p.length > 0 && p.length <= 20,
+  },
+  {
+    label: "First character must be a letter",
+    test: (p: string) => (p.length > 0 ? isLetter(p.at(0)!) : false),
+  },
+  {
+    label: "Only letters and numbers",
+    test: (p: string) =>
+      p.length > 0 && [...p].every((c) => isLetter(c) || isDigit(c)),
+  },
+];
+
+export function validateUsername(username: string) {
+  return USERNAME_RULES.filter((rule) => !rule.test(username)).map(
+    (rule) => rule.label,
+  );
+}
+
+export function validateUsernameRule(username: string, rule: string) {
+  return USERNAME_RULES.some((x) => x.label === rule && x.test(username));
 }

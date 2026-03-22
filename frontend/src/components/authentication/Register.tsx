@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,8 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import { validateEmail, validatePassword } from "@/utils";
 import { Spinner } from "../ui/spinner";
+import NewPassword from "./NewPassword";
+import NewUsername from "./NewUsername";
 
 async function createAccountFunction(data: {
   email: string;
@@ -74,6 +76,11 @@ export default function CreateAccount() {
         "Invalid email address",
         "Please enter a valid email address (e.g., john.doe@gmail.com)",
       ]);
+    } else if (username.length < 3 || username.length > 20) {
+      setError([
+        "Invalid username length",
+        "Username must be between 3 and 20 characters",
+      ]);
     } else if (!username.charAt(0).match(/[a-z]/i)) {
       setError(["Invalid username", "Username must begin with a letter."]);
     } else if (!/^[a-zA-Z0-9]+$/.test(username)) {
@@ -101,22 +108,6 @@ export default function CreateAccount() {
     }
   }
 
-  function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
-    setEmail(e.target.value);
-  }
-
-  function handleUsernameInput(e: ChangeEvent<HTMLInputElement>): void {
-    setUsername(e.target.value);
-  }
-
-  function handlePasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-    setPassword(e.target.value);
-  }
-
-  function handleConfirmPasswordInput(e: ChangeEvent<HTMLInputElement>): void {
-    setConfirmPassword(e.target.value);
-  }
-
   function handleLogin() {
     navigate("/login");
   }
@@ -135,40 +126,13 @@ export default function CreateAccount() {
             type="email"
             placeholder="john.doe@gmail.com"
             value={email}
-            onChange={handleEmailInput}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
         <br />
-        <Field>
-          <FieldLabel htmlFor="input-username">Username</FieldLabel>
-          <Input
-            id="input-username"
-            type="text"
-            placeholder="JohnDoe2315"
-            value={username}
-            onChange={handleUsernameInput}
-          />
-          <FieldDescription>
-            Must start with a letter. Letters and numbers only.
-          </FieldDescription>
-        </Field>
+        <NewUsername username={username} setUsername={setUsername} />
         <br />
-        <Field>
-          <div className="flex items-center">
-            <Label htmlFor="input-password">Password</Label>
-          </div>
-          <Input
-            id="input-password"
-            type="password"
-            placeholder="Min. 8 characters"
-            value={password}
-            onChange={handlePasswordInput}
-          />
-          <FieldDescription>
-            At least 8 characters with an uppercase letter, lowercase letter,
-            number, and special character.
-          </FieldDescription>
-        </Field>
+        <NewPassword password={password} setPassword={setPassword} />
         <br />
         <Field>
           <div className="flex items-center">
@@ -179,7 +143,7 @@ export default function CreateAccount() {
             type="password"
             placeholder="Re-enter password"
             value={confirmPassword}
-            onChange={handleConfirmPasswordInput}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </Field>
         {error.at(0) !== "" && error.at(1) !== "" && (

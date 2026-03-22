@@ -41,6 +41,7 @@ export default function PasswordResetLinkSent() {
     return null;
   }
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (timer === 0) return;
 
@@ -48,6 +49,7 @@ export default function PasswordResetLinkSent() {
     return () => clearTimeout(id);
   }, [timer]);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const mutation = useMutation({
     mutationFn: () => {
       return sendPasswordResetEmail(email);

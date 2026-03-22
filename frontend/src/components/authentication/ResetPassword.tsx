@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { validatePassword } from "@/utils";
-import NewPassword from "../NewPassword";
+import NewPassword from "./NewPassword";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Spinner } from "../ui/spinner";

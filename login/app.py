@@ -334,6 +334,12 @@ def create_account():
             "description": "An account with this email address already exists. Please use a different email or login.",
         }, 401
 
+    if len(username) < 3 or len(username) > 20:
+        return {
+            "error": "Invalid username length",
+            "description": "Username must be between 3 and 20 characters.",
+        }, 401
+
     if not username[0].isalpha():
         return {
             "error": "Invalid username",
@@ -414,17 +420,32 @@ def pick_username():
     data = request.get_json()
     username = data["username"]
 
+    if len(username) < 3 or len(username) > 20:
+        return {
+            "error": "Invalid username length",
+            "description": "Username must be between 3 and 20 characters.",
+        }, 401
+
     # Check if username is in a valid format
     if not username[0].isalpha():
-        return {"error": "Username must begin with a letter"}, 401
+        return {
+            "error": "Invalid username format",
+            "description": "Username must begin with a letter",
+        }, 401
 
     if any([not char.isalnum() for char in username]):
-        return {"error": "Username can only contain alphanumeric characters"}
+        return {
+            "error": "Invalid username format",
+            "description": "Username can only contain alphanumeric characters",
+        }
 
     # Check username is not already taken
     user = User.query.filter_by(username=username).first()
     if user:
-        return {"error": "This username has already been taken"}, 401
+        return {
+            "error": "Username unavailable",
+            "description": "That username is already in use. Please choose a different one.",
+        }, 401
 
     # Save username to database
     current_user.update_username(username)

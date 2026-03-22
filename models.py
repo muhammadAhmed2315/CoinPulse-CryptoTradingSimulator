@@ -27,8 +27,8 @@ class User(db.Model, UserMixin):
     __tablename__ = "users"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = db.Column(db.Text, nullable=False, unique=True)
-    username = db.Column(db.Text, unique=True)
+    email = db.Column(db.String(254), nullable=False, unique=True)
+    username = db.Column(db.String(20), unique=True)
     password_hash = db.Column(db.Text, nullable=True)
     provider = db.Column(db.Text, nullable=True)
     provider_id = db.Column(db.Text, nullable=True)

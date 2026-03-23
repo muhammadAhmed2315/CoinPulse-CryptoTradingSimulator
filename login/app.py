@@ -1,12 +1,26 @@
 import time
 from datetime import timedelta
 
-from flask import (Blueprint, jsonify, make_response, redirect,
-                   render_template, request, session, url_for)
-from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                decode_token, get_jwt_identity, jwt_required,
-                                set_access_cookies, set_refresh_cookies,
-                                unset_jwt_cookies)
+from flask import (
+    Blueprint,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    get_jwt_identity,
+    jwt_required,
+    set_access_cookies,
+    set_refresh_cookies,
+    unset_jwt_cookies,
+)
 from flask_login import current_user, login_user
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
@@ -14,14 +28,23 @@ from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
 from requests_oauthlib import OAuth2Session
 from validate_email_address import validate_email
 
-from constants import (DISCORD_API_BASE_URL, DISCORD_AUTHORIZATION_BASE_URL,
-                       DISCORD_OAUTH2_CLIENT_ID, DISCORD_OAUTH2_CLIENT_SECRET,
-                       DISCORD_OAUTH2_REDIRECT_URI, DISCORD_TOKEN_URL,
-                       GOOGLE_AUTHORIZATION_BASE_URL, GOOGLE_CLIENT_ID,
-                       GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, GOOGLE_SCOPE,
-                       GOOGLE_TOKEN_URL, GOOGLE_USERINFO_URL,
-                       PASSWORD_ALLOWED_SPECIAL_CHARS,
-                       TOKEN_GENERATOR_SECRET_KEY)
+from constants import (
+    DISCORD_API_BASE_URL,
+    DISCORD_AUTHORIZATION_BASE_URL,
+    DISCORD_OAUTH2_CLIENT_ID,
+    DISCORD_OAUTH2_CLIENT_SECRET,
+    DISCORD_OAUTH2_REDIRECT_URI,
+    DISCORD_TOKEN_URL,
+    GOOGLE_AUTHORIZATION_BASE_URL,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI,
+    GOOGLE_SCOPE,
+    GOOGLE_TOKEN_URL,
+    GOOGLE_USERINFO_URL,
+    PASSWORD_ALLOWED_SPECIAL_CHARS,
+    TOKEN_GENERATOR_SECRET_KEY,
+)
 from extensions import db
 from models import User, ValueHistory, Wallet
 
@@ -243,11 +266,11 @@ def login():
         return {
             "error": "Email not verified",
             "description": "A verification email has been sent. Please check your inbox and verify your account before logging in.",
-        }, 401
+        }, 403
 
     refresh_token = create_refresh_token(identity=user.id)
 
-    response = make_response({"message": "Login successful"})
+    response = make_response({"message": "Login successful"}, 200)
     set_access_cookies(response, access_token)
     set_refresh_cookies(response, refresh_token)
     return response
@@ -258,7 +281,7 @@ def login():
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
-    response = make_response({"message": "Token refreshed"})
+    response = make_response({"message": "Token refreshed"}, 200)
     set_access_cookies(response, access_token)
     return response
 
@@ -282,53 +305,53 @@ def create_account():
         return {
             "error": "Invalid email address",
             "description": "Please enter a valid email address (e.g., john.doe@gmail.com)",
-        }, 401
+        }, 400
 
     user = User.query.filter_by(email=email).first()
     if user:
         return {
             "error": "Email already in use",
             "description": "An account with this email address already exists. Please use a different email or login.",
-        }, 401
+        }, 409
 
     if len(username) < 3 or len(username) > 20:
         return {
             "error": "Invalid username length",
             "description": "Username must be between 3 and 20 characters.",
-        }, 401
+        }, 400
 
     if not username[0].isalpha():
         return {
             "error": "Invalid username",
             "description": "Username must begin with a letter.",
-        }, 401
+        }, 400
 
     for char in username:
         if not char.isalnum():
             return {
                 "error": "Invalid username",
                 "description": "Username can only contain alphanumeric characters.",
-            }, 401
+            }, 400
 
     user = User.query.filter_by(username=username).first()
     if user:
         return {
             "error": "Username already taken",
             "description": "Please choose a different username.",
-        }, 401
+        }, 409
 
     password_errors = " ".join(validate_password_format(password))
     if password_errors:
         return {
             "error": "Invalid password format",
             "description": password_errors,
-        }, 401
+        }, 400
 
     if password != confirm_password:
         return {
             "error": "Passwords do not match",
             "description": "Please make sure both passwords are identical.",
-        }, 401
+        }, 400
 
     # Save user information to database, create a wallet for them, and log them in
     user = User(email=email, username=username, password=password)
@@ -381,20 +404,20 @@ def pick_username():
         return {
             "error": "Invalid username length",
             "description": "Username must be between 3 and 20 characters.",
-        }, 401
+        }, 400
 
     # Check if username is in a valid format
     if not username[0].isalpha():
         return {
             "error": "Invalid username format",
             "description": "Username must begin with a letter",
-        }, 401
+        }, 400
 
     if any([not char.isalnum() for char in username]):
         return {
             "error": "Invalid username format",
             "description": "Username can only contain alphanumeric characters",
-        }
+        }, 400
 
     # Check username is not already taken
     user = User.query.filter_by(username=username).first()
@@ -402,7 +425,7 @@ def pick_username():
         return {
             "error": "Username unavailable",
             "description": "That username is already in use. Please choose a different one.",
-        }, 401
+        }, 409
 
     # Save username to database
     current_user.update_username(username)
@@ -422,7 +445,7 @@ def pick_username():
 
 @user_authentication.route("/logout", methods=["get"])
 def logout():
-    response = make_response({"message": "Logged out"})
+    response = make_response({"message": "Logged out"}, 200)
     unset_jwt_cookies(response)
     return response
 
@@ -557,32 +580,6 @@ def retry_verification_from_token():
         }, 401
 
 
-def send_activation_email(user_email: str, token: str, username: str) -> None:
-    """
-    Sends a verification email to the specified user.
-
-    Creates and sends an email which consists of a verification token embedded within
-    an HTML template. Email is sent using the configured mail server to the user's
-    email address.
-
-    Parameters:
-        user_email: Email address of user to whom the verification email will be sent
-        token: The verification token to be included in the email for user verification
-    """
-    from app import mail_server
-
-    html_body = render_template(
-        "emailVerification/verification-email.html", token=token, username=username
-    )
-    msg = Message(
-        subject="Verify Your CoinPulse Account",
-        sender="MAIL_DEFAULT_SENDER",
-        recipients=[user_email],
-        html=html_body,
-    )
-    mail_server.send(msg)
-
-
 # #################### RESET USER'S PASSWORD ####################
 @user_authentication.route(
     "/verify_password_reset_token/<token>", methods=["get", "post"]
@@ -658,7 +655,7 @@ def reset_password():
         return {
             "error": "Invalid email address",
             "description": "Please enter a valid email address (e.g., john.doe@gmail.com)",
-        }, 401
+        }, 400
 
     user = User.query.filter_by(email=email).first()
 
@@ -674,14 +671,14 @@ def reset_password():
         return {
             "error": "Invalid password format",
             "description": password_errors,
-        }, 401
+        }, 400
 
     # Confirm passwords match
     if password != confirm_password:
         return {
             "error": "Passwords do not match",
             "description": "Please make sure both passwords are identical.",
-        }, 401
+        }, 400
 
     # Update user password in the database
     user = db.session.get(User, user.id)
@@ -726,7 +723,7 @@ def request_password_reset():
         return {
             "error": "Invalid email",
             "description": "Please enter a valid email address.",
-        }, 201
+        }, 400
 
     # If user exists and isn't using OAuth for login
     user = User.query.filter_by(email=email).first()
@@ -745,38 +742,6 @@ def request_password_reset():
 @jwt_required()
 def authenticate_user():
     return {"email": get_jwt_identity()}
-
-
-def send_password_reset_email(user_email: str, token: str, username: str) -> None:
-    """
-    Sends a password reset email to a user.
-
-    This function composes and sends an email with a password reset link that includes
-    a security token. The email is sent to the user's email address provided during
-    registration or stored in the user's profile.
-
-    Parameters:
-    user_email (str): The email address of the user to whom the password reset email
-                      will be sent.
-    token (str): A unique security token used for verifying the identity of the user
-                 during the password reset process.
-    username (str): The username of the user, used to personalize the email content.
-
-    Returns:
-    None: The function sends an email and does not return any value.
-    """
-    from app import mail_server
-
-    html_body = render_template(
-        "passwordReset/password-reset-email.html", token=token, username=username
-    )
-    msg = Message(
-        subject="Reset your CoinPulse password",
-        sender="MAIL_DEFAULT_SENDER",
-        recipients=[user_email],
-        html=html_body,
-    )
-    mail_server.send(msg)
 
 
 # #################### HELPER FUNCTIONS ####################
@@ -815,3 +780,61 @@ def validate_password_format(input_password: str) -> list[str]:
         password_errors.append("Password must be at least 8 characters long.")
 
     return password_errors
+
+
+def send_password_reset_email(user_email: str, token: str, username: str) -> None:
+    """
+    Sends a password reset email to a user.
+
+    This function composes and sends an email with a password reset link that includes
+    a security token. The email is sent to the user's email address provided during
+    registration or stored in the user's profile.
+
+    Parameters:
+    user_email (str): The email address of the user to whom the password reset email
+                      will be sent.
+    token (str): A unique security token used for verifying the identity of the user
+                 during the password reset process.
+    username (str): The username of the user, used to personalize the email content.
+
+    Returns:
+    None: The function sends an email and does not return any value.
+    """
+    from app import mail_server
+
+    html_body = render_template(
+        "passwordReset/password-reset-email.html", token=token, username=username
+    )
+    msg = Message(
+        subject="Reset your CoinPulse password",
+        sender="MAIL_DEFAULT_SENDER",
+        recipients=[user_email],
+        html=html_body,
+    )
+    mail_server.send(msg)
+
+
+def send_activation_email(user_email: str, token: str, username: str) -> None:
+    """
+    Sends a verification email to the specified user.
+
+    Creates and sends an email which consists of a verification token embedded within
+    an HTML template. Email is sent using the configured mail server to the user's
+    email address.
+
+    Parameters:
+        user_email: Email address of user to whom the verification email will be sent
+        token: The verification token to be included in the email for user verification
+    """
+    from app import mail_server
+
+    html_body = render_template(
+        "emailVerification/verification-email.html", token=token, username=username
+    )
+    msg = Message(
+        subject="Verify Your CoinPulse Account",
+        sender="MAIL_DEFAULT_SENDER",
+        recipients=[user_email],
+        html=html_body,
+    )
+    mail_server.send(msg)

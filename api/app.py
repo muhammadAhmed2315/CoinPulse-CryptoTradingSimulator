@@ -1,21 +1,17 @@
-from flask import jsonify, request, Blueprint
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    jwt_required,
-    get_jwt_identity,
-)
-from extensions import db
-from models import User, Wallet, Transaction, TransactionLikes
-from rapidfuzz import process
 import time
-import requests
-from constants import COINGECKO_API_HEADERS
-from core.app import update_user_wallet_value_in_background
-from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
-from RedditScraper.RedditScraper import RedditScraper
-from core.app import time_ago
 
+import requests
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                get_jwt_identity, jwt_required)
+from rapidfuzz import process
+
+from constants import COINGECKO_API_HEADERS
+from core.app import time_ago, update_user_wallet_value_in_background
+from extensions import db
+from models import Transaction, TransactionLikes, User, Wallet
+from RedditScraper.RedditScraper import RedditScraper
+from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 
 api = Blueprint("api", __name__)
 

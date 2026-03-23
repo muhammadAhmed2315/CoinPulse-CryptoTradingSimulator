@@ -1,47 +1,29 @@
-from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError
 import time
 from datetime import timedelta
 
-from models import User, Wallet, ValueHistory
-from flask import jsonify, make_response
-from extensions import db
-from constants import GOOGLE_CLIENT_ID
-from constants import GOOGLE_CLIENT_SECRET
-from constants import TOKEN_GENERATOR_SALT
-from constants import GOOGLE_AUTHORIZATION_BASE_URL
-from constants import GOOGLE_TOKEN_URL
-from constants import GOOGLE_REDIRECT_URI
-from constants import GOOGLE_USERINFO_URL
-from constants import GOOGLE_SCOPE
-from requests_oauthlib import OAuth2Session
-from constants import DISCORD_OAUTH2_CLIENT_ID
-from constants import DISCORD_API_BASE_URL
-from constants import DISCORD_AUTHORIZATION_BASE_URL
-from constants import DISCORD_TOKEN_URL
-from constants import TOKEN_GENERATOR_SECRET_KEY
-from validate_email_address import validate_email
-from constants import DISCORD_OAUTH2_CLIENT_SECRET
-from constants import DISCORD_OAUTH2_REDIRECT_URI
-from constants import PASSWORD_ALLOWED_SPECIAL_CHARS
-from constants import TOKEN_GENERATOR_EXPIRATION_TIME_SECONDS
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-from flask_login import (
-    login_user,
-    logout_user,
-    current_user,
-)
-from flask import render_template, redirect, request, url_for, Blueprint, session
+from flask import (Blueprint, jsonify, make_response, redirect,
+                   render_template, request, session, url_for)
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                decode_token, get_jwt_identity, jwt_required,
+                                set_access_cookies, set_refresh_cookies,
+                                unset_jwt_cookies)
+from flask_login import current_user, login_user
 from flask_mail import Message
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    decode_token,
-    set_access_cookies,
-    set_refresh_cookies,
-    jwt_required,
-    get_jwt_identity,
-    unset_jwt_cookies,
-)
+from itsdangerous import URLSafeTimedSerializer
+from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
+from requests_oauthlib import OAuth2Session
+from validate_email_address import validate_email
+
+from constants import (DISCORD_API_BASE_URL, DISCORD_AUTHORIZATION_BASE_URL,
+                       DISCORD_OAUTH2_CLIENT_ID, DISCORD_OAUTH2_CLIENT_SECRET,
+                       DISCORD_OAUTH2_REDIRECT_URI, DISCORD_TOKEN_URL,
+                       GOOGLE_AUTHORIZATION_BASE_URL, GOOGLE_CLIENT_ID,
+                       GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, GOOGLE_SCOPE,
+                       GOOGLE_TOKEN_URL, GOOGLE_USERINFO_URL,
+                       PASSWORD_ALLOWED_SPECIAL_CHARS,
+                       TOKEN_GENERATOR_SECRET_KEY)
+from extensions import db
+from models import User, ValueHistory, Wallet
 
 # This URLSafeTimedSerializer object will handle generating and verifying tokens
 serializer = URLSafeTimedSerializer(TOKEN_GENERATOR_SECRET_KEY)

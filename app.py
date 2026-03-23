@@ -1,21 +1,16 @@
-import os
 import logging
+import os
+import threading
+import uuid
+
 from flask import Flask
-from models import User
+from flask_cors import CORS
 from flask_mail import Mail
 from flask_migrate import Migrate
-from constants import MAIL_USERNAME
-from constants import MAIL_PASSWORD
-from extensions import db, login_manager, jwt
-import uuid
-from constants import (
-    JWT_SECRET_KEY,
-    JWT_ACCESS_TOKEN_EXPIRES_HOURS,
-    JWT_REFRESH_TOKEN_EXPIRES_DAYS,
-)
-import threading
-from flask_cors import CORS
-from datetime import timedelta
+
+from constants import MAIL_PASSWORD, MAIL_USERNAME
+from extensions import db, jwt, login_manager
+from models import User
 
 # Configure logging
 log = logging.getLogger("werkzeug")
@@ -88,9 +83,9 @@ def create_app():
         return db.session.get(User, uid)
 
     # Import blueprints
-    from login.app import user_authentication
-    from core.app import core
     from api.app import api
+    from core.app import core
+    from login.app import user_authentication
 
     # Register blueprints
     app.register_blueprint(user_authentication)
@@ -108,10 +103,8 @@ app, mail_server = create_app()
 
 if __name__ == "__main__":
     # Create the background task thread
-    from core.app import (
-        update_user_wallet_value_in_background,
-        update_open_trades_in_background,
-    )
+    from core.app import (update_open_trades_in_background,
+                          update_user_wallet_value_in_background)
 
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         # Run thread to continuously update user wallet value in the background

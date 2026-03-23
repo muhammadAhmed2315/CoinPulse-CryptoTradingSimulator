@@ -1,7 +1,9 @@
-import requests
 import urllib.parse
-from goose3 import Goose
+
+import requests
 from bs4 import BeautifulSoup
+from goose3 import Goose
+
 from .NewsArticle import NewsArticle
 
 

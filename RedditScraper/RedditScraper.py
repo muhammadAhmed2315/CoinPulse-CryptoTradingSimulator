@@ -1,15 +1,13 @@
+from typing import List
+
 import requests
+
+from constants import (REDDIT_CLIENT_ID, REDDIT_PASSWORD, REDDIT_SECRET_KEY,
+                       REDDIT_USER_AGENT, REDDIT_USERNAME)
+
+from .RedditComment import RedditComment
 from .RedditPost import RedditPost
 from .RedditSub import RedditSub
-from .RedditComment import RedditComment
-from typing import List
-from constants import (
-    REDDIT_CLIENT_ID,
-    REDDIT_SECRET_KEY,
-    REDDIT_USERNAME,
-    REDDIT_PASSWORD,
-    REDDIT_USER_AGENT,
-)
 
 
 class RedditScraper:

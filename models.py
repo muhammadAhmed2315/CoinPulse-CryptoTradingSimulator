@@ -1,12 +1,13 @@
-from extensions import db
-from sqlalchemy import Boolean, ARRAY
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict, MutableList
 import time
+import uuid
+
+from flask_login import UserMixin
+from sqlalchemy import ARRAY, Boolean
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.ext.mutable import MutableDict, MutableList
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from extensions import db
 
 
 class User(db.Model, UserMixin):

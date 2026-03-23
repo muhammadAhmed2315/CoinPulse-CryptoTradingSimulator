@@ -1,31 +1,20 @@
-import requests
 import time
-import time
-from flask import (
-    render_template,
-    request,
-    Blueprint,
-    jsonify,
-    session,
-    redirect,
-    url_for,
-)
-from flask_login import current_user, login_required, logout_user
-from models import User, Wallet, Transaction, TransactionLikes
-from constants import (
-    COINGECKO_API_KEY,
-    COINGECKO_API_HEADERS,
-    OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
-    WALLET_VALUE_UPDATE_INTERVAL_SECONDS,
-)
-from extensions import db
-import time
-from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
-from RedditScraper.RedditScraper import RedditScraper
 from datetime import datetime
-from sqlalchemy import or_, and_
-from flask_jwt_extended import jwt_required
 
+import requests
+from flask import (Blueprint, jsonify, redirect, render_template, request,
+                   session, url_for)
+from flask_jwt_extended import jwt_required
+from flask_login import current_user, logout_user
+from sqlalchemy import and_, or_
+
+from constants import (COINGECKO_API_HEADERS, COINGECKO_API_KEY,
+                       OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
+                       WALLET_VALUE_UPDATE_INTERVAL_SECONDS)
+from extensions import db
+from models import Transaction, TransactionLikes, Wallet
+from RedditScraper.RedditScraper import RedditScraper
+from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 
 core = Blueprint("core", __name__)
 

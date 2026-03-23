@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from constants import POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD
+
+from constants import POSTGRESQL_PASSWORD, POSTGRESQL_USERNAME
 
 # Connection string for the 'postgres' system database
 engine = create_engine(

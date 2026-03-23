@@ -567,10 +567,15 @@ def retry_verification_from_token():
         if user:
             new_token = create_access_token(identity=user.id)
             send_activation_email(user.email, new_token, user.username)
-
-        return {
-            "message": "Account activation email sent. Please check your email to verify your account."
-        }, 200
+            return {
+                "message": "Account activation email sent. Please check your email to verify your account."
+            }, 200
+        else:
+            # Return generic "invalid token" to avoid revealing whether a user ID exists
+            return {
+                "error": "Invalid token",
+                "message": "This token is invalid. Please request a new verification email.",
+            }, 401
 
     except InvalidSignatureError:
         # Token has been tampered with

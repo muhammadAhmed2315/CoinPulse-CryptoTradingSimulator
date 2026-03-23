@@ -32,7 +32,10 @@ async function loginFunction(data: { email: string; password: string }) {
     credentials: "include",
   });
 
-  if (!response.ok) throw await response.json();
+  if (!response.ok) {
+    const body = await response.json();
+    throw { status: response.status, ...body };
+  }
 
   return await response.json();
 }
@@ -55,12 +58,12 @@ export default function Login() {
       navigate("/dashboard");
     },
 
-    onError: (err: { error: string; description: string }) => {
-      if (err.error === "Email not verified")
+    onError: (err: { status: number; error: string; description: string }) => {
+      if (err.status === 403)
         navigate("/activation_email_sent", {
           state: { email: email },
         });
-      setError([err.error ?? "Login failed", err.description ?? ""]);
+      else setError([err.error ?? "Login failed", err.description ?? ""]);
     },
   });
 

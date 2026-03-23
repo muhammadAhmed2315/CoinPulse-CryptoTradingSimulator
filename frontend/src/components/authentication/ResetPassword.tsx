@@ -40,7 +40,10 @@ async function resetPassword(data: {
     credentials: "include",
   });
 
-  if (!response.ok) throw await response.json();
+  if (!response.ok) {
+    const body = await response.json();
+    throw { ...body, status: response.status };
+  }
 
   return await response.json();
 }
@@ -89,9 +92,8 @@ export default function ResetPassword() {
       setSuccessTimer(4);
     },
 
-    onError: (err: { error: string; description: string }) => {
-      if (err.error === "Invalid token")
-        navigate("/password_reset_link_invalid");
+    onError: (err: { error: string; description: string; status: number }) => {
+      if (err.status === 401) navigate("/password_reset_link_invalid");
       setError([err.error, err.description]);
     },
   });

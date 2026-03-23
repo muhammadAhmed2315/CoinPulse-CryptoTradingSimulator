@@ -19,7 +19,7 @@ export default function NewUsername({
         <Input
           id="input-username"
           type="text"
-          placeholder="Min. 8 characters"
+          placeholder="Min. 3 characters"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />

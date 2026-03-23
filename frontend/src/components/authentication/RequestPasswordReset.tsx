@@ -113,7 +113,6 @@ export default function RequestPasswordReset() {
       <CardFooter className="flex flex-col gap-2.5">
         <RippleButton
           className="w-full cursor-pointer"
-          variant="outline"
           onClick={handleSendEmailClick}
         >
           {sendResetEmailMutation.isPending ? (
@@ -123,14 +122,14 @@ export default function RequestPasswordReset() {
           )}
           <RippleButtonRipples />
         </RippleButton>
-        <div className="flex items-center">
-          <p
-            className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
-            onClick={handleBackToLogin}
-          >
-            ← Back to login
-          </p>
-        </div>
+        <RippleButton
+          className="w-full cursor-pointer"
+          variant="outline"
+          onClick={handleBackToLogin}
+        >
+          ← Back to login
+          <RippleButtonRipples />
+        </RippleButton>
       </CardFooter>
     </Card>
   );

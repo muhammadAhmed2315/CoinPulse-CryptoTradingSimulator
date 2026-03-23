@@ -28,9 +28,12 @@ export default function VerifyEmail() {
     },
 
     onSuccess: (data) => {
-      navigate("/email_verification_successful", {
-        state: { email: data.email },
-      });
+      if (data.message === "Email already verified")
+        navigate("/email_already_verified", { state: { email: data.email } });
+      else
+        navigate("/email_verification_successful", {
+          state: { email: data.email },
+        });
       // navigate("/login");
     },
 

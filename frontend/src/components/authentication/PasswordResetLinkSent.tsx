@@ -81,7 +81,7 @@ export default function PasswordResetLinkSent() {
 
         <p className="text-[22px] font-extrabold">Check your inbox</p>
 
-        <p>
+        <p className="text-center">
           If there's an account associated with <b>{email}</b>, you'll receive a
           link to reset your password shortly. Be sure to check your spam folder
           too.
@@ -89,12 +89,11 @@ export default function PasswordResetLinkSent() {
 
         <p>This link will expire in 1 hour.</p>
 
-        <Separator />
+        <Separator className="mt-2 mb-4" />
 
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-[75%]">
           <RippleButton
             className="w-full cursor-pointer"
-            variant="outline"
             onClick={handleResendEmail}
             disabled={timer > 0}
           >
@@ -111,13 +110,14 @@ export default function PasswordResetLinkSent() {
             )}
             <RippleButtonRipples />
           </RippleButton>
-
-          <a
-            className="inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
+          <RippleButton
+            className="w-full cursor-pointer"
+            variant="outline"
             onClick={handleBackToLogin}
           >
             ← Back to login
-          </a>
+            <RippleButtonRipples />
+          </RippleButton>
           <div className="text-sm">
             <span>Need help? </span>
             <span className="hover:underline cursor-pointer">

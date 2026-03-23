@@ -151,11 +151,7 @@ export default function Login() {
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
-        <RippleButton
-          className="w-full cursor-pointer"
-          variant="outline"
-          onClick={handleLogin}
-        >
+        <RippleButton className="w-full cursor-pointer" onClick={handleLogin}>
           {loginMutation.isPending ? <Spinner /> : <>Login</>}
           <RippleButtonRipples />
         </RippleButton>

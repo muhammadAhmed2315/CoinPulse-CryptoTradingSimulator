@@ -106,14 +106,14 @@ export default function EmailVerificationUnsuccessful() {
           )}
           <RippleButtonRipples />
         </RippleButton>
-        <div className="flex">
-          <a
-            className="inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
-            onClick={handleBackToLogin}
-          >
-            ← Back to login
-          </a>
-        </div>
+        <RippleButton
+          className="w-full cursor-pointer"
+          variant="outline"
+          onClick={handleBackToLogin}
+        >
+          ← Back to login
+          <RippleButtonRipples />
+        </RippleButton>
       </div>
     </Card>
   );

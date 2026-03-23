@@ -492,19 +492,25 @@ def verify_email(token):
 
         user = User.query.filter_by(id=data["sub"]).first()
         # Token is valid and matches data
-        if user and str(user.id) == data["sub"] and not user.verified:
-            user.verified = True
-            db.session.add(user)
-            db.session.commit()
-            return {
-                "message": "Account verification successful",
-                "email": user.email,
-            }, 200
+        if user and str(user.id) == data["sub"]:
+            if not user.verified:
+                user.verified = True
+                db.session.add(user)
+                db.session.commit()
+                return {
+                    "message": "Email verification successful",
+                    "email": user.email,
+                }, 200
+            else:
+                return {
+                    "message": "Email already verified",
+                    "email": user.email,
+                }, 200
         else:
             return {
                 "error": "Unauthorised",
                 "message": "Invalid or expired verification token",
-            }, 201
+            }, 401
 
     except ExpiredSignatureError:
         # Expired token

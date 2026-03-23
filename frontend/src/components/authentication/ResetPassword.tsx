@@ -151,7 +151,6 @@ export default function ResetPassword() {
       <CardFooter className="flex flex-col gap-2.5">
         <RippleButton
           className="w-full cursor-pointer"
-          variant="outline"
           onClick={handleSubmit}
           disabled={successTimer > 0}
         >
@@ -166,14 +165,14 @@ export default function ResetPassword() {
           )}
           <RippleButtonRipples />
         </RippleButton>
-        <div
-          className="flex items-center"
+        <RippleButton
+          className="w-full cursor-pointer"
+          variant="outline"
           onClick={() => navigate("/login", { state: { prefillEmail: email } })}
         >
-          <p className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer">
-            ← Back to login
-          </p>
-        </div>
+          ← Back to login
+          <RippleButtonRipples />
+        </RippleButton>
       </CardFooter>
     </Card>
   );

@@ -108,7 +108,7 @@ export default function CreateAccount() {
     }
   }
 
-  function handleLogin() {
+  function handleBackToLogin() {
     navigate("/login");
   }
 
@@ -160,7 +160,6 @@ export default function CreateAccount() {
       <CardFooter className="flex flex-col gap-2.5">
         <RippleButton
           className="w-full cursor-pointer"
-          variant="outline"
           onClick={handleCreateAccount}
         >
           {createAccountMutation.isPending ? <Spinner /> : <>Create account</>}
@@ -201,7 +200,7 @@ export default function CreateAccount() {
           <span>Already have an account?&nbsp;</span>
           <p
             className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
-            onClick={handleLogin}
+            onClick={handleBackToLogin}
           >
             Login here
           </p>

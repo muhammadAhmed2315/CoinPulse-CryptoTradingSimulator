@@ -21,6 +21,7 @@ import VerifyPasswordResetToken from "./components/authentication/VerifyPassword
 import PasswordResetLinkInvalid from "./components/authentication/PasswordResetLinkInvalid";
 import { AuthContextProvider } from "./context/auth-context";
 import ProtectedRoute from "./components/ProtectedRoute";
+import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerified";
 
 function App() {
   return (
@@ -51,6 +52,10 @@ function App() {
             <Route
               path="/email_verification_successful"
               element={<EmailVerificationSuccessful />}
+            />
+            <Route
+              path="/email_already_verified"
+              element={<EmailAlreadyVerified />}
             />
             <Route
               path="/email_verification_unsuccessful"

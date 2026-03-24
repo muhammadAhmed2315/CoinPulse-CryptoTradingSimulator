@@ -6,19 +6,23 @@ import { Card } from "@/components/ui/card";
 import AtSymbolIcon from "@/assets/icons/at-symbol.svg";
 import { Separator } from "../ui/separator";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useState, type ChangeEvent } from "react";
+import { useAuth } from "@/context/auth-context";
+import { Spinner } from "../ui/spinner";
+import NewUsername from "./NewUsername";
 
 // TODO:
 // - Username validation needs to be done here
 
 export default function PickUsername() {
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
-  const PickUsernameMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: (data: { username: string }) =>
       axios.post("http://localhost:5000/pick_username", data, {
         withCredentials: true,
@@ -29,12 +33,20 @@ export default function PickUsername() {
     },
   });
 
-  function handleUsernameChange(e: ChangeEvent<HTMLInputElement>) {
-    setUsername(e.target.value);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
   }
 
-  function handleSubmit() {
-    PickUsernameMutation.mutate({ username: username });
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.username) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
@@ -50,14 +62,13 @@ export default function PickUsername() {
 
         <p>Choose something unique. This is how others will find you.</p>
 
-        <Input
-          placeholder="@ username"
-          value={username}
-          onChange={handleUsernameChange}
-        />
+        <NewUsername username={username} setUsername={setUsername} />
 
-        <RippleButton className="cursor-pointer" onClick={handleSubmit}>
-          Continue
+        <RippleButton
+          className="cursor-pointer"
+          onClick={() => mutation.mutate({ username: username })}
+        >
+          {mutation.isPending ? <Spinner /> : <>Continue</>}
           <RippleButtonRipples />
         </RippleButton>
       </div>

@@ -18,7 +18,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import { validateEmail } from "@/utils";
@@ -44,7 +44,13 @@ export default function Login() {
   const prefillEmail: string = useLocation().state?.prefillEmail ?? "";
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<[string, string]>(["", ""]);
+  const [searchParams] = useSearchParams();
+  const oauthError = searchParams.get("error");
+  const [error, setError] = useState<[string, string]>(
+    oauthError === "oauth_denied"
+      ? ["Authentication denied", "Google sign-in was cancelled or denied."]
+      : ["", ""],
+  );
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -187,7 +193,13 @@ export default function Login() {
             <RippleButtonRipples />
           </RippleButton>
 
-          <RippleButton className="cursor-pointer" variant="outline">
+          <RippleButton
+            className="cursor-pointer"
+            variant="outline"
+            onClick={() => {
+              window.location.href = "http://localhost:5000/login_google";
+            }}
+          >
             <img
               className="h-5.5 w-5.5 cursor-pointer"
               src={googleLogo}

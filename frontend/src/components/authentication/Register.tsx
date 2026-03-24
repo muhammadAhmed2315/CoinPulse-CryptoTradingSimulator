@@ -17,7 +17,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
@@ -49,7 +49,13 @@ export default function CreateAccount() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<[string, string]>(["", ""]);
+  const [searchParams] = useSearchParams();
+  const oauthError = searchParams.get("error");
+  const [error, setError] = useState<[string, string]>(
+    oauthError === "oauth_denied"
+      ? ["Authentication denied", "Google sign-in was cancelled or denied."]
+      : ["", ""],
+  );
   const navigate = useNavigate();
 
   const createAccountMutation = useMutation({
@@ -185,7 +191,13 @@ export default function CreateAccount() {
             <RippleButtonRipples />
           </RippleButton>
 
-          <RippleButton className="cursor-pointer" variant="outline">
+          <RippleButton
+            className="cursor-pointer"
+            variant="outline"
+            onClick={() => {
+              window.location.href = "http://localhost:5000/login_google";
+            }}
+          >
             <img
               className="h-5.5 w-5.5 cursor-pointer"
               src={googleLogo}

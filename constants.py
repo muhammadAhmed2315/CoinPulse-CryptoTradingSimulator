@@ -13,7 +13,7 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_AUTHORIZATION_BASE_URL = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-GOOGLE_REDIRECT_URI = "https://coin-pulse-ffda7bc3f791.herokuapp.com/callback_google"
+GOOGLE_REDIRECT_URI = "http://localhost:5000/callback_google"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
 GOOGLE_SCOPE = ["profile", "email"]
 
@@ -45,6 +45,8 @@ WALLET_VALUE_UPDATE_INTERVAL_SECONDS = 1800
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ACCESS_TOKEN_EXPIRES_HOURS = 1
 JWT_REFRESH_TOKEN_EXPIRES_DAYS = 7
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 PASSWORD_ALLOWED_SPECIAL_CHARS = [
     "~",

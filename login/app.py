@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import timedelta
 
@@ -21,7 +22,7 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     unset_jwt_cookies,
 )
-from flask_login import current_user, login_user
+from flask_login import login_user
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
@@ -35,6 +36,7 @@ from constants import (
     DISCORD_OAUTH2_CLIENT_SECRET,
     DISCORD_OAUTH2_REDIRECT_URI,
     DISCORD_TOKEN_URL,
+    FRONTEND_URL,
     GOOGLE_AUTHORIZATION_BASE_URL,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
@@ -152,24 +154,14 @@ def callback_discord():
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
-# os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Only for development on localhost
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Only for development on localhost
 
 
 @user_authentication.route("/login_google")
 def login_google():
     """
-    Initiates OAuth2 authentication with Google.
-
-    This function creates an OAuth2 session with the specified client ID, redirect URI,
-    and scope. It then constructs the authorization URL for Google's OAuth2 service,
-    specifying that the access should be offline (allowing for refresh tokens) and
-    prompting the user to select an account if multiple are logged in.
-
-    The user is then redirected to the authorization URL to complete the login process.
-
-    Returns:
-        Redirect: A redirection response object that directs the user to Google's
-                  OAuth2 login page.
+    Initiates OAuth2 authentication with Google by redirecting the user to
+    Google's authorization page.
     """
     google = OAuth2Session(
         GOOGLE_CLIENT_ID, redirect_uri=GOOGLE_REDIRECT_URI, scope=GOOGLE_SCOPE
@@ -184,23 +176,13 @@ def login_google():
 @user_authentication.route("/callback_google")
 def callback_google():
     """
-    Handles the callback from Google OAuth2 authentication.
-
-    This function retrieves the OAuth2 state from the session and uses it to create a new
-    OAuth2Session. It then exchanges the authorization code returned by Google for an access token,
-    which is then saved in the session.
-
-    Subsequently, it fetches the user's email and ID from Google's userinfo endpoint.
-    If the user does not already exist in the database, a new user record is created
-    with details obtained from Google.
-
-    Finally, it logs in the user and redirects them to the home page.
-
-    Returns:
-        Redirect: A redirection response object that directs the user to the home page
-                  after login.
+    Handles the OAuth2 callback from Google. Exchanges the authorization code for
+    an access token, retrieves user info, creates the user if they don't exist,
+    sets JWT cookies, and redirects to the frontend.
     """
-    # Fetches and saves token in the session data
+    if request.values.get("error"):
+        return redirect(f"{FRONTEND_URL}/login?error=oauth_denied")
+
     google = OAuth2Session(
         GOOGLE_CLIENT_ID,
         state=session.get("oauth_state"),
@@ -213,23 +195,25 @@ def callback_google():
     )
     session["google_token"] = token
 
-    # Getting user email
     userinfo_response = google.get(GOOGLE_USERINFO_URL)
     userinfo = userinfo_response.json()
     user_email = userinfo.get("email")
     user_id = userinfo.get("id")
 
-    # Check if user already exists in the database
     user = User.query.filter_by(email=user_email).first()
     if not user:
-        # Create the user, add to the database and then login
         user = User(email=user_email, provider="google", provider_id=user_id)
         db.session.add(user)
         db.session.commit()
 
-    login_user(user)
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
 
-    return redirect(url_for("user_authentication.pick_username"))
+    redirect_path = "/pick_username" if not user.username else "/dashboard"
+    response = make_response(redirect(f"{FRONTEND_URL}{redirect_path}"), 302)
+    set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
+    return response
 
 
 # #################### DEFAULT AUTHENTICATION ####################
@@ -428,11 +412,13 @@ def pick_username():
         }, 409
 
     # Save username to database
-    current_user.update_username(username)
-    db.session.add(current_user)
+    user_id = get_jwt_identity()
+    user = db.session.get(User, user_id)
+    user.update_username(username)
+    db.session.add(user)
     db.session.commit()
 
-    wallet = Wallet(current_user.id)
+    wallet = Wallet(user.id)
     db.session.add(wallet)
     db.session.commit()
 
@@ -746,7 +732,8 @@ def request_password_reset():
 @user_authentication.route("/auth/me", methods=["get"])
 @jwt_required()
 def authenticate_user():
-    return {"email": get_jwt_identity()}
+    user = db.session.get(User, get_jwt_identity())
+    return {"email": user.email, "username": user.username}, 200
 
 
 # #################### HELPER FUNCTIONS ####################

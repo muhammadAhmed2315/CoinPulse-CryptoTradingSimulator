@@ -22,6 +22,7 @@ import PasswordResetLinkInvalid from "./components/authentication/PasswordResetL
 import { AuthContextProvider } from "./context/auth-context";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerified";
+import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
 
 function App() {
   return (
@@ -73,6 +74,11 @@ function App() {
               path="/password_reset_link_invalid"
               element={<PasswordResetLinkInvalid />}
             />
+          </Route>
+
+          {/* Catch-all for unmatched routes when not logged in */}
+          <Route element={<AuthenticationBase />}>
+            <Route path="*" element={<AuthenticationPageNotFound />} />
           </Route>
 
           {/* Authenticated routes */}

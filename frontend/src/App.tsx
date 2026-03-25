@@ -19,10 +19,36 @@ import EmailVerificationUnsuccessful from "./components/authentication/EmailVeri
 import EmailVerificationForm from "./components/authentication/EmailVerificationForm";
 import VerifyPasswordResetToken from "./components/authentication/VerifyPasswordResetToken";
 import PasswordResetLinkInvalid from "./components/authentication/PasswordResetLinkInvalid";
-import { AuthContextProvider } from "./context/auth-context";
+import { AuthContextProvider, useAuth } from "./context/auth-context";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerified";
 import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
+import AuthenticatedPageNotFound from "./components/AuthenticatedPageNotFound.tsx";
+import FlickeringGrid from "./components/authentication/FlickeringGrid";
+import NavBar from "./components/NavBar";
+
+function NotFoundHandler() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return null;
+
+  if (isAuthenticated) {
+    return (
+      <div>
+        <NavBar />
+        <div className="pl-12 pr-12 pt-6 pb-6">
+          <AuthenticatedPageNotFound />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <FlickeringGrid color="#ffffff" backgroundColor="#000000">
+      <AuthenticationPageNotFound />
+    </FlickeringGrid>
+  );
+}
 
 function App() {
   return (
@@ -76,11 +102,6 @@ function App() {
             />
           </Route>
 
-          {/* Catch-all for unmatched routes when not logged in */}
-          <Route element={<AuthenticationBase />}>
-            <Route path="*" element={<AuthenticationPageNotFound />} />
-          </Route>
-
           {/* Authenticated routes */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AuthenticatedBase />}>
@@ -90,6 +111,9 @@ function App() {
               <Route path="/coin_info" element={<CoinInfo />} />
             </Route>
           </Route>
+
+          {/* Catch-all for unmatched routes */}
+          <Route path="*" element={<NotFoundHandler />} />
         </Routes>
       </BrowserRouter>
     </AuthContextProvider>

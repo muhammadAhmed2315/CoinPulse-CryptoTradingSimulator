@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import discordLogo from "@/assets/logos/discord.svg";
 import googleLogo from "@/assets/logos/google.svg";
 
@@ -53,7 +53,7 @@ export default function CreateAccount() {
   const oauthError = searchParams.get("error");
   const [error, setError] = useState<[string, string]>(
     oauthError === "oauth_denied"
-      ? ["Authentication denied", "Google sign-in was cancelled or denied."]
+      ? ["Authentication denied", "OAuth sign-in was cancelled or denied."]
       : ["", ""],
   );
   const navigate = useNavigate();
@@ -181,7 +181,13 @@ export default function CreateAccount() {
         </div>
 
         <div className="flex gap-2 justify-center">
-          <RippleButton className="cursor-pointer" variant="outline">
+          <RippleButton
+            className="cursor-pointer"
+            variant="outline"
+            onClick={() => {
+              window.location.href = "http://localhost:5000/login_discord";
+            }}
+          >
             <img
               className="h-6 w-6 cursor-pointer"
               src={discordLogo}

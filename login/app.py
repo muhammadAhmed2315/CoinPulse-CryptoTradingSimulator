@@ -4,13 +4,11 @@ from datetime import timedelta
 
 from flask import (
     Blueprint,
-    jsonify,
     make_response,
     redirect,
     render_template,
     request,
     session,
-    url_for,
 )
 from flask_jwt_extended import (
     create_access_token,
@@ -22,7 +20,6 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     unset_jwt_cookies,
 )
-from flask_login import login_user
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
@@ -57,31 +54,12 @@ user_authentication = Blueprint("user_authentication", __name__)
 
 # #################### DISCORD OAUTH AUTHENTICATION ####################
 def token_updater(token):
-    """
-    Update the stored OAuth2 token in the session
-
-    Args:
-        token (dict): A dictionary containing the OAuth2 token
-
-    Returns:
-        None
-    """
+    """Update the stored Discord OAuth2 token in the session."""
     session["oauth2_token"] = token
 
 
 def make_session(token=None, state=None, scope=None):
-    """
-    Create an OAuth2 session for Discord authentication.
-
-    Args:
-        token (dict, optional): The OAuth token to be used for the session.
-        state (str, optional): The state parameter from OAuth to prevent CSRF.
-        scope (list, optional): The scopes required for the OAuth session.
-
-    Returns:
-        OAuth2Session: An instance of OAuth2Session configured for Discord.
-    """
-
+    """Create an OAuth2 session for Discord authentication."""
     return OAuth2Session(
         client_id=DISCORD_OAUTH2_CLIENT_ID,
         token=token,
@@ -100,13 +78,8 @@ def make_session(token=None, state=None, scope=None):
 @user_authentication.route("/login_discord")
 def login_discord():
     """
-    Start the OAuth login process with Discord.
-
-    This function redirects the user to the Discord authorization URL where they can
-    authorize the application.
-
-    Returns:
-        Response: A redirection response to the Discord authorization URL.
+    Initiates OAuth2 authentication with Discord by redirecting the user to
+    Discord's authorization page.
     """
     scope = request.args.get("scope", "identify email")
     discord = make_session(scope=scope.split(" "))
@@ -118,16 +91,13 @@ def login_discord():
 @user_authentication.route("/callback_discord")
 def callback_discord():
     """
-    Handle the OAuth callback from Discord.
-
-    This function retrieves the OAuth token and user details, checks if the user exists
-    in the database, and handles logging in or registering the user.
-
-    Returns:
-        Response: A redirection to another endpoint after handling the login or error.
+    Handles the OAuth2 callback from Discord. Exchanges the authorization code for
+    an access token, retrieves user info, creates the user if they don't exist,
+    sets JWT cookies, and redirects to the frontend.
     """
     if request.values.get("error"):
-        return request.values["error"]
+        return redirect(f"{FRONTEND_URL}/login?error=oauth_denied")
+
     discord = make_session(state=session.get("oauth2_state"))
     token = discord.fetch_token(
         DISCORD_TOKEN_URL,
@@ -137,20 +107,24 @@ def callback_discord():
     session["oauth2_token"] = token
 
     discord = make_session(token=session.get("oauth2_token"))
-    user_info = jsonify(discord.get(DISCORD_API_BASE_URL + "/users/@me").json()).json
+    user_info = discord.get(DISCORD_API_BASE_URL + "/users/@me").json()
     user_email = user_info["email"]
     user_id = user_info["id"]
 
-    # Check if user already exists in the database
     user = User.query.filter_by(email=user_email).first()
     if not user:
-        # Create the user, add to the database and then login
         user = User(email=user_email, provider="discord", provider_id=user_id)
         db.session.add(user)
         db.session.commit()
 
-    login_user(user)
-    return redirect(url_for("user_authentication.pick_username"))
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
+
+    redirect_path = "/pick_username" if not user.username else "/dashboard"
+    response = make_response(redirect(f"{FRONTEND_URL}{redirect_path}"), 302)
+    set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
+    return response
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################

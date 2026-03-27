@@ -2,15 +2,25 @@ import time
 from datetime import datetime
 
 import requests
-from flask import (Blueprint, jsonify, redirect, render_template, request,
-                   session, url_for)
+from flask import (
+    Blueprint,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_jwt_extended import jwt_required
 from flask_login import current_user, logout_user
 from sqlalchemy import and_, or_
 
-from constants import (COINGECKO_API_HEADERS, COINGECKO_API_KEY,
-                       OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
-                       WALLET_VALUE_UPDATE_INTERVAL_SECONDS)
+from constants import (
+    COINGECKO_API_HEADERS,
+    COINGECKO_API_KEY,
+    OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
+    WALLET_VALUE_UPDATE_INTERVAL_SECONDS,
+)
 from extensions import db
 from models import Transaction, TransactionLikes, Wallet
 from RedditScraper.RedditScraper import RedditScraper
@@ -1301,8 +1311,8 @@ def get_all_coin_names():
     return data
 
 
-@core.route("/get_trending_coins_data")
-def get_trending_coins_data():
+@core.route("/get_trending_coins")
+def get_trending_coins():
     """
     Fetch and return data for currently trending coins from the CoinGecko API.
 
@@ -1315,12 +1325,33 @@ def get_trending_coins_data():
     """
     url = "https://api.coingecko.com/api/v3/search/trending"
 
-    response = requests.get(url, headers=COINGECKO_API_HEADERS)
+    try:
+        response = requests.get(url, headers=COINGECKO_API_HEADERS)
 
-    data = response.json()
-    data = jsonify(data)
+        data = response.json()
+        data = data["coins"]
+        data = [coin["item"] for coin in data]
 
-    return data
+        data = [
+            {
+                "name": coin["name"],
+                "thumb": coin["thumb"],
+                "symbol": coin["symbol"],
+                "market_cap_rank": coin["market_cap_rank"],
+                "price": coin["data"]["price"],
+                "total_volume": int(coin["data"]["total_volume"][1:].replace(",", "")),
+                "market_cap": int(coin["data"]["market_cap"][1:].replace(",", "")),
+                "price_change_percentage_24h": {
+                    "usd": coin["data"]["price_change_percentage_24h"]["usd"],
+                    "btc": coin["data"]["price_change_percentage_24h"]["btc"],
+                },
+            }
+            for coin in data
+        ]
+
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @core.route("/get_multiple_coin_data", methods=["POST"])

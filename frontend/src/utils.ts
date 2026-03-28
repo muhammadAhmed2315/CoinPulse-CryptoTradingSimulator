@@ -9,6 +9,16 @@ export function formatTime(seconds: number) {
   return `0:${String(seconds).padStart(2, "0")}`;
 }
 
+// =====
+export function numToMoney(num: number, abs: boolean = false) {
+  const absolute = abs ? Math.abs(num) : num;
+
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(absolute);
+}
+
 //=====
 // prettier-ignore
 const PASSWORD_ALLOWED_SPECIAL_CHARS = [

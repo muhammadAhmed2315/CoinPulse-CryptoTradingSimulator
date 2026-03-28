@@ -1,5 +1,3 @@
-import TrendingCoinCard from "./TrendingCoinCard";
-
 import {
   Carousel,
   CarouselContent,
@@ -11,10 +9,33 @@ import {
   RippleButton,
   RippleButtonRipples,
 } from "@/components/animate-ui/components/buttons/ripple";
+import TrendingCoinCard from "./TrendingCoinCard";
+
+type TrendingCoinsProps = {
+  data?: {
+    name: string;
+    thumb: string;
+    symbol: string;
+    market_cap_rank: number;
+    price: number;
+    market_cap: number;
+    total_volume: number;
+    price_change_percentage_24h: {
+      btc: number;
+      usd: number;
+    };
+  }[];
+  isLoading: boolean;
+  isError: boolean;
+};
 
 const arr = Array.from({ length: 15 }, (_, i) => i);
 
-export default function TrendingCoins() {
+export default function TrendingCoins({
+  data,
+  isLoading,
+  isError,
+}: TrendingCoinsProps) {
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex justify-between">
@@ -30,7 +51,11 @@ export default function TrendingCoins() {
             {arr.map((i) => {
               return (
                 <CarouselItem className="basis-auto" key={i}>
-                  <TrendingCoinCard />
+                  <TrendingCoinCard
+                    isLoading={isLoading}
+                    isError={isError}
+                    data={data?.at(i) || undefined}
+                  />
                 </CarouselItem>
               );
             })}

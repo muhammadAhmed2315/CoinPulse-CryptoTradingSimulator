@@ -1189,8 +1189,8 @@ def cancel_open_trade():
     return jsonify({"success": "Transaction successfully cancelled"}), 200
 
 
-@core.route("/get_top_coins_data", methods=["POST"])
-def get_top_coins_data():
+@core.route("/get_top_coins", methods=["POST"])
+def get_top_coins():
     """
     Retrieve and return a list of the top coins from the CoinGecko API, sorted by a
     user-specified criterion.

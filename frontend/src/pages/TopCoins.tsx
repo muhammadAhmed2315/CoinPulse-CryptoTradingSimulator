@@ -40,7 +40,7 @@ export type ApiSorts =
   | "volume_desc";
 
 async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
-  const URL = "http://localhost:5000/get_top_coins_data";
+  const URL = "http://localhost:5000/get_top_coins";
   const body = {
     sort_coins_by: sort_coins_by,
   };

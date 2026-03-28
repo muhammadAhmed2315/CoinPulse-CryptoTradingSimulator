@@ -1,3 +1,4 @@
+import { numToMoney } from "@/utils";
 import PercentageChangeBar from "./PercentageChangeBar";
 
 type CurrencyBenchmarkListProps = {

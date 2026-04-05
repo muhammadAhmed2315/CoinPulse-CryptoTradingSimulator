@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import formatCompactValue, { numToMoney, toTitleCase } from "@/utils";
 import SparklineGraph from "./SparklineGraph";
 import { Spinner } from "./ui/spinner";
@@ -17,7 +17,6 @@ import {
 import { Switch } from "./ui/switch";
 import PriceChangeBox from "./PriceChangeBox";
 import CustomSkeleton from "./CustomSkeleton";
-import { FieldDescription, FieldLabel } from "@/components/ui/field";
 
 type OrderSide = "BUY" | "SELL";
 type OrderType = "MARKET" | "LIMIT" | "STOP";
@@ -76,6 +75,37 @@ async function getCoinBalance(coinId: string = "bitcoin") {
   return await response.json();
 }
 
+async function placeOrder(
+  orderSide: OrderSide,
+  orderType: OrderType,
+  quantity: string,
+  coin_id: string,
+  pricePerUnit: number,
+  visibility: boolean,
+  comment: string,
+) {
+  const data = {
+    transactionType: orderSide.toLowerCase(),
+    orderType: orderType.toLowerCase(),
+    quantity: parseFloat(quantity),
+    coin_id: coin_id,
+    price_per_unit: pricePerUnit,
+    visibility: visibility,
+    comment: comment,
+  };
+
+  const response = await fetch("http://localhost:5000/process_order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+
+  if (!response.ok) throw await response.json();
+
+  return await response.json();
+}
+
 export default function NewTradeCard() {
   const [coinTicker, setCoinTicker] = useState("BTC");
   const [coinName, setCoinName] = useState("Bitcoin");
@@ -89,6 +119,7 @@ export default function NewTradeCard() {
   const [timelineMsg, setTimelineMsg] = useState("");
   const [orderPrice, setOrderPrice] = useState("");
   const [orderPriceTouched, setOrderPriceTouched] = useState(false);
+  const [successTimer, setSuccessTimer] = useState(-1);
 
   const invalidTimelineMsg = shareOnTimeline && timelineMsg === "";
 
@@ -104,12 +135,34 @@ export default function NewTradeCard() {
     orderPrice !== "" &&
     parseFloat(orderPrice) === 0;
 
-  function handleShareOnTimelineChange(value: boolean) {
-    setShareOnTimeline(value);
-    if (!value) {
-      setTimelineMsg("");
-    }
-  }
+  const placeOrderMutation = useMutation({
+    mutationFn: () =>
+      placeOrder(
+        orderSide,
+        orderType,
+        coinAmount,
+        "bitcoin",
+        coinDataQuery.data[0].current_price,
+        shareOnTimeline,
+        timelineMsg,
+      ),
+
+    onSuccess: () => {
+      setSuccessTimer(2);
+      setOrderSide("BUY");
+      setOrderType("MARKET");
+      setUsdAmount("");
+      setCoinAmount("");
+      setOrderPrice("");
+      setBalancePercentage(undefined);
+    },
+  });
+
+  useEffect(() => {
+    if (successTimer === 0) return;
+    const id = setTimeout(() => setSuccessTimer((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [successTimer]);
 
   const coinDataQuery = useQuery({
     queryKey: ["coin-info"],
@@ -133,7 +186,6 @@ export default function NewTradeCard() {
 
   const placeOrderBtnDisabled =
     usdAmount >= userBalanceQuery.data ||
-    (shareOnTimeline && timelineMsg.length === 0) ||
     (orderType !== "MARKET" && orderPrice === "") ||
     parseFloat(orderPrice) === 0 ||
     parseFloat(usdAmount) === 0 ||
@@ -183,6 +235,13 @@ export default function NewTradeCard() {
       if (res.length > 0) {
         setBalancePercentage(res.at(0) as BalancePercentage);
       }
+    }
+  }
+
+  function handleShareOnTimelineChange(value: boolean) {
+    setShareOnTimeline(value);
+    if (!value) {
+      setTimelineMsg("");
     }
   }
 
@@ -478,7 +537,7 @@ export default function NewTradeCard() {
 
         {/* Share on timeline header*/}
         <div className="flex justify-between mb-2">
-          <p className="text-sm text-gray-600">Share on Timeline</p>
+          <p className="text-sm text-gray-600">Share Trade on Timeline</p>
           <Switch
             checked={shareOnTimeline}
             onCheckedChange={handleShareOnTimelineChange}
@@ -493,23 +552,29 @@ export default function NewTradeCard() {
             placeholder="Let others know about your trade..."
             value={timelineMsg}
             onChange={(e) => setTimelineMsg(e.target.value)}
-            disabled={!shareOnTimeline}
-            aria-invalid={invalidTimelineMsg}
           />
-          {invalidTimelineMsg && (
-            <FieldDescription className="text-red-500">
-              Please enter a valid message.
-            </FieldDescription>
-          )}
         </Field>
 
         {/* PLACE ORDER BUTTON */}
         <RippleButton
           variant={orderSide === "BUY" ? "default" : "destructive"}
-          className={`font-bold w-full cursor-pointer`}
-          disabled={placeOrderBtnDisabled}
+          className={`font-bold w-full cursor-pointer ${successTimer > 0 && "bg-emerald-500"}`}
+          disabled={
+            placeOrderBtnDisabled ||
+            placeOrderMutation.isPending ||
+            successTimer > 0
+          }
+          onClick={() => placeOrderMutation.mutate()}
         >
-          PLACE {orderSide} ORDER
+          {placeOrderMutation.isPending ? (
+            <>
+              Placing order... <Spinner />
+            </>
+          ) : successTimer > 0 ? (
+            <>Order successfully placed!</>
+          ) : (
+            <>PLACE {orderSide} ORDER</>
+          )}
           <RippleButtonRipples />
         </RippleButton>
       </div>

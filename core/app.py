@@ -379,9 +379,9 @@ def update_likes():
     )
 
 
-@core.route("/submit_order", methods=["POST"])
+@core.route("/process_order", methods=["POST"])
 @jwt_required()
-def submit_order():
+def process_order():
     """
     Processes a cryptocurrency transaction submitted via a POST request containing JSON
     data.
@@ -410,66 +410,64 @@ def submit_order():
                        exception with an appropriate status code and error message.
     """
     # Ensure request contains necessary JSON data
-    if not request.json or "transactionData" not in request.json:
-        return jsonify({"error": "Missing transaction data"}), 400
-
-    data = request.json["transactionData"]
+    data = request.json
 
     # Check data contains all required fields
     required_fields = {
-        "transactionType": False,
-        "orderType": False,
-        "quantity": False,
-        "coin_id": False,
-        "comment": False,
-        "price_per_unit": False,
-        "visibility": False,
+        "transactionType",
+        "orderType",
+        "quantity",
+        "coin_id",
+        "comment",
+        "price_per_unit",
+        "visibility",
     }
-
-    for key in data:
-        if key in required_fields:
-            required_fields[key] = True
 
     errors = []
     for key in required_fields:
-        if not required_fields[key]:
+        if key not in data:
             errors.append(key)
     errors = ", ".join(errors)
 
-    if any(field not in data for field in required_fields):
-        return jsonify({"error": "Missing fields: " + errors}), 400
+    if len(errors) > 0:
+        return jsonify({"error": "Missing fields: " + errors}), 422
 
     # Make sure user did not enter a negative quantity
     if data["quantity"] <= 0:
         return (
             jsonify(
                 {
-                    "error": "Transaction Failed: Quantity must be greater than 0. Please check your input and try again."
+                    "error": "Order request failed: Quantity must be greater than 0. Please check your input and try again."
                 }
             ),
-            400,
+            422,
         )
+
+    # Get the current user
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
 
     # Make sure user has enough balance (USD) to execute a buy order of any type
     if data["transactionType"] == "buy":
-        if not current_user.wallet.has_enough_balance(
+        if not user.wallet.has_enough_balance(
             data["quantity"] * data["price_per_unit"]
         ):
             return (
                 jsonify(
                     {
-                        "error": "Transaction Failed: Insufficient USD balance to complete the buy transaction. Please check your portfolio and try again."
+                        "error": "Order request failed: Insufficient USD balance to complete the buy transaction. Please check your portfolio and try again."
                     }
                 ),
                 400,
             )
+
     # Make sure user is not selling more coins than they own for any type of sell order
     elif data["transactionType"] == "sell":
-        if not current_user.wallet.has_enough_coins(data["coin_id"], data["quantity"]):
+        if not user.wallet.has_enough_coins(data["coin_id"], data["quantity"]):
             return (
                 jsonify(
                     {
-                        "error": "Transaction Failed: Insufficient crypto balance to complete the sale transaction. Please check your portfolio and try again."
+                        "error": "Order request failed: Insufficient crypto balance to complete the sale transaction. Please check your portfolio and try again."
                     }
                 ),
                 400,
@@ -486,14 +484,14 @@ def submit_order():
         coin_id=data["coin_id"],
         quantity=data["quantity"],
         price_per_unit=data["price_per_unit"],
-        wallet_id=current_user.wallet.id,
+        wallet_id=user.wallet.id,
         comment=data["comment"],
-        balance_before=current_user.wallet.balance,
+        balance_before=user.wallet.balance,
         visibility=data["visibility"],
     )
 
     try:
-        user_wallet = current_user.wallet
+        user_wallet = user.wallet
         if transaction.orderType == "market" and transaction.transactionType == "buy":
             # Update wallet balance
             user_wallet.update_balance_subtract(

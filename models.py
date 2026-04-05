@@ -83,7 +83,7 @@ class User(db.Model, UserMixin):
     def update_last_password_reset_token(self, token: str) -> None:
         self.last_password_reset_token = token
 
-    def check_password(self, password):
+    def check_password(self, password: str):
         """
         Checks input password against the stored hash
 
@@ -150,7 +150,7 @@ class Wallet(db.Model):
         """
         self.owner_id = owner_id
 
-    def update_balance_add(self, amount):
+    def update_balance_add(self, amount: float):
         """
         Adds a specified amount to the wallet's balance.
 
@@ -159,7 +159,7 @@ class Wallet(db.Model):
         """
         self.balance += amount
 
-    def update_balance_subtract(self, amount):
+    def update_balance_subtract(self, amount: float):
         """
         Subtracts a specified amount from the wallet's balance.
 
@@ -168,7 +168,7 @@ class Wallet(db.Model):
         """
         self.balance -= amount
 
-    def update_assets_add(self, coin_id, quantity):
+    def update_assets_add(self, coin_id: str, quantity: float):
         """
         Adds a specified quantity of a coin to the wallet's assets.
 
@@ -181,7 +181,7 @@ class Wallet(db.Model):
         else:
             self.assets[coin_id] = quantity
 
-    def update_assets_subtract(self, coin_id, quantity):
+    def update_assets_subtract(self, coin_id: str, quantity: float):
         """
         Subtracts a specified quantity of a coin from the wallet's assets.
 
@@ -200,7 +200,7 @@ class Wallet(db.Model):
         else:
             self.assets[coin_id] -= quantity
 
-    def has_enough_balance(self, amount):
+    def has_enough_balance(self, amount: float):
         """
         Determines if the wallet has enough balance for a transaction.
 
@@ -212,7 +212,7 @@ class Wallet(db.Model):
         """
         return self.balance >= amount
 
-    def has_enough_coins(self, coin_id, coin_quantity):
+    def has_enough_coins(self, coin_id: str, coin_quantity: float):
         """
         Determines if the wallet has enough of a specific coin for a transaction.
 

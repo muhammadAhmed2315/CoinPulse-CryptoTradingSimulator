@@ -11,7 +11,7 @@ from flask import (
     session,
     url_for,
 )
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_login import current_user, logout_user
 from sqlalchemy import and_, or_
 
@@ -22,7 +22,7 @@ from constants import (
     WALLET_VALUE_UPDATE_INTERVAL_SECONDS,
 )
 from extensions import db
-from models import Transaction, TransactionLikes, Wallet
+from models import Transaction, TransactionLikes, User, Wallet
 from RedditScraper.RedditScraper import RedditScraper
 from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 
@@ -379,9 +379,9 @@ def update_likes():
     )
 
 
-@core.route("/process_transaction", methods=["POST"])
+@core.route("/submit_order", methods=["POST"])
 @jwt_required()
-def process_transaction():
+def submit_order():
     """
     Processes a cryptocurrency transaction submitted via a POST request containing JSON
     data.
@@ -1236,8 +1236,8 @@ def get_top_coins():
     return jsonify(temp)
 
 
-@core.route("/get_single_coin_data", methods=["POST"])
-def get_single_coin_data():
+@core.route("/get_coin_data/<coin_id>", methods=["GET"])
+def get_coin_data(coin_id: str):
     """
     Fetches and returns detailed market data for a specific coin.
 
@@ -1249,9 +1249,6 @@ def get_single_coin_data():
     Returns:
         Flask.Response: A JSON response containing detailed market data for the specified cryptocurrency coin.
     """
-    data = request.get_json()
-    coin_id = data["coin_id"]
-
     url = "https://api.coingecko.com/api/v3/coins/markets"
     params = {
         "vs_currency": "usd",
@@ -1266,8 +1263,33 @@ def get_single_coin_data():
     return data
 
 
-@core.route("/get_coin_balance", methods=["POST"])
-def get_coin_balance():
+@core.route("/get_coin_sparkline/<coin_id>", methods=["GET"])
+def get_coin_sparkline(coin_id: str):
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+    params = {"vs_currency": "usd", "days": "1", "interval": "hourly"}
+
+    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+    data = response.json()
+    data = data["prices"]
+    data = [price for tick, price in data]
+    data = jsonify(data)
+
+    return data
+
+
+@core.route("/get_user_balance", methods=["GET"])
+@jwt_required()
+def get_user_balance():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    user_balance = user.wallet.balance
+    data = jsonify(user_balance)
+    return data, 200
+
+
+@core.route("/get_coin_balance/<coin_id>", methods=["GET"])
+@jwt_required()
+def get_coin_balance(coin_id: str):
     """
     Fetches and returns the balance of a specific coin from the current user's wallet.
 
@@ -1280,13 +1302,14 @@ def get_coin_balance():
                         the user's wallet.
 
     """
-    data = request.get_json()
-    coin_id = data["coin_id"]
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
 
     # Get coin balance from curent user's wallet corresponding with the coin_id
-    coin_balance = current_user.wallet.assets.get(coin_id, 0)
+    coin_balance = user.wallet.assets.get(coin_id, 0)
+    data = jsonify(coin_balance)
 
-    return jsonify(coin_balance), 200
+    return data, 200
 
 
 @core.route("/get_all_coin_names")

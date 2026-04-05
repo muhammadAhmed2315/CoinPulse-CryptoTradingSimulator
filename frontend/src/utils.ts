@@ -19,7 +19,27 @@ export function numToMoney(num: number, abs: boolean = false) {
   }).format(absolute);
 }
 
-//=====
+// =====
+export function toTitleCase(word: string) {
+  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
+
+// =====
+export default function formatCompactValue(num: number) {
+  if (num >= 1_000_000_000_000) {
+    return `${(num / 1_000_000_000_000).toPrecision(3)}T`;
+  } else if (num >= 1_000_000_000) {
+    return `${(num / 1_000_000_000).toPrecision(3)}B`;
+  } else if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toPrecision(3)}M`;
+  } else if (num >= 1_000) {
+    return `${(num / 1_000).toPrecision(3)}K`;
+  }
+
+  return `${num}`;
+}
+
+// =====
 // prettier-ignore
 const PASSWORD_ALLOWED_SPECIAL_CHARS = [
     "~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", 

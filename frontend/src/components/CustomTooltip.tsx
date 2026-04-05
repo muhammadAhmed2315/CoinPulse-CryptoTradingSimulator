@@ -21,8 +21,8 @@ export default function CustomTooltip({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger className={`${triggerStyle} cursor-pointer`}>
-          {trigger}
+        <TooltipTrigger asChild>
+          <span className={`${triggerStyle} cursor-pointer`}>{trigger}</span>
         </TooltipTrigger>
         <TooltipContent className={contentStyle}>
           <p>{content}</p>

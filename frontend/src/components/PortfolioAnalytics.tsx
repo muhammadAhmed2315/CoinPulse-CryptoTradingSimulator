@@ -46,12 +46,6 @@ export default function PortfolioAnalytics() {
               </TabsList>
             </Tabs>
           </CardDescription>
-          <CardAction>
-            <RippleButton className="text-xl cursor-pointer">
-              New Trade
-              <RippleButtonRipples />
-            </RippleButton>
-          </CardAction>
         </CardHeader>
         <CardContent>
           <p>Graph goes here</p>

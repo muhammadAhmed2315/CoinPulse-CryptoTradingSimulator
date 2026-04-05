@@ -6,27 +6,14 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 
-import { numToMoney } from "@/utils";
+import formatCompactValue, { numToMoney } from "@/utils";
 import RedWarningIcon from "@/assets/icons/warning-red.svg";
 import { BorderBeam } from "../ui/border-beam";
 import { Spinner } from "../ui/spinner";
 import CustomTooltip from "../CustomTooltip";
 import { Separator } from "../ui/separator";
 import CurrencyBenchmarkList from "./CurrencyBenchmarkList";
-
-function formatCompactValue(num: number) {
-  if (num >= 1_000_000_000_000) {
-    return `${(num / 1_000_000_000_000).toPrecision(3)}T`;
-  } else if (num >= 1_000_000_000) {
-    return `${(num / 1_000_000_000).toPrecision(3)}B`;
-  } else if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toPrecision(3)}M`;
-  } else if (num >= 1_000) {
-    return `${(num / 1_000).toPrecision(3)}K`;
-  }
-
-  return `${num}`;
-}
+import PriceChangeBox from "../PriceChangeBox";
 
 type TrendingCoinCardProps = {
   data?: {
@@ -125,18 +112,7 @@ export default function TrendingCoinCard({
 
             <div className="flex justify-between items-center mb-3">
               <b className="text-lg">${numToMoney(data!.price)}</b>
-              <div
-                className={`rounded-md px-2 py-0.5 ${priceChange! > 0 ? "bg-green-50" : priceChange! < 0 ? "bg-red-50" : "bg-black/5"}`}
-              >
-                <p
-                  className={
-                    priceChange! >= 0 ? "text-[#21c45d]" : "text-[#ef4444]"
-                  }
-                >
-                  {priceChange! > 0 ? "↑" : priceChange! < 0 ? "↓ " : ""}{" "}
-                  {numToMoney(priceChange!, true)}%
-                </p>
-              </div>
+              <PriceChangeBox priceChange={priceChange!} fontSize="sm" />
             </div>
 
             <CurrencyBenchmarkList

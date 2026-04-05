@@ -1,10 +1,14 @@
 type SparklineGraphProps = {
   data: number[];
+  height?: number;
+  width?: number;
 };
 
-export default function SparklineGraph({ data }: SparklineGraphProps) {
-  const width = 240;
-  const height = 64;
+export default function SparklineGraph({
+  data,
+  height = 64,
+  width = 240,
+}: SparklineGraphProps) {
   const positive = data.length > 0 ? data.at(0)! < data.at(-1)! : true;
 
   const min = Math.min(...data);

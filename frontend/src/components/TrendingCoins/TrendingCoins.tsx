@@ -5,11 +5,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import {
-  RippleButton,
-  RippleButtonRipples,
-} from "@/components/animate-ui/components/buttons/ripple";
 import TrendingCoinCard from "./TrendingCoinCard";
+import NewTradeButton from "../NewTradeButton";
 
 type TrendingCoinsProps = {
   data?: {
@@ -40,10 +37,6 @@ export default function TrendingCoins({
     <div className="flex flex-col gap-y-4">
       <div className="flex justify-between">
         <h1 className="text-2xl">Trending Coins</h1>
-        <RippleButton className="cursor-pointer text-xl">
-          New Trade
-          <RippleButtonRipples />
-        </RippleButton>
       </div>
       <div className="relative px-10">
         <Carousel opts={{ dragFree: true }}>

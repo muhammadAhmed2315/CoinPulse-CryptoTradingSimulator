@@ -120,6 +120,7 @@ export default function NewTradeCard() {
   const [orderPrice, setOrderPrice] = useState("");
   const [orderPriceTouched, setOrderPriceTouched] = useState(false);
   const [successTimer, setSuccessTimer] = useState(-1);
+  const [errorTimer, setErrorTimer] = useState(-1);
 
   const invalidTimelineMsg = shareOnTimeline && timelineMsg === "";
 
@@ -156,13 +157,23 @@ export default function NewTradeCard() {
       setOrderPrice("");
       setBalancePercentage(undefined);
     },
+
+    onError: (e) => {
+      setErrorTimer(5);
+    },
   });
 
   useEffect(() => {
     if (successTimer === 0) return;
-    const id = setTimeout(() => setSuccessTimer((s) => s - 1), 1000);
+    const id = setTimeout(() => setSuccessTimer((s) => s - 1), 1_000);
     return () => clearTimeout(id);
   }, [successTimer]);
+
+  useEffect(() => {
+    if (errorTimer === 0) return;
+    const id = setTimeout(() => setErrorTimer((s) => s - 1), 1_000);
+    return () => clearTimeout(id);
+  }, [errorTimer]);
 
   const coinDataQuery = useQuery({
     queryKey: ["coin-info"],
@@ -396,7 +407,7 @@ export default function NewTradeCard() {
         {/* Buy/Sell toggle group */}
         <div className="relative flex w-full py-1.5 mb-4 cursor-pointer bg-[#f5f5f5] rounded-sm overflow-hidden">
           <div
-            className={`absolute inset-y-0 w-1/2 rounded-sm transition-all duration-300 ease-in-out ${orderSide === "BUY" ? "left-0 bg-black" : "left-1/2 bg-[#dc2626]"}`}
+            className={`absolute inset-y-0 w-1/2 rounded-sm transition-all duration-300 ease-in-out ${orderSide === "BUY" ? "left-0 bg-black" : "left-1/2 bg-orange-500"}`}
           />
           <div
             className={`relative flex-1 text-center rounded-sm font-semibold z-10 transition-colors duration-300 ${orderSide === "BUY" ? "text-white" : "text-gray-500"}`}
@@ -557,12 +568,13 @@ export default function NewTradeCard() {
 
         {/* PLACE ORDER BUTTON */}
         <RippleButton
-          variant={orderSide === "BUY" ? "default" : "destructive"}
-          className={`font-bold w-full cursor-pointer ${successTimer > 0 && "bg-emerald-500"}`}
+          variant="default"
+          className={`font-bold w-full cursor-pointer ${orderSide === "SELL" && !(successTimer > 0) && !(errorTimer > 0) && "bg-orange-500 hover:bg-orange-600"} ${successTimer > 0 && "bg-emerald-500"} ${errorTimer > 0 && "bg-red-500"}`}
           disabled={
             placeOrderBtnDisabled ||
             placeOrderMutation.isPending ||
-            successTimer > 0
+            successTimer > 0 ||
+            errorTimer > 0
           }
           onClick={() => placeOrderMutation.mutate()}
         >
@@ -572,6 +584,8 @@ export default function NewTradeCard() {
             </>
           ) : successTimer > 0 ? (
             <>Order successfully placed!</>
+          ) : errorTimer > 0 ? (
+            <>{(placeOrderMutation.error as any)?.error}</>
           ) : (
             <>PLACE {orderSide} ORDER</>
           )}

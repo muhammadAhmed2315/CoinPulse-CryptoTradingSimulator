@@ -423,23 +423,14 @@ def process_order():
         "visibility",
     }
 
-    errors = []
     for key in required_fields:
         if key not in data:
-            errors.append(key)
-    errors = ", ".join(errors)
-
-    if len(errors) > 0:
-        return jsonify({"error": "Missing fields: " + errors}), 422
+            return jsonify({"error": "Order failed: Invalid request data"}), 422
 
     # Make sure user did not enter a negative quantity
     if data["quantity"] <= 0:
         return (
-            jsonify(
-                {
-                    "error": "Order request failed: Quantity must be greater than 0. Please check your input and try again."
-                }
-            ),
+            jsonify({"error": "Order failed: Order quantity must be greater than 0"}),
             422,
         )
 
@@ -453,11 +444,7 @@ def process_order():
             data["quantity"] * data["price_per_unit"]
         ):
             return (
-                jsonify(
-                    {
-                        "error": "Order request failed: Insufficient USD balance to complete the buy transaction. Please check your portfolio and try again."
-                    }
-                ),
+                jsonify({"error": "Order failed: insufficient USD balance"}),
                 400,
             )
 
@@ -465,11 +452,7 @@ def process_order():
     elif data["transactionType"] == "sell":
         if not user.wallet.has_enough_coins(data["coin_id"], data["quantity"]):
             return (
-                jsonify(
-                    {
-                        "error": "Order request failed: Insufficient crypto balance to complete the sale transaction. Please check your portfolio and try again."
-                    }
-                ),
+                jsonify({"error": "Order failed: Insufficient coion balance"}),
                 400,
             )
 
@@ -529,7 +512,7 @@ def process_order():
     except Exception as e:
         db.session.rollback()
         return (
-            jsonify({"error": f"Failed to process transaction. Reason: {str(e)}"}),
+            jsonify({"error": "Order failed: An unexpected error occurred"}),
             500,
         )
 

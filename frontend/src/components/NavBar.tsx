@@ -21,11 +21,19 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
 import NewTradeButton from "@/components/NewTradeButton";
+import { loadAllCoinsList } from "@/loadAllCoinsList";
 
 export default function NavBar() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+
+  const prefetchAllCoinsList = async () => {
+    await queryClient.prefetchQuery({
+      queryKey: ["all-coins-list"],
+      queryFn: loadAllCoinsList,
+    });
+  };
 
   const logoutMutation = useMutation({
     mutationFn: () =>
@@ -105,7 +113,7 @@ export default function NavBar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <NewTradeButton />
+        <NewTradeButton prefetchFn={prefetchAllCoinsList} />
       </div>
     </div>
   );

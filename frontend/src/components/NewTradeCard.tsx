@@ -17,6 +17,7 @@ import {
 import { Switch } from "./ui/switch";
 import PriceChangeBox from "./PriceChangeBox";
 import CustomSkeleton from "./CustomSkeleton";
+import { loadAllCoinsList } from "@/loadAllCoinsList";
 
 type OrderSide = "BUY" | "SELL";
 type OrderType = "MARKET" | "LIMIT" | "STOP";
@@ -135,6 +136,11 @@ export default function NewTradeCard() {
     orderPriceTouched &&
     orderPrice !== "" &&
     parseFloat(orderPrice) === 0;
+
+  const allCoinsQuery = useQuery({
+    queryKey: ["all-coins-list"],
+    queryFn: loadAllCoinsList,
+  });
 
   const placeOrderMutation = useMutation({
     mutationFn: () =>
@@ -366,13 +372,11 @@ export default function NewTradeCard() {
         <div className="flex justify-between items-center mb-2">
           <div>
             <p className="text-xs text-gray-400 ">USD BALANCE</p>
-            <p className="font-bold">
-              {userBalanceQuery.isLoading ? (
-                <CustomSkeleton className="h-6 w-25" />
-              ) : (
-                `$${numToMoney(userBalanceQuery.data)}`
-              )}
-            </p>
+            {userBalanceQuery.isLoading ? (
+              <CustomSkeleton className="h-6 w-25" />
+            ) : (
+              <p className="font-bold">{numToMoney(userBalanceQuery.data)}</p>
+            )}
           </div>
           <img src={PlayUSD} className="size-6.5" />
         </div>
@@ -381,16 +385,16 @@ export default function NewTradeCard() {
         <div className="flex justify-between items-center">
           <div>
             <p className="text-xs text-gray-400">{coinTicker} BALANCE</p>
-            <p className="font-bold">
-              {coinBalanceQuery.isLoading ? (
-                <CustomSkeleton className="w-25 h-6" />
-              ) : (
-                <CustomTooltip
-                  trigger={`${coinBalanceQuery.data.toFixed(8)}...`}
-                  content={coinBalanceQuery.data}
-                />
-              )}
-            </p>
+
+            {coinBalanceQuery.isLoading ? (
+              <CustomSkeleton className="w-25 h-6" />
+            ) : (
+              <CustomTooltip
+                trigger={`${coinBalanceQuery.data.toFixed(8)}...`}
+                content={coinBalanceQuery.data}
+                triggerStyle="font-bold"
+              />
+            )}
           </div>
           <img src={PlayUSD} className="size-6.5" />
         </div>
@@ -432,6 +436,7 @@ export default function NewTradeCard() {
                 variant={orderType === type ? "default" : "outline"}
                 className="cursor-pointer"
                 onClick={() => handleOrderTypeChange(type as OrderType)}
+                key={type}
               >
                 {typeRaw}
                 <RippleButtonRipples />
@@ -472,7 +477,7 @@ export default function NewTradeCard() {
         <div className="flex w-full gap-2 mb-4">
           {[0.1, 0.25, 0.5, 0.75, 1].map((num) => {
             return userBalanceQuery.isLoading ? (
-              <CustomSkeleton className="w-full h-7.5" />
+              <CustomSkeleton key={num} className="w-full h-7.5" />
             ) : (
               <RippleButton
                 variant={balancePercentage === num ? "default" : "outline"}
@@ -480,6 +485,7 @@ export default function NewTradeCard() {
                 onClick={() =>
                   handleBalancePercentageBtnClick(num as BalancePercentage)
                 }
+                key={num}
               >
                 {num * 100}%
                 <RippleButtonRipples />

@@ -6,7 +6,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import TrendingCoinCard from "./TrendingCoinCard";
-import NewTradeButton from "../NewTradeButton";
 
 type TrendingCoinsProps = {
   data?: {

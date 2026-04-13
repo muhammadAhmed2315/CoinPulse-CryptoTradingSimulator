@@ -1,5 +1,5 @@
 import PlaceholderIcon from "@/assets/icons/placeholder.svg";
-import { Card } from "./ui/card";
+import { Card } from "@/components/ui/card";
 
 const arr = Array.from({ length: 10 }, (_, i) => i);
 

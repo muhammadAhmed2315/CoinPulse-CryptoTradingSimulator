@@ -1,18 +1,13 @@
-import {
-  RippleButton,
-  RippleButtonRipples,
-} from "@/components/animate-ui/components/buttons/ripple";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "./ui/separator";
+import { Separator } from "../../ui/separator";
 
 export default function PortfolioAnalytics() {
   return (

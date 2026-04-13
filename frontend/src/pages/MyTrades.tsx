@@ -1,5 +1,5 @@
 import TradesTable from "@/components/TradesTable";
-import PortfolioAnalytics from "../components/PortfolioAnalytics";
+import PortfolioAnalytics from "../components/Dashboard/PortfolioPanel/PortfolioAnalytics";
 
 export default function MyTrades() {
   return (

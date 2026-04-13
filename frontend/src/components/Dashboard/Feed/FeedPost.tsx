@@ -5,13 +5,13 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Separator } from "./ui/separator";
 import PlaceholderIcon from "@/assets/icons/placeholder.svg";
 import HeartIcon from "@/assets/icons/heart.svg";
 import {
   RippleButton,
   RippleButtonRipples,
 } from "@/components/animate-ui/components/buttons/ripple";
+import { Separator } from "@/components/ui/separator";
 
 type FeedPostProps = {
   img: string;

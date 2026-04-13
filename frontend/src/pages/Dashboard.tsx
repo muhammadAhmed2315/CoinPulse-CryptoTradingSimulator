@@ -1,6 +1,6 @@
-import TrendingCoins from "@/components/TrendingCoins/TrendingCoins";
-import FeedPost from "@/components/FeedPost";
-import PortfolioOverview from "@/components/PortfolioOverview";
+import FeedPost from "@/components/Dashboard/Feed/FeedPost";
+import PortfolioOverview from "@/components/Dashboard/PortfolioPanel/PortfolioOverview";
+import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
 import { useQuery } from "@tanstack/react-query";
 
 async function getTrendingCoins() {

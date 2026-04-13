@@ -8,12 +8,12 @@ import {
 
 import formatCompactValue, { numToMoney } from "@/utils";
 import RedWarningIcon from "@/assets/icons/warning-red.svg";
-import { BorderBeam } from "../ui/border-beam";
-import { Spinner } from "../ui/spinner";
-import CustomTooltip from "../CustomTooltip";
-import { Separator } from "../ui/separator";
 import CurrencyBenchmarkList from "./CurrencyBenchmarkList";
-import PriceChangeBox from "../PriceChangeBox";
+import { BorderBeam } from "@/components/ui/border-beam";
+import { Spinner } from "@/components/ui/spinner";
+import CustomTooltip from "@/components/CustomTooltip";
+import PriceChangeBox from "@/components/PriceChangeBox";
+import { Separator } from "@/components/ui/separator";
 
 type TrendingCoinCardProps = {
   data?: {

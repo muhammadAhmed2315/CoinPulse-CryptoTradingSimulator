@@ -17,7 +17,7 @@ export default function CurrencyBenchmarkList({
 
   return (
     <div className="px-2">
-      <p className="text-xs text-center text-gray-500">
+      <p className="text-xs text-center text-gray-500 font-mono">
         24H VS OTHER CURRENCIES
       </p>
       <div className="flex gap-2 items-center">

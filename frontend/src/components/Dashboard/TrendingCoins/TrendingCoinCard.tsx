@@ -108,7 +108,7 @@ export default function TrendingCoinCard({
           </CardHeader>
 
           <CardContent className="px-2">
-            <p className="text-gray-500">PRICE</p>
+            <p className="text-gray-500 font-mono">PRICE</p>
 
             <div className="flex justify-between items-center mb-3">
               <b className="text-lg">${numToMoney(data!.price)}</b>
@@ -125,12 +125,12 @@ export default function TrendingCoinCard({
 
           <CardFooter className="h-8">
             <div className="flex-2">
-              <p className="text-xs text-gray-500">MKT CAP</p>
+              <p className="text-xs text-gray-500 font-mono">MKT CAP</p>
               <b>${formatCompactValue(data!.market_cap ?? 0)}</b>
             </div>
             <Separator orientation="vertical" className="mr-3" />
             <div className="flex-2">
-              <p className="text-xs text-gray-500">VOLUME</p>
+              <p className="text-xs text-gray-500 font-mono">VOLUME</p>
               <b>${formatCompactValue(data!.total_volume ?? 0)}</b>
             </div>
           </CardFooter>

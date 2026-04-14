@@ -40,7 +40,7 @@ export default function NewTradeCardLeft({
       </div>
 
       {/* Display current coin price + percentage change */}
-      <p className="text-xs tracking-wider text-gray-400">PRICE</p>
+      <p className="text-xs font-mono text-gray-400">PRICE</p>
       <div className="flex items-center justify-between mb-4">
         <p className="text-3xl font-bold ">
           $
@@ -112,7 +112,7 @@ export default function NewTradeCardLeft({
       {/* User's current PlayUSD balance */}
       <div className="flex justify-between items-center mb-2">
         <div>
-          <p className="text-xs text-gray-400 ">USD BALANCE</p>
+          <p className="text-xs text-gray-400 font-mono">USD BALANCE</p>
           {userBalanceQuery.isLoading ? (
             <CustomSkeleton className="h-6 w-25" />
           ) : (
@@ -125,7 +125,7 @@ export default function NewTradeCardLeft({
       {/* User's current coin balance */}
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 font-mono">
             {currCoin.ticker.toUpperCase()} BALANCE
           </p>
           {coinBalanceQuery.isLoading ? (

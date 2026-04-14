@@ -225,9 +225,7 @@ export default function NewTradeCardRight({
 
   return (
     <div className="flex-2 p-4">
-      <p className="text-xs tracking-widest mt-2 mb-1 text-gray-400">
-        ORDER ENTRY
-      </p>
+      <p className="text-xs font-mono mt-2 mb-1 text-gray-400">ORDER ENTRY</p>
       <p className="font-bold text-xl mb-4">
         {toTitleCase(orderSide)} {currCoin.ticker.toUpperCase()}
       </p>
@@ -270,7 +268,7 @@ export default function NewTradeCardRight({
       </div>
 
       {/* PlayUSD input */}
-      <p className="text-xs text-gray-400 mb-2">TOTAL (USD)</p>
+      <p className="text-xs text-gray-400 mb-2 font-mono">TOTAL (USD)</p>
       <Field
         data-invalid={
           amountZero || parseFloat(usdAmount) > userBalanceQuery.data
@@ -328,7 +326,9 @@ export default function NewTradeCardRight({
       {/* LIMIT/STOP price input */}
       {(orderType === "LIMIT" || orderType === "STOP") && (
         <>
-          <p className="text-xs mb-2 text-gray-400">{orderType} PRICE (USD)</p>
+          <p className="text-xs mb-2 text-gray-400 font-mono">
+            {orderType} PRICE (USD)
+          </p>
           <Field
             data-invalid={orderPriceEmpty || orderPriceZero}
             className="bg-[#fafafa] mb-1 gap-1"
@@ -361,7 +361,7 @@ export default function NewTradeCardRight({
       )}
 
       {/* Coin amount input */}
-      <p className="text-xs mb-2 text-gray-400">
+      <p className="text-xs mb-2 text-gray-400 font-mono">
         AMOUNT ({currCoin.ticker.toUpperCase()})
       </p>
       <Field

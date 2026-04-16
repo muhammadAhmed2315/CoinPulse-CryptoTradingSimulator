@@ -44,7 +44,7 @@ export default function CoinSearchBar({
         value={query}
         onChange={handleSearchInput}
       ></input>
-      <div className="absolute top-full left-0 w-full z-10">
+      <div className="absolute top-full left-0 w-full z-10 bg-white">
         {showDropdown &&
           matchingCoins.slice(0, 10).map((c) => (
             <div

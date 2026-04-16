@@ -1,3 +1,4 @@
+import math
 import time
 from datetime import datetime
 
@@ -274,7 +275,7 @@ def get_feedposts():
             type (str): Can be 'global' = fetch transactions visible to all users or
                         'own' = fetch transactions specific to the current user.
             page (int): The page number for pagination purposes, used to calculate the
-                        slice of transactions to return (1-indexed).
+                        slice of transactions to return (0-indexed).
 
     Returns:
         A JSON response containing:
@@ -289,26 +290,27 @@ def get_feedposts():
     type = data["type"]
     page = data["page"]
 
-    if type == "global":
-        # Get transactions from the database that have public (true) visibility, and
-        # then order by most recent first (timestamp descending)
-        transactions = (
-            Transaction.query.filter_by(visibility=True)
-            .order_by(Transaction.timestamp.desc())
-            .all()
+    PAGE_SIZE = 10
+
+    # Fetch the current user
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+
+    if type == "GLOBAL":
+        base_query = Transaction.query.filter_by(visibility=True).order_by(
+            Transaction.timestamp.desc()
         )
-    elif type == "own":
-        # Get transactions from the database that belong to the current user,
-        # regardless of their visibility
-        transactions = (
-            Transaction.query.filter_by(wallet_id=current_user.wallet.id)
-            .order_by(Transaction.timestamp.desc())
-            .all()
+    elif type == "PRIVATE":
+        base_query = Transaction.query.filter_by(wallet_id=user.wallet.id).order_by(
+            Transaction.timestamp.desc()
         )
+
+    total = base_query.count()
+    max_pages = max(math.ceil(total / PAGE_SIZE) - 1, 0)
+    transactions = base_query.offset(page * PAGE_SIZE).limit(PAGE_SIZE).all()
 
     res = []
 
-    # Extract the necessary data from each transaction
     for transaction in transactions:
         temp = {}
 
@@ -326,20 +328,23 @@ def get_feedposts():
             temp["visibility"] = transaction.visibility
 
         # Has user liked the current transaction
-        if current_user.id in transaction.likes.liked_by_user_ids:
+        if user.id in transaction.likes.liked_by_user_ids:
             temp["curr_user_liked"] = True
         else:
             temp["curr_user_liked"] = False
 
         res.append(temp)
 
-    # Paginate the results
-    res = res[(page - 1) * 10 : page * 10]
-
-    if res:
-        return jsonify({"success": "Feedposts successfully fetched", "data": res}), 200
-    else:
-        return jsonify({"success": "No feedposts to show"}), 200
+    return (
+        jsonify(
+            {
+                "data": res,
+                "nextPage": page + 1 if page < max_pages else None,
+                "maxPages": max_pages,
+            }
+        ),
+        200,
+    )
 
 
 @core.route("/update_likes", methods=["POST"])
@@ -352,23 +357,36 @@ def update_likes():
     like from the transaction, the function adds or removes the current user from the
     transaction's TransactionLikes.liked_by_user_ids list.
     """
-    data = request.get_json()
-    is_increment = data["isIncrement"]
-    transaction_id = data["transactionID"]
+    try:
+        data = request.get_json()
+        print(data)
+        is_increment = data["isIncrement"]
+        transaction_id = data["transactionID"]
 
-    # Get the transaction object from the database
-    transaction = Transaction.query.get(transaction_id)
+        # Get the current user
+        user_id = get_jwt_identity()
+        current_user = User.query.filter_by(id=user_id).first()
 
-    # Increment or decrement the number of likes for the transaction
-    if is_increment:
-        transaction.add_like(current_user.id)
-    else:
-        transaction.remove_like(current_user.id)
+        # Get the transaction object from the database
+        transaction = Transaction.query.get(transaction_id)
 
-    # Save the updated transaction to the database
-    db.session.add(transaction)
-    db.session.add(transaction.likes)
-    db.session.commit()
+        # Increment or decrement the number of likes for the transaction
+        if is_increment:
+            print("Adding a like")
+            transaction.add_like(current_user.id)
+        else:
+            print("Removing a like")
+            transaction.remove_like(current_user.id)
+
+        # Save the updated transaction to the database
+        db.session.add(transaction)
+        db.session.add(transaction.likes)
+        db.session.commit()
+    except Exception as e:
+        return (
+            jsonify({"error": "Failed to update like count due to internal error"}),
+            500,
+        )
 
     return jsonify(
         {
@@ -410,7 +428,7 @@ def process_order():
                        exception with an appropriate status code and error message.
     """
     # Ensure request contains necessary JSON data
-    data = request.json
+    data = request.get_json()
 
     # Check data contains all required fields
     required_fields = {

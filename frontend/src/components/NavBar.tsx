@@ -18,22 +18,45 @@ import LineChartAscendingIcon from "@/assets/icons/line-chart-ascending.svg";
 import PlaceHolderIcon from "@/assets/icons/placeholder.svg";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
 import NewTradeButton from "./NewTrade/NewTradeButton";
 import { loadAllCoinsList } from "@/loadAllCoinsList";
+import CustomSkeleton from "./CustomSkeleton";
+import { numToMoney } from "@/utils";
+
+async function fetchTotalPortfolioValue() {
+  const response = await fetch(
+    "http://localhost:5000/get_wallet_total_current_value",
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) throw await response.json();
+
+  return await response.json();
+}
 
 export default function NavBar() {
+  // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
+  // ===== REACTQUERY HOOKS =====
   const prefetchAllCoinsList = async () => {
     await queryClient.prefetchQuery({
       queryKey: ["all-coins-list"],
       queryFn: loadAllCoinsList,
     });
   };
+
+  const portfolioTotalValueQuery = useQuery({
+    queryKey: ["total-portfolio-value"],
+    queryFn: fetchTotalPortfolioValue,
+  });
 
   const logoutMutation = useMutation({
     mutationFn: () =>
@@ -49,7 +72,12 @@ export default function NavBar() {
 
   return (
     <div className="flex justify-between items-center text-lg p-6 mr-4 ml-4">
-      <h1>Portfolio Value: $1,214,865.16</h1>
+      {portfolioTotalValueQuery.isLoading && (
+        <CustomSkeleton className="h-8 w-60" />
+      )}
+      {portfolioTotalValueQuery.data && (
+        <h1>Portfolio Value: ${numToMoney(portfolioTotalValueQuery.data)}</h1>
+      )}
 
       <NavigationMenu>
         <NavigationMenuList>

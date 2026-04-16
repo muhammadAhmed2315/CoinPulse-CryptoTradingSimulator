@@ -384,7 +384,11 @@ def update_likes():
         db.session.commit()
     except Exception as e:
         return (
-            jsonify({"error": "Failed to update like count due to internal error"}),
+            jsonify(
+                {
+                    "error": f"Failed to update like count due to internal error: {str(e)}"
+                }
+            ),
             500,
         )
 
@@ -590,29 +594,24 @@ def get_wallet_total_current_value():
     """
     # Since the CoinGecko API only updates coin prices every 45 seconds, only call the
     # update wallet history function if this page was accessed 45 seconds or more ago
-    last_visit = session.get("get_wallet_total_current_value_last_visited")
-    if last_visit is not None:
-        if int(time.time()) - last_visit >= 45:
-            update_user_wallet_value_in_background(current_user.wallet.id)
-    session["get_wallet_total_current_value_last_visited"] = int(time.time())
-
     try:
-        current_total_value = current_user.wallet.total_current_value
-        return (
-            jsonify(
-                {"success": "Data successfully retrieved", "data": current_total_value}
-            ),
-            200,
-        )
+        # Get the current user
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+
+        last_visit = session.get("get_wallet_total_current_value_last_visited")
+        if last_visit is not None:
+            if int(time.time()) - last_visit >= 45:
+                update_user_wallet_value_in_background(user.wallet.id)
+        session["get_wallet_total_current_value_last_visited"] = int(time.time())
+
+        current_total_value = user.wallet.total_current_value
+        return jsonify(current_total_value), 200
+
     except Exception as e:
         return (
             jsonify(
-                {
-                    "error": (
-                        "An error occurred while retrieving the wallet's current total value from the database. "
-                        f"Reason: {str(e)}"
-                    )
-                }
+                {"error": (f"Could not get user's total portfolio value: {str(e)}")}
             ),
             500,
         )

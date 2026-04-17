@@ -335,12 +335,13 @@ def get_feedposts():
 
         res.append(temp)
 
+    print(f"Page: {page}")
+    print(f"Max. Pages: {max_pages}")
     return (
         jsonify(
             {
                 "data": res,
                 "nextPage": page + 1 if page < max_pages else None,
-                "maxPages": max_pages,
             }
         ),
         200,

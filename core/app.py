@@ -1107,12 +1107,16 @@ def get_wallet_assets():
     Returns:
         A JSON response containing a success message along with the user's assets and wallet balance.
     """
-    current_assets = current_user.wallet.assets
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        current_assets = user.wallet.assets
+    except Exception as e:
+        return jsonify({"error": f"Failed to retrieve wallet assets: {str(e)}"}), 500
 
     return (
         jsonify(
             {
-                "success": "Data successfully retrieved",
                 "assets": current_assets,
                 "balance": current_user.wallet.balance,
             }

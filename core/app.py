@@ -1092,6 +1092,48 @@ def update_open_trades_in_background():
         time.sleep(OPEN_TRADE_UPDATE_INTERVAL_SECONDS)
 
 
+@jwt_required()
+def get_coins_data(coin_ids: str):
+    try:
+        url = "https://api.coingecko.com/api/v3/coins/markets"
+        params = {
+            "vs_currency": "usd",
+            "ids": coin_ids,
+        }
+
+        response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+        data = response.json()
+
+    except Exception as e:
+        raise e
+
+    return data
+
+
+@core.route("/get_multiple_coin_data", methods=["POST"])
+@jwt_required()
+def get_multiple_coin_data():
+    """
+    Fetch and return market data for multiple specified coins.
+
+    This function processes a POST request that should include a JSON body containing
+    'coin_ids', a string of coin IDs (comma-separated). It constructs a query to the
+    CoinGecko API to retrievethe current market data for the specified coins in USD.
+
+    Returns:
+        Flask.Response: A JSON response containing the market data for the specified coins.
+    """
+    try:
+        data = request.get_json()
+        coin_ids = data["coin_ids"]
+        data = jsonify(get_coins_data(coin_ids))
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch coin data: {str(e)}"}), 500
+
+    return data, 200
+
+
 @core.route("/get_wallet_assets", methods=["GET"])
 @jwt_required()
 def get_wallet_assets():
@@ -1108,21 +1150,48 @@ def get_wallet_assets():
         A JSON response containing a success message along with the user's assets and wallet balance.
     """
     try:
+        # Fetch user id
         user_id = get_jwt_identity()
         user = User.query.filter_by(id=user_id).first()
+
+        # Fetch amount of each coin in the user's wallet
         current_assets = user.wallet.assets
+        owned_coins = ",".join(current_assets.keys())
+
+        # Fetch current market data for each coin
+        coin_market_data = get_coins_data(owned_coins)
+
+        # Filter the coin market data
+        coin_market_data = [
+            {
+                "id": c["id"],
+                "symbol": c["symbol"],
+                "name": c["name"],
+                "image": c["image"],
+                "current_price": c["current_price"],
+                "price_change_percentage_24h": c["price_change_percentage_24h"],
+            }
+            for c in coin_market_data
+        ]
+
+        # Convert coin market data into one big object
+        coin_market_data = {c["id"]: c for c in coin_market_data}
+
+        # Merge market data and wallet assets data
+        data = [
+            {
+                "amount": val,
+                **coin_market_data[c],
+                "total_value": val * coin_market_data[c]["current_price"],
+            }
+            for c, val in current_assets.items()
+        ]
+        data.append({"total_value": user.wallet.balance, "id": "playusd"})
+
     except Exception as e:
         return jsonify({"error": f"Failed to retrieve wallet assets: {str(e)}"}), 500
 
-    return (
-        jsonify(
-            {
-                "assets": current_assets,
-                "balance": current_user.wallet.balance,
-            }
-        ),
-        200,
-    )
+    return data, 200
 
 
 @core.route("/get_open_trades", methods=["GET"])
@@ -1376,34 +1445,6 @@ def get_trending_coins():
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-@core.route("/get_multiple_coin_data", methods=["POST"])
-def get_multiple_coin_data():
-    """
-    Fetch and return market data for multiple specified coins.
-
-    This function processes a POST request that should include a JSON body containing
-    'coin_ids', a string of coin IDs (comma-separated). It constructs a query to the
-    CoinGecko API to retrievethe current market data for the specified coins in USD.
-
-    Returns:
-        Flask.Response: A JSON response containing the market data for the specified coins.
-    """
-    data = request.get_json()
-    coin_ids = data["coin_ids"]
-
-    url = "https://api.coingecko.com/api/v3/coins/markets"
-    params = {
-        "vs_currency": "usd",
-        "ids": coin_ids,
-    }
-
-    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    data = jsonify(data)
-
-    return data
 
 
 @core.route("/get_coin_OHLC_data", methods=["POST"])

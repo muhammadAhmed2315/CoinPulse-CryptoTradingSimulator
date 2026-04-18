@@ -1,6 +1,8 @@
 import { JSDOM } from "jsdom";
 import { writeFileSync } from "fs";
 
+// TODO: Convert this TS
+
 async function fetchCoinsList() {
   const response = await fetch("https://api.coingecko.com/api/v3/coins/list", {
     method: "GET",

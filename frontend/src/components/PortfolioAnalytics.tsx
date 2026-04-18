@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "../../ui/separator";
+import { Separator } from "./ui/separator";
 
 export default function PortfolioAnalytics() {
   return (

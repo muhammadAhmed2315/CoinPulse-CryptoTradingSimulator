@@ -85,7 +85,7 @@ export default function FeedPost({
   });
 
   return (
-    <Card className="p-6 mb-6">
+    <Card className="p-6 mb-6 gap-4">
       <CardHeader className="p-0">
         <div className="flex gap-4 items-center">
           <img src={PlaceholderIcon} className="size-15" />

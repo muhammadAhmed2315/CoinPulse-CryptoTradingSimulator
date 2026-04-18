@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Overview Redesign</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+    { "imports": {
+        "preact": "https://esm.sh/preact@10.25.4",
+        "preact/hooks": "https://esm.sh/preact@10.25.4/hooks",
+        "htm": "https://esm.sh/htm@3.1.1"
+    }}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['DM Sans', 'system-ui', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background: #fff; margin: 0; font-family: 'DM Sans', sans-serif; }
+    .scroll-hidden { overflow-y: auto; scrollbar-width: none; }
+    .scroll-hidden::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module">
+    import { h, render } from "preact";
+    import { useState } from "preact/hooks";
+    import htm from "htm";
+    const html = htm.bind(h);
+
+    const HOLDINGS = [
+      { id: "usd",      name: "Play USD",  symbol: "USD",  quantity: 433992.73,   usdValue: 433992.73,   change24h: 0,      color: "#111111", logo: "https://cdn-icons-png.flaticon.com/512/3215/3215522.png" },
+      { id: "bitcoin",   name: "Bitcoin",   symbol: "BTC",  quantity: 4.9018,      usdValue: 402813.46,   change24h: 2.34,   color: "#444444", logo: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png" },
+      { id: "ethereum",  name: "Ethereum",  symbol: "ETH",  quantity: 24.2353,     usdValue: 43219.87,    change24h: -1.12,  color: "#777777", logo: "https://assets.coingecko.com/coins/images/279/small/ethereum.png" },
+      { id: "tether",    name: "Tether",    symbol: "USDT", quantity: 50034.0231,  usdValue: 50034.02,    change24h: 0.01,   color: "#999999", logo: "https://assets.coingecko.com/coins/images/325/small/Tether.png" },
+      { id: "xrp",       name: "XRP",       symbol: "XRP",  quantity: 74626.8657,  usdValue: 39112.12,    change24h: 5.67,   color: "#bbbbbb", logo: "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png" },
+      { id: "bnb",       name: "BNB",       symbol: "BNB",  quantity: 81.1649,     usdValue: 48211.40,    change24h: -0.45,  color: "#cccccc", logo: "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png" },
+      { id: "harambe",   name: "Harambe",   symbol: "HRMB", quantity: 0.7125,      usdValue: 12.41,       change24h: -8.23,  color: "#e0e0e0", logo: "https://assets.coingecko.com/coins/images/38297/small/photo_2024-06-18_01-35-46.jpg" },
+    ];
+
+    const TOTAL_VALUE = HOLDINGS.reduce((s, h) => s + h.usdValue, 0);
+    const PREV_VALUE = 989432.18;
+    const TOTAL_CHANGE = ((TOTAL_VALUE - PREV_VALUE) / PREV_VALUE) * 100;
+    const TOTAL_CHANGE_USD = TOTAL_VALUE - PREV_VALUE;
+
+    function fmt(n) {
+      return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    }
+
+    function fmtQty(n) {
+      if (n >= 1000) return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+      if (n >= 1) return new Intl.NumberFormat("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 }).format(n);
+      return new Intl.NumberFormat("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 6 }).format(n);
+    }
+
+    function PriceChangeBox({ change }) {
+      if (change === 0) return null;
+      const pos = change > 0;
+      const bg = pos ? 'bg-green-50' : 'bg-red-50';
+      const color = pos ? 'color: #21c45d' : 'color: #ef4444';
+
+      return html`
+        <div class="flex gap-0.5 rounded-md px-1.5 py-0.5 items-center ${bg}">
+          <span class="text-xs font-bold font-mono" style="${color}">${pos ? '↑' : '↓'} ${fmt(Math.abs(change))}%</span>
+        </div>
+      `;
+    }
+
+    function HoldingRow({ holding, isLast }) {
+      const border = isLast ? '' : 'border-b border-[#f0f0f0]';
+
+      return html`
+        <div class="flex items-center gap-3 py-3.5 ${border}">
+          <img src=${holding.logo} class="size-8 rounded-full" alt=${holding.name} />
+
+          <div class="flex flex-col min-w-0 flex-1">
+            <span class="text-sm font-semibold truncate">${holding.name}</span>
+            <span class="text-xs text-gray-500 font-mono">${holding.symbol}</span>
+          </div>
+
+          <div class="flex flex-col items-end gap-0.5">
+            <b class="text-sm font-mono">$${fmt(holding.usdValue)}</b>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-gray-500 font-mono">${fmtQty(holding.quantity)} ${holding.symbol}</span>
+              ${holding.change24h !== 0 && html`<${PriceChangeBox} change=${holding.change24h} />`}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function PortfolioOverview() {
+      const [hovered, setHovered] = useState(null);
+
+      return html`
+        <div class="bg-white rounded-xl border border-[#e8e8e8] shadow-sm overflow-hidden">
+          <!-- Header -->
+          <div class="p-5 pb-4 border-b border-[#f0f0f0]">
+            <p class="text-xs text-gray-500 font-mono mb-1">PORTFOLIO VALUE</p>
+            <b class="text-2xl">$${fmt(TOTAL_VALUE)}</b>
+
+            <!-- Allocation Bar -->
+            <div class="flex w-full h-2 rounded-full overflow-hidden gap-[2px] mt-3">
+              ${HOLDINGS.map(h => {
+                const pct = (h.usdValue / TOTAL_VALUE) * 100;
+                if (pct < 0.3) return null;
+                const dimmed = hovered && hovered !== h.id;
+                return html`
+                  <div
+                    key=${h.id}
+                    class="h-full rounded-full cursor-pointer"
+                    style=${{
+                      width: pct + '%',
+                      backgroundColor: h.color,
+                      minWidth: 4,
+                      opacity: dimmed ? 0.2 : 1,
+                      transition: 'opacity 0.2s ease',
+                    }}
+                    onMouseEnter=${() => setHovered(h.id)}
+                    onMouseLeave=${() => setHovered(null)}
+                  />
+                `;
+              })}
+            </div>
+            <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+              ${HOLDINGS.filter(h => (h.usdValue / TOTAL_VALUE) * 100 >= 1).map(h => {
+                const dimmed = hovered && hovered !== h.id;
+                return html`
+                  <div
+                    key=${h.id}
+                    class="flex items-center gap-1 cursor-pointer"
+                    style=${{ opacity: dimmed ? 0.3 : 1, transition: 'opacity 0.2s ease' }}
+                    onMouseEnter=${() => setHovered(h.id)}
+                    onMouseLeave=${() => setHovered(null)}
+                  >
+                    <div class="w-2 h-2 rounded-full" style=${{ backgroundColor: h.color }} />
+                    <span class="text-[10px] text-gray-500 font-mono">${h.symbol} ${((h.usdValue / TOTAL_VALUE) * 100).toFixed(1)}%</span>
+                  </div>
+                `;
+              })}
+            </div>
+          </div>
+
+          <!-- Holdings -->
+          <div class="px-5 pt-1 pb-2">
+            <div class="flex justify-between items-center py-3 mb-0.5">
+              <p class="text-xs text-gray-500 font-mono">HOLDINGS</p>
+              <p class="text-xs text-gray-500 font-mono">VALUE</p>
+            </div>
+
+            <div class="relative">
+              <div class="max-h-[400px] scroll-hidden" id="holdings-list">
+                ${HOLDINGS.map((h, i) => html`
+                  <${HoldingRow}
+                    key=${h.id}
+                    holding=${h}
+                    isLast=${i === HOLDINGS.length - 1}
+                  />
+                `)}
+              </div>
+              <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" id="scroll-fade" />
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    render(html`
+      <div class="flex items-start justify-center p-10" style="min-height:100vh; background:#fff">
+        <div style="width: 460px">
+          <${PortfolioOverview} />
+        </div>
+      </div>
+    `, document.getElementById("root"));
+  </script>
+</body>
+</html>

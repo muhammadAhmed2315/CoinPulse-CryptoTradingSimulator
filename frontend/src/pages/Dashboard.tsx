@@ -1,6 +1,5 @@
-import FeedPost from "@/components/Dashboard/Feed/FeedPost";
 import FeedPostMenu from "@/components/Dashboard/Feed/FeedPostMenu";
-import PortfolioOverview from "@/components/Dashboard/PortfolioPanel/PortfolioOverview";
+import PortfolioPanel from "@/components/Dashboard/PortfolioPanel/PortfolioPanel";
 import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
 import { useQuery } from "@tanstack/react-query";
 
@@ -38,11 +37,7 @@ export default function Dashboard() {
         </div>
 
         <div className="flex-1">
-          <div className="flex gap-4">
-            <p className="text-lg cursor-pointer">Portfolio Overview</p>
-            <p className="text-lg cursor-pointer">Open Positions</p>
-          </div>
-          <PortfolioOverview />
+          <PortfolioPanel />
         </div>
       </div>
     </div>

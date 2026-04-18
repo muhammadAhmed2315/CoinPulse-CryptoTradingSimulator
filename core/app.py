@@ -335,8 +335,6 @@ def get_feedposts():
 
         res.append(temp)
 
-    print(f"Page: {page}")
-    print(f"Max. Pages: {max_pages}")
     return (
         jsonify(
             {

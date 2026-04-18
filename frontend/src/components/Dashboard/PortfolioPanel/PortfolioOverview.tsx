@@ -1,6 +1,20 @@
 import PlaceholderIcon from "@/assets/icons/placeholder.svg";
 import { Card } from "@/components/ui/card";
 
+async function fetchTotalPortfolioValue() {
+  const response = await fetch(
+    "http://localhost:5000/get_wallet_total_current_value",
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) throw await response.json();
+
+  return await response.json();
+}
+
 const arr = Array.from({ length: 10 }, (_, i) => i);
 
 export default function PortfolioOverview() {

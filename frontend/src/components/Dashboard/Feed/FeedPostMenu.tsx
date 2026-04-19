@@ -45,8 +45,6 @@ export default function FeedPostMenu() {
     initialPageParam: 0,
   });
 
-  if (globalFeedQuery) console.log(globalFeedQuery.data);
-
   return (
     <div>
       <Tabs

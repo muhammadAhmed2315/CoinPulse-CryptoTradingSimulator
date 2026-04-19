@@ -1169,7 +1169,8 @@ def get_wallet_assets():
                 "name": c["name"],
                 "image": c["image"],
                 "current_price": c["current_price"],
-                "price_change_percentage_24h": c["price_change_percentage_24h"],
+                "priceChange24h": c["price_change_percentage_24h"],
+                "ticker": c["symbol"],
             }
             for c in coin_market_data
         ]
@@ -1182,11 +1183,16 @@ def get_wallet_assets():
             {
                 "amount": val,
                 **coin_market_data[c],
-                "total_value": val * coin_market_data[c]["current_price"],
+                "totalValue": val * coin_market_data[c]["current_price"],
             }
             for c, val in current_assets.items()
         ]
-        data.append({"total_value": user.wallet.balance, "id": "playusd"})
+        data.append(
+            {"totalValue": user.wallet.balance, "id": "playusd", "name": "PlayUSD"}
+        )
+
+        # Sort by totalValue
+        data.sort(key=lambda x: -x["totalValue"])
 
     except Exception as e:
         return jsonify({"error": f"Failed to retrieve wallet assets: {str(e)}"}), 500

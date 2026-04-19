@@ -15,7 +15,7 @@ export default function PortfolioPanel() {
   const [activeTab, setActiveTab] = useState<PanelType>("OVERVIEW");
 
   return (
-    <div>
+    <div className="px-7.5">
       <Tabs
         onValueChange={(value) => setActiveTab(value as PanelType)}
         value={activeTab}

@@ -31,7 +31,7 @@ export default function Dashboard() {
         data={trendingCoinsQuery.data || undefined}
       />
 
-      <div className="flex gap-12.5">
+      <div className="flex gap-12.5 mt-6">
         <div className="flex flex-col flex-2">
           <FeedPostMenu />
         </div>

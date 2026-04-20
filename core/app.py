@@ -444,6 +444,7 @@ def process_order():
         "visibility",
     }
 
+    # Verify required fields have been provided
     for key in required_fields:
         if key not in data:
             return jsonify({"error": "Order failed: Invalid request data"}), 422
@@ -533,7 +534,9 @@ def process_order():
     except Exception as e:
         db.session.rollback()
         return (
-            jsonify({"error": "Order failed: An unexpected error occurred"}),
+            jsonify(
+                {"error": f"Order failed — an unexpected error occurred: {str(e)}"}
+            ),
             500,
         )
 
@@ -1165,7 +1168,6 @@ def get_wallet_assets():
         coin_market_data = [
             {
                 "id": c["id"],
-                "symbol": c["symbol"],
                 "name": c["name"],
                 "image": c["image"],
                 "current_price": c["current_price"],
@@ -1188,7 +1190,12 @@ def get_wallet_assets():
             for c, val in current_assets.items()
         ]
         data.append(
-            {"totalValue": user.wallet.balance, "id": "playusd", "name": "PlayUSD"}
+            {
+                "totalValue": user.wallet.balance,
+                "id": "playusd",
+                "name": "PlayUSD",
+                "ticker": "USD",
+            }
         )
 
         # Sort by totalValue

@@ -23,7 +23,7 @@ function convertHoldingsToPercentages(
   const holdingsWithPercentages = holdings.map((coin, i) => ({
     ...coin,
     percentage: (coin.totalValue / totalHoldingsValue) * 100,
-    color: COLORS[i % COLORS.length],
+    color: COLORS[i * Math.floor(COLORS.length / holdings.length)],
   }));
 
   if (holdingsWithPercentages.length <= 8) return holdingsWithPercentages;

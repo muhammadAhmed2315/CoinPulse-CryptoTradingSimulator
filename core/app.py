@@ -1225,13 +1225,21 @@ def get_open_trades():
         database query fails), the function needs proper error handling to manage such
         exceptions.
     """
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+
     open_transactions = Transaction.query.filter_by(
-        wallet_id=current_user.wallet.id, status="open"
+        wallet_id=user.wallet.id, status="open"
     ).all()
 
     res = []
+    coins = set()
 
     for transaction in open_transactions:
+        # Skip market orders
+        if transaction.orderType == "MARKET":
+            continue
+
         temp = {}
         temp["id"] = transaction.id
         temp["coin_id"] = transaction.coin_id
@@ -1240,8 +1248,15 @@ def get_open_trades():
         temp["transaction_type"] = transaction.transactionType
         temp["order_type"] = transaction.orderType
         res.append(temp)
+        coins.add(transaction.coin_id)
 
-    return jsonify({"success": "Open orders successfully fetched", "data": res}), 200
+    coins_data = get_coins_data(",".join(coins))
+    coins_data = {coin["id"]: coin["current_price"] for coin in coins_data}
+
+    for coin in res:
+        coin["current_price"] = coins_data[coin["coin_id"]]
+
+    return jsonify(res), 200
 
 
 @core.route("/cancel_open_trade", methods=["POST"])

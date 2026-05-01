@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Open Positions — Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --radius-md: 0.5rem;
+    --radius-lg: 0.625rem;
+    --radius-xl: 0.875rem;
+
+    --bg-page: #f5f5f7;
+    --bg-card: #ffffff;
+    --bg-muted: #fafafa;
+    --bg-subtle: #f7f7f8;
+
+    --border-faint: #f0f0f0;
+    --border-soft: #ececef;
+
+    --text-primary: #18181b;
+    --text-body: #3f3f46;
+    --text-muted: #71717a;
+    --text-secondary: #6b7280;
+    --text-placeholder: #a0a0a0;
+
+    --buy-strong: #059669;
+    --sell-strong: #e11d48;
+    --buy-bg: #ecfdf5;
+    --sell-bg: #fff1f2;
+
+    --section-accent: #8b86b8;
+
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "DM Sans", system-ui, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+
+  /* Approx the right-rail width on the dashboard (~33% of ~1500px) */
+  .page {
+    width: 524px;
+    max-width: 100%;
+    margin: 32px auto;
+    padding: 0;
+  }
+
+  /* Tab bar — mirrors the existing PortfolioPanel header */
+  .tabs {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .tab {
+    font-size: 20px;
+    font-weight: 500;
+    color: #a1a1aa;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .tab.active { color: var(--text-primary); font-weight: 600; }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  /* ============================================================
+     HEADER — Reserved Value on top, exposure bar below
+     (mirrors PortfolioOverview's "PORTFOLIO VALUE → bar" layout)
+     ============================================================ */
+  .header {
+    padding: 18px 20px 16px;
+  }
+  .header-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+  .header-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 2px 0 12px;
+  }
+
+  .exposure-track {
+    display: flex;
+    gap: 4px;
+    height: 8px;
+  }
+  .exposure-segment {
+    height: 100%;
+    border-radius: 999px;
+  }
+  .exposure-segment.s1 { background: #18181b; flex: 44; }
+  .exposure-segment.s2 { background: #71717a; flex: 26; }
+  .exposure-segment.s3 { background: #a1a1aa; flex: 18; }
+  .exposure-segment.s4 { background: #d4d4d8; flex: 12; }
+
+  .exposure-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-dot {
+    width: 6px; height: 6px;
+    border-radius: 999px;
+  }
+  .legend-dot.s1 { background: #18181b; }
+  .legend-dot.s2 { background: #71717a; }
+  .legend-dot.s3 { background: #a1a1aa; }
+  .legend-dot.s4 { background: #d4d4d8; }
+
+  /* ============================================================
+     SECTION (accordion)
+     ============================================================ */
+  .section {
+    border-top: 1px solid var(--border-faint);
+  }
+
+  /* Click target — entire header toggles open/closed */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s ease;
+  }
+  .section-head:hover { background: var(--bg-muted); }
+
+  .section-head-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .chevron {
+    width: 16px; height: 16px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+  }
+  .section.open .chevron { transform: rotate(90deg); }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--section-accent);
+    letter-spacing: -0.01em;
+  }
+  .section-head-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-count {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-subtle);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  /* Mini summary shown when section is collapsed (e.g. "$1.00 closest") */
+  .section-summary {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: opacity 0.12s ease;
+  }
+  .section.open .section-summary { display: none; }
+
+  /* Collapsible body */
+  .section-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.22s ease;
+  }
+  .section.open .section-body { grid-template-rows: 1fr; }
+  .section-body-inner {
+    overflow: hidden;
+    padding: 0 20px;
+  }
+  .section.open .section-body-inner {
+    padding: 0 20px 8px;
+  }
+
+  /* ============================================================
+     ORDER ROW — narrow layout
+     row 1: icon | pill + name + qty + spacer + cancel button
+     row 2: target → current ($X away) on one line
+     ============================================================ */
+  .order {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    column-gap: 12px;
+    row-gap: 6px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .order:last-child { border-bottom: none; }
+
+  .coin-icon {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #f4f4f5;
+    grid-row: 1 / span 2;
+  }
+  .coin-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Top row: side pill + name + qty | cancel */
+  .order-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .side-pill {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .side-pill.buy  { background: var(--buy-bg);  color: var(--buy-strong); }
+  .side-pill.sell { background: var(--sell-bg); color: var(--sell-strong); }
+  .asset-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  /* Distance to trigger — sits on the top row, no pill background */
+  .away-text {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: auto;
+    margin-right: 8px;
+  }
+  .away-text .away-amt { font-weight: 700; }
+  .away-text .away-suffix {
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 3px;
+  }
+  .away-text.up   .away-amt { color: var(--buy-strong); }
+  .away-text.down .away-amt { color: var(--sell-strong); }
+  .cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+  .cancel-btn:hover {
+    background: var(--sell-bg);
+    border-color: #fecdd3;
+    color: var(--sell-strong);
+  }
+  .cancel-btn svg { width: 13px; height: 13px; }
+
+  /* Bottom row: target → current (away) all on one line */
+  .price-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .price-line .label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .price-line .val {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .price-line .arrow {
+    color: #d4d4d8;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .price-line .qty {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+  .away {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 2px;
+  }
+  .away.up    { background: var(--buy-bg);  color: var(--buy-strong); }
+  .away.down  { background: var(--sell-bg); color: var(--sell-strong); }
+
+  /* ============================================================
+     EMPTY STATE
+     ============================================================ */
+  .empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: 6px;
+  }
+  .empty-num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--text-placeholder);
+    width: 20px; height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .empty-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .empty-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-body);
+  }
+  .empty-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="tabs">
+    <div class="tab">Portfolio Overview</div>
+    <div class="tab active">Open Positions</div>
+  </div>
+
+  <div class="panel">
+
+    <!-- ============================================================
+         HEADER — Reserved Value on top, exposure bar below
+         ============================================================ -->
+    <div class="header">
+      <div class="header-label">Reserved Value</div>
+      <div class="header-value">$92,418.57</div>
+
+      <div class="exposure-track">
+        <div class="exposure-segment s1"></div>
+        <div class="exposure-segment s2"></div>
+        <div class="exposure-segment s3"></div>
+        <div class="exposure-segment s4"></div>
+      </div>
+
+      <div class="exposure-legend">
+        <span class="legend-item"><span class="legend-dot s1"></span>Limit Buy (44%)</span>
+        <span class="legend-item"><span class="legend-dot s2"></span>Limit Sell (26%)</span>
+        <span class="legend-item"><span class="legend-dot s3"></span>Stop Buy (18%)</span>
+        <span class="legend-item"><span class="legend-dot s4"></span>Stop Sell (12%)</span>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         LIMIT BUY
+         ============================================================ -->
+    <div class="section open">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="section-head-left">
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="section-title">Limit Buy Orders</span>
+        </div>
+        <div class="section-head-right">
+          <span class="section-summary">closest $1.00</span>
+          <span class="section-count">2 orders</span>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <div class="section-body-inner">
+          <div class="order">
+            <div class="coin-icon">
+              <img src="https://assets.coingecko.com/coins/images/1/standard/bitcoin.png" alt="BTC"/>
+            </div>
+            <div class="order-top">
+              <span class="side-pill buy">BUY</span>
+              <span class="asset-name">Bitcoin</span>
+              <span class="away-text up">
+                <span class="away-amt">$1.00</span><span class="away-suffix">away</span>
+              </span>
+              <button class="cancel-btn" aria-label="Cancel order">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="price-line">
+              <span class="label">Limit</span>
+              <span class="val">$76,419.00</span>
+              <span class="arrow">→</span>
+              <span class="label">Now</span>
+              <span class="val">$76,420.00</span>
+              <span class="qty">0.2924 BTC</span>
+            </div>
+          </div>
+
+          <div class="order">
+            <div class="coin-icon">
+              <img src="https://assets.coingecko.com/coins/images/279/standard/ethereum.png" alt="ETH"/>
+            </div>
+            <div class="order-top">
+              <span class="side-pill buy">BUY</span>
+              <span class="asset-name">Ethereum</span>
+              <span class="away-text down">
+                <span class="away-amt">$66.40</span><span class="away-suffix">away</span>
+              </span>
+              <button class="cancel-btn" aria-label="Cancel order">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="price-line">
+              <span class="label">Limit</span>
+              <span class="val">$2,735.50</span>
+              <span class="arrow">→</span>
+              <span class="label">Now</span>
+              <span class="val">$2,801.90</span>
+              <span class="qty">4.8500 ETH</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         LIMIT SELL
+         ============================================================ -->
+    <div class="section">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="section-head-left">
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="section-title">Limit Sell Orders</span>
+        </div>
+        <div class="section-head-right">
+          <span class="section-summary">closest $4.93</span>
+          <span class="section-count">1 order</span>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <div class="section-body-inner">
+          <div class="order">
+            <div class="coin-icon">
+              <img src="https://assets.coingecko.com/coins/images/4128/standard/solana.png" alt="SOL"/>
+            </div>
+            <div class="order-top">
+              <span class="side-pill sell">SELL</span>
+              <span class="asset-name">Solana</span>
+              <span class="away-text up">
+                <span class="away-amt">$4.93</span><span class="away-suffix">away</span>
+              </span>
+              <button class="cancel-btn" aria-label="Cancel order">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="price-line">
+              <span class="label">Limit</span>
+              <span class="val">$168.75</span>
+              <span class="arrow">→</span>
+              <span class="label">Now</span>
+              <span class="val">$163.82</span>
+              <span class="qty">126.0000 SOL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         STOP BUY — empty
+         ============================================================ -->
+    <div class="section">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="section-head-left">
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="section-title">Stop Buy Orders</span>
+        </div>
+        <div class="section-head-right">
+          <span class="section-count">0 orders</span>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <div class="section-body-inner">
+          <div class="empty">
+            <span class="empty-num">0</span>
+            <div class="empty-text">
+              <span class="empty-title">No stop buy orders</span>
+              <span class="empty-sub">Nothing waiting above market right now.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         STOP SELL
+         ============================================================ -->
+    <div class="section">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="section-head-left">
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="section-title">Stop Sell Orders</span>
+        </div>
+        <div class="section-head-right">
+          <span class="section-summary">closest $0.06</span>
+          <span class="section-count">1 order</span>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <div class="section-body-inner">
+          <div class="order">
+            <div class="coin-icon">
+              <img src="https://assets.coingecko.com/coins/images/44/standard/xrp-symbol-white-128.png" alt="XRP"/>
+            </div>
+            <div class="order-top">
+              <span class="side-pill sell">SELL</span>
+              <span class="asset-name">XRP</span>
+              <span class="away-text down">
+                <span class="away-amt">$0.06</span><span class="away-suffix">above</span>
+              </span>
+              <button class="cancel-btn" aria-label="Cancel order">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="price-line">
+              <span class="label">Stop</span>
+              <span class="val">$2.13</span>
+              <span class="arrow">→</span>
+              <span class="label">Now</span>
+              <span class="val">$2.19</span>
+              <span class="qty">74,626.8657 XRP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

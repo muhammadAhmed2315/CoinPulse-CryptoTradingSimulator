@@ -125,6 +125,7 @@ export default function NewTradeCardRight({
       setCoinAmount("");
       setOrderPrice("");
       setBalancePercentage(undefined);
+      setTimelineMsg("");
     },
 
     onError: (e) => {

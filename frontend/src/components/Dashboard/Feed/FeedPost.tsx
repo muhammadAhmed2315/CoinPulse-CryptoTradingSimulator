@@ -110,6 +110,7 @@ export default function FeedPost({
               {transaction_type && (
                 <TradePill
                   side={transaction_type.toUpperCase() as "BUY" | "SELL"}
+                  type={order_type}
                 />
               )}
               <p

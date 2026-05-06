@@ -7,9 +7,10 @@ const pulseKeyframes = `
 
 type TradePillProps = {
   side: "BUY" | "SELL";
+  type: "MARKET" | "LIMIT" | "STOP";
 };
 
-export default function TradePill({ side }: TradePillProps) {
+export default function TradePill({ side, type }: TradePillProps) {
   const isBuy = side === "BUY";
 
   return (
@@ -24,7 +25,7 @@ export default function TradePill({ side }: TradePillProps) {
           className="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"
           style={{ animation: "pillPulse 2s ease-in-out infinite" }}
         />
-        {side}
+        {type} {side}
       </span>
     </>
   );

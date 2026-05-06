@@ -43,8 +43,12 @@ export function numToMoney(num: number, abs: boolean = false) {
 }
 
 // =====
-export function toTitleCase(word: string) {
-  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+export function toTitleCase(text: string) {
+  return text
+    .trim()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 }
 
 // =====

@@ -38,7 +38,7 @@ async function placeOrder(
     orderType: orderType.toLowerCase(),
     quantity: parseFloat(quantity),
     coin_id: coin_id,
-    price_per_unit: pricePerUnit,
+    price_per_unit: parseFloat(pricePerUnit),
     visibility: visibility,
     comment: comment,
   };
@@ -112,7 +112,9 @@ export default function NewTradeCardRight({
         orderType,
         coinAmount,
         currCoin.id,
-        coinDataQuery.data[0].current_price,
+        orderType === "MARKET"
+          ? coinDataQuery.data[0].current_price
+          : orderPrice,
         shareOnTimeline,
         timelineMsg,
       ),
@@ -408,7 +410,6 @@ export default function NewTradeCardRight({
       </div>
 
       {/* Share on timeline text area */}
-
       <Field data-invalid={invalidTimelineMsg} className="mb-4 gap-1">
         <Textarea
           className="bg-[#fafafa] w-full h-25 resize-none"
@@ -443,7 +444,9 @@ export default function NewTradeCardRight({
         ) : errorTimer > 0 ? (
           <>{(placeOrderMutation.error as any)?.error}</>
         ) : (
-          <>PLACE {orderSide} ORDER</>
+          <>
+            PLACE {orderType} {orderSide} ORDER
+          </>
         )}
         <RippleButtonRipples />
       </RippleButton>

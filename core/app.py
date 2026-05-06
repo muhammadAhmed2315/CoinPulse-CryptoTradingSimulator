@@ -1099,10 +1099,7 @@ def update_open_trades_in_background():
 def get_coins_data(coin_ids: str):
     try:
         url = "https://api.coingecko.com/api/v3/coins/markets"
-        params = {
-            "vs_currency": "usd",
-            "ids": coin_ids,
-        }
+        params = {"vs_currency": "usd", "ids": coin_ids, "precision": 2}
 
         response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
         data = response.json()
@@ -1251,10 +1248,16 @@ def get_open_trades():
         coins.add(transaction.coin_id)
 
     coins_data = get_coins_data(",".join(coins))
-    coins_data = {coin["id"]: coin["current_price"] for coin in coins_data}
+    coins_data = {
+        coin["id"]: [coin["current_price"], coin["image"], coin["symbol"], coin["name"]]
+        for coin in coins_data
+    }
 
     for coin in res:
-        coin["current_price"] = coins_data[coin["coin_id"]]
+        coin["current_price"] = coins_data[coin["coin_id"]][0]
+        coin["image"] = coins_data[coin["coin_id"]][1]
+        coin["ticker"] = coins_data[coin["coin_id"]][2]
+        coin["name"] = coins_data[coin["coin_id"]][3]
 
     return jsonify(res), 200
 
@@ -1275,16 +1278,38 @@ def cancel_open_trade():
     Returns:
         A JSON response indicating the success of the operation and HTTP status code 200.
     """
-    data = request.get_json()
-    transaction_id = data["transaction_id"]
+    try:
+        data = request.get_json(silent=True) or {}
+        transaction_id = data.get("transaction_id")
+        if not transaction_id:
+            return jsonify({"error": "Missing transaction_id"}), 400
 
-    transaction = Transaction.query.get(transaction_id)
-    transaction.cancel_open_order()
+        # Get the transaction object
+        transaction = Transaction.query.get(transaction_id)
+        if not transaction:
+            return jsonify({"error": "Order no longer exists"}), 404
 
-    db.session.add(transaction)
-    db.session.commit()
+        # Get the transaction owner's wallet id
+        user_id = get_jwt_identity()
+        wallet_id = Wallet.query.filter_by(owner_id=user_id).first().id
 
-    return jsonify({"success": "Transaction successfully cancelled"}), 200
+        # Verify that the transaction belongs to the user sending the request
+        if transaction.wallet_id != wallet_id:
+            return (
+                jsonify(
+                    {"error": "Transaction does not belong to the requesting user"}
+                ),
+                403,
+            )
+
+        # Else cancel the order and commit to the db
+        transaction.cancel_open_order()
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({"success": "Transaction successfully cancelled"}), 200
+    except Exception:
+        return jsonify({"error": "Transaction could not be cancelled"}), 500
 
 
 @core.route("/get_top_coins", methods=["POST"])

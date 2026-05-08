@@ -128,8 +128,8 @@ export default function PortfolioOverview() {
                           priceChange={c.priceChange24h}
                           fontSize="xs"
                         />
-                        <p className="text-xs text-gray-500 font-mono">
-                          {formatCoinAmount(c.amount)} {c.ticker.toUpperCase()}
+                        <p className="text-xs text-gray-500 font-mono uppercase">
+                          {formatCoinAmount(c.amount)} {c.ticker}
                         </p>
                       </div>
                     )}

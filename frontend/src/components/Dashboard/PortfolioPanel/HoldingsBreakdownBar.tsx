@@ -92,8 +92,8 @@ export default function HoldingsBreakdownBar({
               style={{ backgroundColor: coin.color }}
               className={`rounded-full size-2 transition-transform duration-200 ease-out ${hoveredId === coin.id ? "scale-125" : "scale-100"}`}
             />
-            <p className="text-[10px] font-mono text-current pt-0.5">
-              {coin.ticker.toUpperCase()} ({coin.percentage.toFixed(1)}%)
+            <p className="text-[10px] font-mono text-current pt-0.5 uppercase">
+              {coin.ticker} ({coin.percentage.toFixed(1)}%)
             </p>
           </div>
         ))}

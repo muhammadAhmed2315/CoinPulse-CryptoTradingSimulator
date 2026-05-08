@@ -8,7 +8,7 @@ import {
   AccordionPanel,
 } from "@/components/animate-ui/components/base/accordion";
 import CustomSkeleton from "@/components/CustomSkeleton";
-import { numToMoney, toTitleCase } from "@/utils";
+import { numToMoney } from "@/utils";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { Separator } from "@/components/ui/separator";
 import OpenOrderRow from "./OpenOrderRow";
@@ -125,8 +125,8 @@ export default function OpenPositions() {
                 {/* ===== TRIGGER ===== */}
                 <AccordionTrigger className="hover:no-underline cursor-pointer">
                   <div className="flex justify-between w-full">
-                    <span className="cursor-pointer font-bold text-[15px]">
-                      {toTitleCase(orders.id)} Orders
+                    <span className="cursor-pointer font-bold text-[15px] capitalize">
+                      {orders.id} Orders
                     </span>
                     <span className="font-mono text-[13px] text-[#71717a] pt-0.5">
                       {openOrdersByType[orders.id].length} ORDERS

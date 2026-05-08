@@ -35,7 +35,7 @@ export default function NewTradeCardLeft({
         <img src={currCoin.imgUrl} className="rounded-3xl size-12" />
         <div>
           <p className="font-bold text-xl">{currCoin.name}</p>
-          <p className="font-semibold">{currCoin.ticker.toUpperCase()}</p>
+          <p className="font-semibold uppercase">{currCoin.ticker}</p>
         </div>
       </div>
 
@@ -125,8 +125,8 @@ export default function NewTradeCardLeft({
       {/* User's current coin balance */}
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-xs text-gray-400 font-mono">
-            {currCoin.ticker.toUpperCase()} BALANCE
+          <p className="text-xs text-gray-400 font-mono uppercase">
+            {currCoin.ticker} BALANCE
           </p>
           {coinBalanceQuery.isLoading ? (
             <CustomSkeleton className="w-25 h-6" />

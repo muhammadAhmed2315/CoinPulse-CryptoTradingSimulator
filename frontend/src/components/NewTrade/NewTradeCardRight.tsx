@@ -364,8 +364,8 @@ export default function NewTradeCardRight({
       )}
 
       {/* Coin amount input */}
-      <p className="text-xs mb-2 text-gray-400 font-mono">
-        AMOUNT ({currCoin.ticker.toUpperCase()})
+      <p className="text-xs mb-2 text-gray-400 font-mono uppercase">
+        AMOUNT ({currCoin.ticker})
       </p>
       <Field
         data-invalid={

@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/card";
 import PlaceholderIcon from "@/assets/icons/placeholder.svg";
 import { Separator } from "@/components/ui/separator";
-import { formatRelativeOrAbsoluteDate, numToMoney, toTitleCase } from "@/utils";
+import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
 import BannerFlickerGrid from "./BannerFlickerGrid";
 import TradePill from "./TradePill";
 import LikeButton from "./LikeButton";
@@ -119,9 +119,8 @@ export default function FeedPost({
                 {transaction_type?.toUpperCase() === "BUY" ? "+" : "-"}
                 {quantity?.toFixed(4)}
               </p>
-              <p className="text-[#71717a] font-medium">
-                {coin_id && toTitleCase(coin_id)} @ $
-                {numToMoney(price_per_unit)}
+              <p className="text-[#71717a] font-medium capitalize">
+                {coin_id && coin_id} @ ${numToMoney(price_per_unit)}
               </p>
             </div>
             <p

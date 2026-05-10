@@ -541,7 +541,7 @@ def process_order():
         )
 
 
-@core.route("/get_wallet_history", methods=["POST"])
+@core.route("/get_wallet_history", methods=["GET"])
 @jwt_required()
 def get_wallet_history():
     """
@@ -557,15 +557,26 @@ def get_wallet_history():
         Exception: If any error occurs during the retrieval process.
     """
     try:
-        wallet_history = current_user.wallet.value_history
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        wallet_history = user.wallet.value_history
 
         res = {
-            "balance_history": wallet_history.balance_history,
-            "assets_value_history": wallet_history.assets_value_history,
-            "total_value_history": wallet_history.total_value_history,
-            "timestamps": wallet_history.timestamps,
+            "balance": [
+                [wallet_history.timestamps[i], wallet_history.balance_history[i]]
+                for i in range(len(wallet_history.timestamps))
+            ],
+            "assets": [
+                [wallet_history.timestamps[i], wallet_history.assets_value_history[i]]
+                for i in range(len(wallet_history.timestamps))
+            ],
+            "totalValue": [
+                [wallet_history.timestamps[i], wallet_history.total_value_history[i]]
+                for i in range(len(wallet_history.timestamps))
+            ],
         }
-        return jsonify({"success": "Data successfully retrieved", "data": res}), 200
+
+        return jsonify(res), 200
     except Exception as e:
         return (
             jsonify(

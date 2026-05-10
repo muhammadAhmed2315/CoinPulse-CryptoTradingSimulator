@@ -33,6 +33,15 @@ export function formatTime(seconds: number) {
 }
 
 // =====
+export function formatUnixToDayMonthYear(unixTimestamp: number) {
+  const date = new Date(unixTimestamp * 1000);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = date.toLocaleString("default", { month: "long" }).slice(0, 3);
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
+// =====
 export function numToMoney(num: number, abs: boolean = false) {
   const absolute = abs ? Math.abs(num) : num;
 

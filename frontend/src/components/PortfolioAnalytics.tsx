@@ -72,8 +72,6 @@ export default function PortfolioAnalytics() {
       }
     : {};
 
-  if (portfolioHistoryQuery.data) console.log(portfolioHistoryQuery.data);
-
   return (
     <div>
       <Card>

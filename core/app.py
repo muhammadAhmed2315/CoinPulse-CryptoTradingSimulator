@@ -122,7 +122,7 @@ def get_trades_info():
 
     Args:
         None. Expects JSON data in the request body with the following keys:
-        - page (int): The page number of the transactions to fetch.
+        - page (int): The page number of the transactions to fetch (1-indexed).
         - sort (str): The sorting criteria for the transactions.
 
     Returns:
@@ -135,54 +135,72 @@ def get_trades_info():
     Raises:
         KeyError: If the 'page' or 'sort' keys are not found in the request data.
     """
-    data = request.get_json()
-    page = data["page"]
-    sort = data["sort"]
+    try:
+        # Parse request body
+        data = request.get_json()
+        page = data["page"]
+        sort = data["sort"]
+        # filter = data["filter"]
 
-    transactions = current_user.wallet.transactions
+        # Get current user's transactions
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        transactions = user.wallet.transactions.all()
+        total_transactions = len(transactions)
 
-    # If the user has transactions, sort them based on the specified criteria and
-    # paginate the results
-    if transactions:
-        transactions = sort_transactions(transactions, sort)
-        maxPages = (len(transactions) // 25) + 1
-        transactions = transactions[(page - 1) * 25 : page * 25]
+        # If the user has transactions, sort them based on the specified criteria and
+        # paginate the results
+        if transactions:
+            transactions = sort_transactions(transactions, sort)
+            maxPages = (len(transactions) // 25) + 1
+            transactions = transactions[(page - 1) * 25 : page * 25]
 
-        res = []
+            # Filter the transactions
+            print(transactions[0])
 
-        # Extract the necessary data from each transaction
-        for transaction in transactions:
-            temp = {}
-            temp["orderType"] = transaction.orderType
-            temp["transactionType"] = transaction.transactionType
-            temp["id"] = transaction.id
-            temp["timestamp"] = transaction.timestamp
-            temp["coin_id"] = transaction.coin_id
-            temp["quantity"] = transaction.quantity
-            temp["price_per_unit"] = transaction.price_per_unit
-            temp["comment"] = transaction.comment
-            temp["status"] = transaction.status
-            temp["price_at_execution"] = transaction.price_per_unit_at_execution
-            res.append(temp)
+            res = []
 
+            # Extract the necessary data from each transaction
+            for transaction in transactions:
+                temp = {}
+                temp["orderType"] = transaction.orderType
+                temp["transactionType"] = transaction.transactionType
+                temp["id"] = transaction.id
+                temp["timestamp"] = transaction.timestamp
+                temp["coin_id"] = transaction.coin_id
+                temp["quantity"] = transaction.quantity
+                temp["price_per_unit"] = transaction.price_per_unit
+                temp["comment"] = transaction.comment
+                temp["status"] = transaction.status
+                temp["price_at_execution"] = transaction.price_per_unit_at_execution
+                res.append(temp)
+
+            return (
+                jsonify(
+                    {
+                        "data": res,
+                        "maxPages": maxPages,
+                        "totalItems": total_transactions,
+                    }
+                ),
+                200,
+            )
+        else:
+            return jsonify(
+                {
+                    "data": [],
+                    "maxPages": 0,
+                },
+                200,
+            )
+    except Exception as e:
         return (
             jsonify(
                 {
-                    "success": "Transaction history successfully fetched",
-                    "data": res,
-                    "maxPages": maxPages,
+                    "error": f"Failed to fetch trade history due to internal error: {str(e)}"
                 }
             ),
-            200,
-        )
-    else:
-        return jsonify(
-            {
-                "success": "Transaction history successfully fetched",
-                "data": [],
-                "maxPages": 0,
-            },
-            200,
+            500,
         )
 
 

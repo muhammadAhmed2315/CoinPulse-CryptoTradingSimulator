@@ -14,6 +14,7 @@ import { StockChart } from "@highcharts/react/Stock";
 import { AreaSeries } from "@highcharts/react/series/Area";
 import { formatUnixToDayMonthYear, numToMoney } from "@/utils";
 
+// ===== API FUNCTIONS =====
 async function fetchPortfolioHistory() {
   const response = await fetch("http://localhost:5000/get_wallet_history", {
     method: "get",
@@ -25,6 +26,7 @@ async function fetchPortfolioHistory() {
   return await response.json();
 }
 
+// ===== HELPER FUNCTIONS =====
 function findOHLC(values: [number, number][]) {
   if (values.length === 0) return {};
 
@@ -75,17 +77,21 @@ export default function PortfolioAnalytics() {
   return (
     <div>
       <Card>
+        {/* ===== HEADER ===== */}
         <CardHeader>
           <CardTitle className="flex flex-col gap-2 min-w-0">
+            {/* ===== TITLE ===== */}
             <p className="font-mono text-sm font-normal uppercase text-muted-foreground">
               Portfolio Analytics
             </p>
+            {/* ===== CURRENT VALUE ===== */}
             {portfolioHistoryQuery.data && (
               <p className="text-3xl font-bold tracking-tight">
                 £{numToMoney(portfolioHistoryQuery.data[activeChart].at(-1)[1])}
               </p>
             )}
           </CardTitle>
+          {/* ===== TABS ===== */}
           <CardAction>
             <Tabs
               defaultValue="totalValue"
@@ -204,9 +210,11 @@ export default function PortfolioAnalytics() {
           )}
         </CardContent>
 
+        {/* ===== OHLC STATS ===== */}
         <CardFooter className="flex flex-col p-0">
           <Separator className="bg-[#f0f0f0]" />
           <div className="grid grid-cols-4 w-full">
+            {/* ===== OPEN ===== */}
             <div className="flex flex-col gap-1 px-6 py-4">
               <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Open
@@ -219,6 +227,7 @@ export default function PortfolioAnalytics() {
               </span>
             </div>
 
+            {/* ===== HIGH ===== */}
             <div className="flex flex-col gap-1 px-6 py-4 border-l border-[#f0f0f0]">
               <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 High
@@ -231,6 +240,7 @@ export default function PortfolioAnalytics() {
               </span>
             </div>
 
+            {/* ===== LOW ===== */}
             <div className="flex flex-col gap-1 px-6 py-4 border-l border-[#f0f0f0]">
               <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Low
@@ -243,6 +253,7 @@ export default function PortfolioAnalytics() {
               </span>
             </div>
 
+            {/* ===== CLOSE ===== */}
             <div className="flex flex-col gap-1 px-6 py-4 border-l border-[#f0f0f0]">
               <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Close

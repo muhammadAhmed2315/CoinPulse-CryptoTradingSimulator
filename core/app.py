@@ -1,3 +1,4 @@
+import json
 import math
 import time
 from datetime import datetime
@@ -74,36 +75,52 @@ def top_coins():
     )
 
 
-@core.route("/my_trades")
+@core.route("/get_trade_filter_counts", methods=["GET"])
 @jwt_required()
-def my_trades():
-    """
-    Route to display the user's trade history page.
+def get_trade_filter_counts():
+    try:
+        # Get current user's transactions
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        transactions = user.wallet.transactions.all()
 
+        # If the user has transactions, get their counts by filter
+        if transactions:
+            # Count transactions by status
+            filterCounts = {
+                "all": len(transactions),
+                "open": sum(1 for t in transactions if t.status == "open"),
+                "finished": sum(1 for t in transactions if t.status == "finished"),
+                "cancelled": sum(1 for t in transactions if t.status == "cancelled"),
+            }
 
-    Since the CoinGecko API only updates coin prices every 45 seconds, this function
-    only triggers a background update of the user's wallet ValueHistory attribute if
-    the user has not visited the page within the last 45 seconds. If it has been more
-    than 45 seconds since the user's last visit, it triggers a background update of the
-    user's wallet ValueHistory attribute using the CoinGecko API. The last visit
-    timestamp is stored in the session and updated upon each visit.
-
-    Returns:
-        A rendered template of the "my-trades.html" page with the necessary context,
-        including the CoinGecko API key for front-end API calls.
-    """
-    # Since the CoinGecko API only updates coin prices every 45 seconds, only call the
-    # update wallet history function if this page was accessed 45 seconds or more ago
-    last_visit = session.get("my_trades_last_visited")
-    if last_visit is not None:
-        if int(time.time()) - last_visit >= 45:
-            update_user_wallet_value_in_background(current_user.wallet.id)
-    session["my_trades_last_visited"] = int(time.time())
-
-    return render_template(
-        "core/my-trades.html",
-        COINGECKO_API_KEY=COINGECKO_API_KEY,
-    )
+            return (
+                jsonify(filterCounts),
+                200,
+            )
+        else:
+            return jsonify(
+                {
+                    jsonify(
+                        {
+                            "all": 0,
+                            "open": 0,
+                            "finished": 0,
+                            "cancelled": 0,
+                        }
+                    )
+                },
+                200,
+            )
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": f"Failed to fetch trade counts by filters due to internal error: {str(e)}"
+                }
+            ),
+            500,
+        )
 
 
 @core.route("/get_trades_info", methods=["POST"])
@@ -120,10 +137,17 @@ def get_trades_info():
 
     The possible types of sorts are specified in the sort_transactions() function.
 
+    Since the CoinGecko API only updates coin prices every 45 seconds, this function
+    only triggers a background update of the user's wallet ValueHistory attribute if
+    the user has not visited the page within the last 45 seconds. If it has been more
+    than 45 seconds since the user's last visit, it triggers a background update of the
+    user's wallet ValueHistory attribute using the CoinGecko API. The last visit
+    timestamp is stored in the session and updated upon each visit.
+
     Args:
         None. Expects JSON data in the request body with the following keys:
         - page (int): The page number of the transactions to fetch (1-indexed).
-        - sort (str): The sorting criteria for the transactions.
+        - TODO: filter
 
     Returns:
         Response (JSON): A JSON object containing:
@@ -136,27 +160,37 @@ def get_trades_info():
         KeyError: If the 'page' or 'sort' keys are not found in the request data.
     """
     try:
+        # Get current user
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+
+        # Update last visit
+        last_visit = session.get("my_trades_last_visited")
+        if last_visit is not None:
+            if int(time.time()) - last_visit >= 45:
+                update_user_wallet_value_in_background(user.wallet.id)
+        session["my_trades_last_visited"] = int(time.time())
+
         # Parse request body
         data = request.get_json()
         page = data["page"]
-        sort = data["sort"]
-        # filter = data["filter"]
+        dataFilter = data["filter"]
 
         # Get current user's transactions
-        user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
         transactions = user.wallet.transactions.all()
-        total_transactions = len(transactions)
 
         # If the user has transactions, sort them based on the specified criteria and
         # paginate the results
         if transactions:
-            transactions = sort_transactions(transactions, sort)
-            maxPages = (len(transactions) // 25) + 1
-            transactions = transactions[(page - 1) * 25 : page * 25]
+            max_pages = (len(transactions) // 25) + 1
 
             # Filter the transactions
-            print(transactions[0])
+            if dataFilter != "all":
+                transactions = [
+                    trnsctn for trnsctn in transactions if trnsctn.status == dataFilter
+                ]
+
+            transactions = transactions[(page - 1) * 25 : page * 25]
 
             res = []
 
@@ -175,12 +209,20 @@ def get_trades_info():
                 temp["price_at_execution"] = transaction.price_per_unit_at_execution
                 res.append(temp)
 
+            all_coins = get_all_coin_names()
+            all_coins = json.loads(all_coins.get_data().decode("utf-8"))
+            all_coins_dict = {}
+            for coin in all_coins:
+                all_coins_dict[coin["id"]] = coin["symbol"]
+
+            for transaction in res:
+                transaction["ticker"] = all_coins_dict[transaction["coin_id"]]
+
             return (
                 jsonify(
                     {
                         "data": res,
-                        "maxPages": maxPages,
-                        "totalItems": total_transactions,
+                        "maxPages": max_pages,
                     }
                 ),
                 200,
@@ -202,78 +244,6 @@ def get_trades_info():
             ),
             500,
         )
-
-
-def sort_transactions(transactions, sort="timestamp_desc"):
-    """
-    Sorts a list of transactions based on the specified sorting criteria.
-
-    This function takes a list of transactions and sorts them according to the provided
-    `sort` argument. The sorting can be done on various transaction fields, such as
-    order type, transaction type, coin ID, quantity, price per unit, total value, and
-    timestamp. If no sorting argument is provided, it defaults to sorting by timestamp
-    in descending order.
-
-    Args:
-        transactions (list): A list of transaction objects to be sorted.
-        sort (str, optional): A string that specifies the sorting criteria.
-
-    Returns:
-        list: A sorted list of transactions based on the specified criteria.
-    """
-    match sort:
-        case "order_type_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.orderType)
-        case "order_type_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.orderType, reverse=True
-            )
-        case "transaction_type_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.transactionType)
-        case "transaction_type_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.transactionType, reverse=True
-            )
-        case "coin_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.coin_id)
-        case "coin_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.coin_id, reverse=True
-            )
-        case "quantity_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.quantity)
-        case "quantity_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.quantity, reverse=True
-            )
-        case "price_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.price_per_unit)
-        case "price_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.price_per_unit, reverse=True
-            )
-        case "timestamp_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.timestamp)
-        case "timestamp_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.timestamp, reverse=True
-            )
-        case "status_asc":
-            return sorted(transactions, key=lambda trnsctn: trnsctn.status)
-        case "status_desc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.status, reverse=True
-            )
-        case "price_at_execution_asc":
-            return sorted(
-                transactions, key=lambda trnsctn: trnsctn.price_per_unit_at_execution
-            )
-        case "price_at_execution_desc":
-            return sorted(
-                transactions,
-                key=lambda trnsctn: trnsctn.price_per_unit_at_execution,
-                reverse=True,
-            )
 
 
 @core.route("/get_feedposts", methods=["POST"])

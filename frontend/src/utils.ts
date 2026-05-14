@@ -18,7 +18,7 @@ export function formatRelativeOrAbsoluteDate(unixTimestamp: number) {
   const day = date.getDate();
   const month = date.toLocaleString("default", { month: "long" });
   const year = date.getFullYear();
-  return `${day} ${month}, ${year}`;
+  return `${day} ${month} ${year}`;
 }
 
 // =====
@@ -42,12 +42,12 @@ export function formatUnixToDayMonthYear(unixTimestamp: number) {
 }
 
 // =====
-export function numToMoney(num: number, abs: boolean = false) {
+export function numToMoney(num: number, abs: boolean = false, dp: number = 2) {
   const absolute = abs ? Math.abs(num) : num;
 
   return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: dp,
+    maximumFractionDigits: dp,
   }).format(absolute);
 }
 

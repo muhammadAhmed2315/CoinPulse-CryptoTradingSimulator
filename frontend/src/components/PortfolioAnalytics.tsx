@@ -35,19 +35,19 @@ function findOHLC(values: [number, number][]) {
 
   return {
     open: {
-      value: `£${numToMoney(values.at(0)![1])}`,
+      value: `$${numToMoney(values.at(0)![1])}`,
       timestamp: formatUnixToDayMonthYear(values.at(0)![0]),
     },
     high: {
-      value: `£${numToMoney(max[1])}`,
+      value: `$${numToMoney(max[1])}`,
       timestamp: formatUnixToDayMonthYear(max[0]),
     },
     low: {
-      value: `£${numToMoney(min[1])}`,
+      value: `$${numToMoney(min[1])}`,
       timestamp: formatUnixToDayMonthYear(min[0]),
     },
     close: {
-      value: `£${numToMoney(values.at(-1)![1])}`,
+      value: `$${numToMoney(values.at(-1)![1])}`,
       timestamp: formatUnixToDayMonthYear(values.at(-1)![0]),
     },
   };
@@ -87,7 +87,7 @@ export default function PortfolioAnalytics() {
             {/* ===== CURRENT VALUE ===== */}
             {portfolioHistoryQuery.data && (
               <p className="text-3xl font-bold tracking-tight">
-                £{numToMoney(portfolioHistoryQuery.data[activeChart].at(-1)[1])}
+                ${numToMoney(portfolioHistoryQuery.data[activeChart].at(-1)[1])}
               </p>
             )}
           </CardTitle>
@@ -163,7 +163,7 @@ export default function PortfolioAnalytics() {
                       "en-US",
                       { month: "short", day: "numeric", year: "numeric" },
                     );
-                    return `<div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${date}</div><b>£${numToMoney(this.y as number)}</b>`;
+                    return `<div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${date}</div><b>$${numToMoney(this.y as number)}</b>`;
                   },
                 },
               }}

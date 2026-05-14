@@ -232,7 +232,6 @@ export default function TradesTable() {
   });
 
   // ===== DERIVED STATE =====
-  const recordCount = tradeHistoryQuery.data?.totalItems;
   const maxPages = tradeHistoryQuery.data?.maxPages;
   const filterCounts = tradeFilterCountsQuery.data;
 

@@ -51,51 +51,62 @@ export default function CoinSortDropDown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <RippleButton variant="outline" className="cursor-pointer w-56">
+        <RippleButton
+          variant="outline"
+          className="cursor-pointer inline-flex! items-center! justify-start! gap-2.5! min-w-55 px-3.5! py-2.25! text-[13px]! font-medium! text-[#111]! bg-white! border! border-[#ececef]! rounded-lg! shadow-none! hover:border-[#71717a]!"
+        >
           <img
             src={
               sortBy === "market_cap_asc" || sortBy == "volume_asc"
                 ? UpArrowIcon
                 : DownArrowIcon
             }
-            className="size-6"
+            className="size-3 opacity-55"
           />
           {sortByMap[sortBy]}
           <RippleButtonRipples />
         </RippleButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={6}
+        className="min-w-60 p-1.5 rounded-[10px] border border-[#ececef] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
+      >
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Market Cap</DropdownMenuLabel>
+          <DropdownMenuLabel className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a] px-2.5 py-1">
+            Market Cap
+          </DropdownMenuLabel>
           <DropdownMenuItem
-            className="cursor-pointer pt-1 pb-1"
+            className={`cursor-pointer px-2.5 py-2 text-[13px] text-[#111] rounded-md focus:bg-[#f0f0f0] ${sortBy === "market_cap_asc" ? "bg-[#f7f7f8] font-semibold" : ""}`}
             onClick={handleCapAscClick}
           >
-            <img src={UpArrowIcon} className="size-6" />
+            <img src={UpArrowIcon} className="size-4 opacity-70" />
             Ascending
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="cursor-pointer pt-1 pb-1"
+            className={`cursor-pointer px-2.5 py-2 text-[13px] text-[#111] rounded-md focus:bg-[#f0f0f0] ${sortBy === "market_cap_desc" ? "bg-[#f7f7f8] font-semibold" : ""}`}
             onClick={handleCapDescClick}
           >
-            <img src={DownArrowIcon} className="size-6" />
+            <img src={DownArrowIcon} className="size-4 opacity-70" />
             Descending
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Volume</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-[#f0f0f0] my-1" />
+        <DropdownMenuLabel className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a] px-2.5 py-1">
+          Volume
+        </DropdownMenuLabel>
         <DropdownMenuItem
-          className="cursor-pointer pt-1 pb-1"
+          className={`cursor-pointer px-2.5 py-2 text-[13px] text-[#111] rounded-md focus:bg-[#f0f0f0] ${sortBy === "volume_asc" ? "bg-[#f7f7f8] font-semibold" : ""}`}
           onClick={handleVolAscClick}
         >
-          <img src={UpArrowIcon} className="size-6" />
+          <img src={UpArrowIcon} className="size-4 opacity-70" />
           Ascending
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer pt-1 pb-1"
+          className={`cursor-pointer px-2.5 py-2 text-[13px] text-[#111] rounded-md focus:bg-[#f0f0f0] ${sortBy === "volume_desc" ? "bg-[#f7f7f8] font-semibold" : ""}`}
           onClick={handleVolDescClick}
         >
-          <img src={DownArrowIcon} className="size-6" />
+          <img src={DownArrowIcon} className="size-4 opacity-70" />
           Descending
         </DropdownMenuItem>
       </DropdownMenuContent>

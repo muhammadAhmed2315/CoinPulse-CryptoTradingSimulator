@@ -84,10 +84,12 @@ export default function NavBar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild className="cursor-pointer text-lg">
               <NavLink to="/dashboard">
-                <div className="flex gap-1">
-                  <img src={HomeIcon} />
-                  <p>Home</p>
-                </div>
+                {({ isActive }) => (
+                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
+                    <img src={HomeIcon} />
+                    <p>Home</p>
+                  </div>
+                )}
               </NavLink>
             </NavigationMenuLink>
           </NavigationMenuItem>
@@ -95,10 +97,12 @@ export default function NavBar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild className="cursor-pointer text-lg">
               <NavLink to="/my_trades">
-                <div className="flex gap-1">
-                  <img src={BarChartIcon} />
-                  <p>My Trades</p>
-                </div>
+                {({ isActive }) => (
+                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
+                    <img src={BarChartIcon} />
+                    <p>My Trades</p>
+                  </div>
+                )}
               </NavLink>
             </NavigationMenuLink>
           </NavigationMenuItem>
@@ -106,10 +110,12 @@ export default function NavBar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild className="cursor-pointer text-lg">
               <NavLink to="/top_coins">
-                <div className="flex gap-1">
-                  <img src={LineChartAscendingIcon} />
-                  <p>Top Coins</p>
-                </div>
+                {({ isActive }) => (
+                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
+                    <img src={LineChartAscendingIcon} />
+                    <p>Top Coins</p>
+                  </div>
+                )}
               </NavLink>
             </NavigationMenuLink>
           </NavigationMenuItem>

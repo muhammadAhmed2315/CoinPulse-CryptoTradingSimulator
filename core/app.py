@@ -1504,8 +1504,9 @@ def get_trending_coins():
         return jsonify({"error": str(e)}), 500
 
 
-@core.route("/get_coin_OHLC_data", methods=["POST"])
-def get_coin_OHLC_data():
+@core.route("/get_coin_OHLC_data/<coin_id>", methods=["GET"])
+@jwt_required()
+def get_coin_OHLC_data(coin_id: str):
     """
     Fetch and return the Open, High, Low, and Close (OHLC) market data for a specified
     coin over the past year.
@@ -1517,9 +1518,6 @@ def get_coin_OHLC_data():
     Returns:
         Flask.Response: A JSON response containing the OHLC data for the specified coin.
     """
-    data = request.get_json()
-    coin_id = data["coin_id"]
-
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days=365"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)
@@ -1529,8 +1527,9 @@ def get_coin_OHLC_data():
     return data
 
 
-@core.route("/get_coin_historical_data", methods=["POST"])
-def get_coin_historical_data():
+@core.route("/get_coin_historical_data/<coin_id>", methods=["GET"])
+@jwt_required()
+def get_coin_historical_data(coin_id: str):
     """
     Fetch and return historical market data for a specified coin over the past year.
 
@@ -1541,9 +1540,6 @@ def get_coin_historical_data():
     Returns:
         Flask.Response: A JSON response containing the historical market data.
     """
-    data = request.get_json()
-    coin_id = data["coin_id"]
-
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
 
     response = requests.get(url, headers=COINGECKO_API_HEADERS)

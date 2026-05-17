@@ -762,7 +762,7 @@
           <div class="card-header">
             <div class="titles">
               <span class="eyebrow">Market Charts</span>
-              <h2>Bitcoin price history</h2>
+              <h2 id="chart-title">Bitcoin price history</h2>
             </div>
           </div>
           <div class="charts-head">
@@ -1064,8 +1064,17 @@
           },
         });
 
+        const TITLE_BY_TAB = {
+          OHLC: "Bitcoin OHLC chart",
+          Price: "Bitcoin price history",
+          "Market Cap": "Bitcoin market cap history",
+          Volume: "Bitcoin trading volume",
+        };
+
         function render() {
           const opts = baseOpts();
+          const titleEl = document.getElementById("chart-title");
+          if (titleEl) titleEl.textContent = TITLE_BY_TAB[currentTab] || "Bitcoin price history";
 
           if (currentTab === "OHLC") {
             opts.series = [

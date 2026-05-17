@@ -178,7 +178,6 @@ export default function CoinInfoCard({
             <SparklineGraph data={coinSparkline} width={600} />
           </>
         ) : (
-          // TODO: Set the height and width of this
           <CustomSkeleton />
         )}
       </div>

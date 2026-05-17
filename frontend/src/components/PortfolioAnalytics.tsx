@@ -10,9 +10,8 @@ import {
 import { Separator } from "./ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { StockChart } from "@highcharts/react/Stock";
-import { AreaSeries } from "@highcharts/react/series/Area";
 import { formatUnixToDayMonthYear, numToMoney } from "@/utils";
+import CustomAreaChart from "./CustomAreaChart";
 
 // ===== API FUNCTIONS =====
 async function fetchPortfolioHistory() {
@@ -117,96 +116,7 @@ export default function PortfolioAnalytics() {
         {/* ===== LINE CHART ===== */}
         <CardContent>
           {portfolioHistoryQuery.data && (
-            <StockChart
-              options={{
-                chart: { backgroundColor: "transparent" },
-                rangeSelector: {
-                  inputEnabled: false,
-                  buttonPosition: { align: "right" },
-                  buttonTheme: {
-                    fill: "transparent",
-                    stroke: "transparent",
-                    "stroke-width": 0,
-                    r: 6,
-                    style: { color: "#999999", fontWeight: "500" },
-                    states: {
-                      hover: { fill: "#f4f4f5", style: { color: "#171717" } },
-                      select: { fill: "#ffffff", style: { color: "#171717" } },
-                    },
-                  },
-                },
-                navigator: {
-                  outlineWidth: 0,
-                  maskFill: "rgba(17,17,17,0.06)",
-                  handles: { backgroundColor: "#ffffff", borderColor: "#111" },
-                  series: { color: "#111", lineWidth: 1.5, fillOpacity: 0.05 },
-                },
-                xAxis: {
-                  lineColor: "transparent",
-                  tickColor: "transparent",
-                  crosshair: { color: "#111", width: 2, dashStyle: "Solid" },
-                },
-                yAxis: { gridLineColor: "#f0f0f0" },
-                tooltip: {
-                  split: false,
-                  shared: false,
-                  useHTML: true,
-                  backgroundColor: "#111",
-                  borderColor: "transparent",
-                  borderRadius: 8,
-                  borderWidth: 0,
-                  shadow: false,
-                  style: { color: "#fff" },
-                  headerFormat: "",
-                  pointFormatter: function () {
-                    const date = new Date(this.x as number).toLocaleDateString(
-                      "en-US",
-                      { month: "short", day: "numeric", year: "numeric" },
-                    );
-                    return `<div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${date}</div><b>$${numToMoney(this.y as number)}</b>`;
-                  },
-                },
-              }}
-            >
-              <AreaSeries
-                data={portfolioHistoryQuery.data[activeChart].map(
-                  ([timestamp, val]: [number, number]) => [
-                    timestamp * 1000,
-                    val,
-                  ],
-                )}
-                options={{
-                  lineColor: "#111",
-                  lineWidth: 2,
-                  color: "#111",
-                  fillColor: {
-                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                    stops: [
-                      [0, "rgba(0,0,0,0.12)"],
-                      [1, "rgba(0,0,0,0.01)"],
-                    ],
-                  },
-                  threshold: null,
-                  marker: {
-                    fillColor: "#111",
-                    lineColor: "#111",
-                    states: {
-                      hover: {
-                        enabled: true,
-                        fillColor: "#111",
-                        lineColor: "#fff",
-                        lineWidth: 2,
-                        radius: 5,
-                        radiusPlus: 0,
-                      },
-                    },
-                  },
-                  states: {
-                    hover: { halo: { size: 6, opacity: 0.15 } },
-                  },
-                }}
-              />
-            </StockChart>
+            <CustomAreaChart data={portfolioHistoryQuery.data[activeChart]} />
           )}
         </CardContent>
 

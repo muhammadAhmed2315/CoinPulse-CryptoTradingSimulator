@@ -4,16 +4,13 @@ import { Card } from "../ui/card";
 import { loadAllCoinsList, type Coin } from "@/loadAllCoinsList";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
-import BitcoinLogo from "../../assets/logos/bitcoin.png";
 import CustomSkeleton from "../CustomSkeleton";
 import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+type CoinInfoCardProps = {
+  currCoin: Coin;
+  setCurrCoin: React.Dispatch<React.SetStateAction<Coin>>;
+};
 
 // ===== API FUNCTIONS =====
 async function getDetailedCoinData(coin_id: string) {
@@ -44,15 +41,12 @@ async function getCoinSparkline(coin_id: string) {
   return await response.json();
 }
 
-export default function CoinInfoCard() {
+export default function CoinInfoCard({
+  currCoin,
+  setCurrCoin,
+}: CoinInfoCardProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query.toLowerCase(), 300);
-  const [currCoin, setCurrCoin] = useState<Coin>({
-    id: "bitcoin",
-    name: "Bitcoin",
-    ticker: "btc",
-    imgUrl: BitcoinLogo,
-  });
 
   // ===== REACT QUERY HOOKS =====
   const allCoinsQuery = useQuery({
@@ -193,7 +187,7 @@ export default function CoinInfoCard() {
       <div>
         {coinData ? (
           <>
-            <div className="px-6 py-3.5 bg-zinc-50 border-b border-[#f0f0f0]">
+            <div className="px-6 pt-3.5 pb-2.5 bg-zinc-50 border-y border-[#f0f0f0]">
               <span className="text-[13px] font-bold tracking-[-0.005em]">
                 Market Data
               </span>
@@ -260,7 +254,7 @@ export default function CoinInfoCard() {
 
       {/* ===== ATL/ATH BAR ===== */}
       {coinData ? (
-        <div className="px-6 pt-[18px] pb-10 border-t border-[#f0f0f0]">
+        <div className="px-6 pt-[18px] pb-8 border-t border-[#f0f0f0]">
           <div className="flex w-full justify-between gap-3 mb-3.5">
             <div className="flex flex-col gap-[3px]">
               <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
@@ -304,19 +298,15 @@ export default function CoinInfoCard() {
           <div className="flex relative items-center w-full h-1.5 rounded-full bg-linear-to-r from-red-50 via-zinc-50 to-emerald-50 mt-[18px] mb-2">
             <div className="absolute inset-0 rounded-full bg-linear-to-r from-red-500 via-zinc-400 to-emerald-500 opacity-35"></div>
 
-            <TooltipProvider>
-              <Tooltip open={true}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="absolute h-3.5 w-3.5 rounded-full bg-[#111111] border-[3px] border-white shadow-[0_0_0_1px_#ececef,0_1px_2px_rgba(0,0,0,0.12)] -translate-x-1/2"
-                    style={{ left: `${allTimePercentage}%` }}
-                  ></div>
-                </TooltipTrigger>
-                <TooltipContent side={"bottom"}>
-                  <p>${numToMoney(coinData.current_price.toFixed(2))}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div
+              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
+              style={{ left: `${allTimePercentage}%` }}
+            >
+              <div className="h-3.5 w-3.5 rounded-full bg-[#111111] border-[3px] border-white shadow-[0_0_0_1px_#ececef,0_1px_2px_rgba(0,0,0,0.12)]"></div>
+              <span className="absolute top-[calc(100%+8px)] font-mono text-[10px] font-semibold tracking-[0.04em] text-white bg-[#111111] px-1.5 py-[3px] rounded-[5px] whitespace-nowrap before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-[#111111]">
+                ${numToMoney(coinData.current_price.toFixed(2))}
+              </span>
+            </div>
           </div>
         </div>
       ) : (

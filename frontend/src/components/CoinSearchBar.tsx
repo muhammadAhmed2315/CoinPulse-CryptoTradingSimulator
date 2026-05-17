@@ -1,5 +1,8 @@
 import type { Coin } from "@/loadAllCoinsList";
 import { useCallback, useState } from "react";
+import { Field, FieldDescription, FieldLabel } from "./ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+import { SearchIcon } from "lucide-react";
 
 type CoinSearchBarProps = {
   coins: Coin[];
@@ -38,12 +41,19 @@ export default function CoinSearchBar({
 
   return (
     <div className="relative flex flex-col gap-1">
-      <input
-        className="bg-white rounded-md border border-black p-3"
-        placeholder="Search for coins..."
-        value={query}
-        onChange={handleSearchInput}
-      ></input>
+      <Field className="max-w-sm">
+        <InputGroup>
+          <InputGroupInput
+            placeholder="Search..."
+            value={query}
+            onChange={handleSearchInput}
+          />
+          <InputGroupAddon align="inline-start">
+            <SearchIcon className="text-muted-foreground" />
+          </InputGroupAddon>
+        </InputGroup>
+      </Field>
+
       <div className="absolute top-full left-0 w-full z-10 bg-white">
         {showDropdown &&
           matchingCoins.slice(0, 10).map((c) => (

@@ -122,10 +122,14 @@ export default function NavBar() {
 
           <NavigationMenuItem>
             <NavigationMenuLink className="cursor-pointer text-lg">
-              <div className="flex gap-1">
-                <img src={InfoIcon} />
-                <p>Coin Info</p>
-              </div>
+              <NavLink to="/coin_info">
+                {({ isActive }) => (
+                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
+                    <img src={InfoIcon} />
+                    <p>Coin Info</p>
+                  </div>
+                )}
+              </NavLink>
             </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>

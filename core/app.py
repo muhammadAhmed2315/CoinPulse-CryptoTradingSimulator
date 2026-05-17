@@ -1376,11 +1376,12 @@ def get_coin_data(coin_id: str):
         "vs_currency": "usd",
         "ids": coin_id,
         "price_change_percentage": "24h",
+        "precision": 5,
     }
 
     response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
     data = response.json()
-    data = jsonify(data)
+    data = jsonify(data[0])
 
     return data
 
@@ -1388,7 +1389,11 @@ def get_coin_data(coin_id: str):
 @core.route("/get_coin_sparkline/<coin_id>", methods=["GET"])
 def get_coin_sparkline(coin_id: str):
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
-    params = {"vs_currency": "usd", "days": "1", "interval": "hourly"}
+    params = {
+        "vs_currency": "usd",
+        "days": "7",
+        "interval": "hourly",
+    }
 
     response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
     data = response.json()

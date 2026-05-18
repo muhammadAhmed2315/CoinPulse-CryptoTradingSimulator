@@ -233,7 +233,6 @@ class RedditScraper:
 
         for post in res["data"]["children"]:
             post = post["data"]
-            print(post)
             posts.append(
                 RedditPost(
                     title=post["title"],

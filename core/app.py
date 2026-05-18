@@ -359,10 +359,8 @@ def update_likes():
 
         # Increment or decrement the number of likes for the transaction
         if is_increment:
-            print("Adding a like")
             transaction.add_like(current_user.id)
         else:
-            print("Removing a like")
             transaction.remove_like(current_user.id)
 
         # Save the updated transaction to the database

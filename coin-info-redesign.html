@@ -555,6 +555,32 @@
         background: var(--bg-soft);
         border: 1px solid var(--border-2);
         flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .thumb.no-image {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: var(--bg-soft);
+        padding: 8px;
+      }
+      .thumb.no-image .no-image-icon {
+        width: 26px;
+        height: 26px;
+        color: var(--muted-2);
+      }
+      .thumb.no-image .no-image-caption {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-align: center;
+        line-height: 1.1;
       }
       .item-body { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
       .item-meta {
@@ -908,7 +934,15 @@
             </article>
 
             <article class="feed-item">
-              <div class="thumb"></div>
+              <div class="thumb no-image">
+                <svg class="no-image-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="5" width="18" height="14" rx="2.5" />
+                  <circle cx="9" cy="10" r="1.4" />
+                  <path d="M21 16l-4.5-4.5a2 2 0 0 0-2.8 0L4 21" />
+                  <line x1="3" y1="3" x2="21" y2="21" />
+                </svg>
+                <span class="no-image-caption">No Image</span>
+              </div>
               <div class="item-body">
                 <div class="item-meta">
                   <span>r/Bitcoin</span>

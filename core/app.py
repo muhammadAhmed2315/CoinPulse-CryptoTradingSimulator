@@ -736,36 +736,42 @@ def get_reddit_posts():
               comment count, id, url, fullname, and a human-readable timestamp
               indicating how long ago the post was made.
     """
-    data = request.get_json()
-    query = data["query"]
-    after = data["after"]
+    try:
+        data = request.get_json()
+        query = data["query"]
+        after = data["after"]
 
-    # Create a RedditScraper object
-    scraper = RedditScraper()
+        print(query)
+        print(after)
 
-    # Search for Reddit posts
-    posts = scraper.search_keyword_in_reddit(
-        sort="relevance", keyword=query, time="week", limit=10, after=after
-    )
+        # Create a RedditScraper object
+        scraper = RedditScraper()
 
-    res = []
+        # Search for Reddit posts
+        posts = scraper.search_keyword_in_reddit(
+            sort="relevance", keyword=query, time="week", limit=10, after=after
+        )
 
-    # Extract the necessary data from each post
-    for post in posts:
-        temp = {}
-        temp["title"] = post.title
-        temp["thumbnail"] = post.thumbnail if post.thumbnail != "self" else ""
-        temp["content"] = post.content
-        temp["subreddit"] = post.subreddit
-        temp["score"] = post.score
-        temp["comment_count"] = post.comment_count
-        temp["id"] = post.id
-        temp["url"] = post.url
-        temp["fullname"] = post.fullname
-        temp["timestamp"] = time_ago(post.timestamp)
-        res.append(temp)
+        res = []
 
-    return jsonify({"success": "Reddit posts successfully fetched", "posts": res}, 200)
+        # Extract the necessary data from each post
+        for post in posts:
+            temp = {}
+            temp["title"] = post.title
+            temp["thumbnail"] = post.thumbnail if post.thumbnail != "self" else ""
+            temp["content"] = post.content
+            temp["subreddit"] = post.subreddit
+            temp["score"] = post.score
+            temp["comment_count"] = post.comment_count
+            temp["id"] = post.id
+            temp["url"] = post.url
+            temp["fullname"] = post.fullname
+            temp["timestamp"] = time_ago(post.timestamp)
+            res.append(temp)
+
+        return jsonify(res), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch Reddit posts: {str(e)}"}), 500
 
 
 def time_ago(unix_timestamp):

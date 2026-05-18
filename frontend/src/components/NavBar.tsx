@@ -121,7 +121,7 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink className="cursor-pointer text-lg">
+            <NavigationMenuLink asChild className="cursor-pointer text-lg">
               <NavLink to="/coin_info">
                 {({ isActive }) => (
                   <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>

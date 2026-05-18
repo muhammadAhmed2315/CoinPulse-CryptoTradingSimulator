@@ -30,7 +30,7 @@ export default function CoinInfo() {
       </div>
       <div className="flex w-full gap-4">
         <NewsFeedCard />
-        <RedditFeedCard />
+        <RedditFeedCard coinName={currCoin.name} />
       </div>
     </div>
   );

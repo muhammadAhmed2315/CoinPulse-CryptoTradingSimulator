@@ -1,3 +1,69 @@
+# ---- Secrets / env ----
 .env
-.venv
+.env.*
+!.env.example
+
+# ---- Python ----
+__pycache__/
 **/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Flask
+instance/
+.webassets-cache
+
+# ---- Node / Frontend ----
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ---- Editors / OS ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ---- Claude Code ----
+.claude/settings.local.json
+.claude/worktrees/
+
+# ---- Project-specific scratch ----
+bruh.json
+*-redesign.html

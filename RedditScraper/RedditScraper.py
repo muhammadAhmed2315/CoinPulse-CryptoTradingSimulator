@@ -2,8 +2,13 @@ from typing import List
 
 import requests
 
-from constants import (REDDIT_CLIENT_ID, REDDIT_PASSWORD, REDDIT_SECRET_KEY,
-                       REDDIT_USER_AGENT, REDDIT_USERNAME)
+from constants import (
+    REDDIT_CLIENT_ID,
+    REDDIT_PASSWORD,
+    REDDIT_SECRET_KEY,
+    REDDIT_USER_AGENT,
+    REDDIT_USERNAME,
+)
 
 from .RedditComment import RedditComment
 from .RedditPost import RedditPost
@@ -228,10 +233,11 @@ class RedditScraper:
 
         for post in res["data"]["children"]:
             post = post["data"]
+            print(post)
             posts.append(
                 RedditPost(
                     title=post["title"],
-                    thumbnail=post["thumbnail"],
+                    thumbnail=post["thumbnail"].replace("&amp;", "&"),
                     content=post["selftext"],
                     subreddit=post["subreddit_name_prefixed"],
                     score=post["ups"],

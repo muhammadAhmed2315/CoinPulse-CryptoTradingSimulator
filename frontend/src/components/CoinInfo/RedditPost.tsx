@@ -1,11 +1,11 @@
-import type { RedditPost } from "./RedditFeedCard";
+import type { RedditPost } from "./RedditFeed";
 
 // ===== TYPES AND INTERFACES =====
-type RedditPostCardType = {
+type RedditPostProps = {
   post: RedditPost;
 };
 
-export default function RedditPostCard({ post }: RedditPostCardType) {
+export default function RedditPost({ post }: RedditPostProps) {
   return (
     <div className="border-b border-[#f0f0f0] last:border-b-0">
       <a
@@ -32,7 +32,7 @@ export default function RedditPostCard({ post }: RedditPostCardType) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-[26px] h-[26px] text-[#a0a0a0]"
+                className="w-6.5 h-6.5 text-[#a0a0a0]"
               >
                 <rect x="3" y="5" width="18" height="14" rx="2.5" />
                 <circle cx="9" cy="10" r="1.4" />

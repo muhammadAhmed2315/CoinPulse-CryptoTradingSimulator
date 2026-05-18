@@ -1,7 +1,7 @@
 import CoinInfoCard from "@/components/CoinInfo/CoinInfoCard";
 import MarketChartsCard from "@/components/CoinInfo/MarketChartsCard";
 import NewsFeedCard from "@/components/CoinInfo/NewsFeedCard";
-import RedditFeedCard from "@/components/CoinInfo/RedditFeedCard";
+import RedditFeedCard from "@/components/CoinInfo/RedditFeed";
 
 import BitcoinLogo from "../assets/logos/bitcoin.png";
 import { useState } from "react";

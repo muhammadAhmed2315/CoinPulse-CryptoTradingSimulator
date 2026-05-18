@@ -44,6 +44,7 @@ class YahooNewsScaper:
         ynews_page = requests.get(url).text
         doc = BeautifulSoup(ynews_page, "html.parser")
         news_articles = doc.find_all("div", class_="dd NewsArticle")
+        print(news_articles)
 
         # Convert all articles into NewsArticle objects
         articles = []

@@ -1,11 +1,11 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { Card } from "../ui/card";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
-import RedditPostCard from "./RedditPostCard";
+import RedditPost from "./RedditPost";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 // ===== TYPES =====
-type RedditFeedCardProps = {
+type RedditFeedProps = {
   coinName: string;
 };
 
@@ -40,21 +40,17 @@ async function getRedditPosts(coinName: string, after: string) {
   return await response.json();
 }
 
-export default function RedditFeedCard({ coinName }: RedditFeedCardProps) {
+export default function RedditFeed({ coinName }: RedditFeedProps) {
   // ===== REACTQUERY HOOKS =====
   const redditPostsQuery = useInfiniteQuery({
     queryKey: ["reddit-posts", coinName],
     queryFn: ({ pageParam }) => getRedditPosts(coinName, pageParam),
     getNextPageParam: (lastPage) => {
-      console.log("LAST PAGE");
-      console.log(lastPage.at(-1));
-      console.log("LAST PAGE");
       return lastPage.length > 0 ? lastPage.at(-1)!.fullname : undefined;
     },
     initialPageParam: "",
   });
 
-  if (redditPostsQuery.data) console.log(redditPostsQuery.data);
   // ===== DERIVED STATE =====
   const numPosts = redditPostsQuery.data
     ? redditPostsQuery.data.pages.flatMap((page) => page).length
@@ -89,7 +85,7 @@ export default function RedditFeedCard({ coinName }: RedditFeedCardProps) {
         className="flex flex-col pb-8"
       >
         {redditPostsQuery.data?.pages.map((page) =>
-          page.map((pg) => <RedditPostCard post={pg} />),
+          page.map((pg) => <RedditPost key={pg.fullname} post={pg} />),
         )}
         {redditPostsQuery.isFetching && (
           <div className="pt-4 w-full flex justify-center">

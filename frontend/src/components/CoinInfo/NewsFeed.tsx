@@ -53,7 +53,9 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
 
   return (
     <Card className="flex-1 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] p-0 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+      {/* ===== HEADER ===== */}
       <div className="flex items-end justify-between gap-4 border-b border-[#f0f0f0] px-6 pt-5.5 pb-4.5">
+        {/* ===== TITLE ===== */}
         <div className="flex flex-col gap-2">
           <p className="font-mono text-[11px] leading-none font-semibold tracking-[0.06em] text-[#71717a] uppercase">
             NEWS
@@ -62,11 +64,13 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
             Recent {coinName} News
           </p>
         </div>
+        {/* ===== RESULTS COUNT ===== */}
         <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
           {numPosts} RESULTS
         </p>
       </div>
 
+      {/* ===== ARTICLES LIST ===== */}
       <InfiniteScroll
         dataLength={newsArticlesQuery.data?.pages.length || 0}
         next={newsArticlesQuery.fetchNextPage}

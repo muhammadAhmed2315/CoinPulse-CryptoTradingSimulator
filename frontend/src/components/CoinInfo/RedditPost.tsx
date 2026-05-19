@@ -15,6 +15,7 @@ export default function RedditPost({ post }: RedditPostProps) {
         target="_blank"
       >
         <div className="flex gap-3.5 px-6 py-4.5 hover:bg-[#fafafa]">
+          {/* ===== THUMBNAIL ===== */}
           {post.thumbnail !== "" &&
           post.thumbnail !== "default" &&
           post.thumbnail !== "image" ? (
@@ -45,7 +46,9 @@ export default function RedditPost({ post }: RedditPostProps) {
             </div>
           )}
 
+          {/* ===== BODY ===== */}
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            {/* ===== META ===== */}
             <div className="flex items-center gap-2.5 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
               <span>{post.subreddit}</span>
               <span className="inline-block size-0.75 shrink-0 overflow-hidden rounded-full bg-[#a0a0a0] text-transparent">
@@ -54,12 +57,14 @@ export default function RedditPost({ post }: RedditPostProps) {
               <span>{post.timestamp}</span>
             </div>
 
+            {/* ===== TITLE ===== */}
             <div>
               <p className="line-clamp-2 text-[14px] leading-[1.4] font-semibold text-[#111111]">
                 {post.title}
               </p>
             </div>
 
+            {/* ===== STATS ===== */}
             <div className="mt-0.5 flex items-center gap-2.5 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#a0a0a0] uppercase">
               <p>{post.score} votes</p>
               <span className="inline-block size-0.75 shrink-0 overflow-hidden rounded-full bg-[#a0a0a0] text-transparent">

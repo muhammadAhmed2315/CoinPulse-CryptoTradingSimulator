@@ -1,5 +1,6 @@
 import type { NewsArticle } from "./NewsFeed";
 
+// ===== TYPES AND INTERFACES =====
 type NewsItemProps = {
   post: NewsArticle;
 };
@@ -14,6 +15,7 @@ export default function NewsItem({ post }: NewsItemProps) {
         target="_blank"
       >
         <div className="flex gap-3.5 px-6 py-4.5 hover:bg-[#fafafa]">
+          {/* ===== THUMBNAIL ===== */}
           {post.image_url ? (
             <img
               src={post.image_url}
@@ -42,7 +44,9 @@ export default function NewsItem({ post }: NewsItemProps) {
             </div>
           )}
 
+          {/* ===== BODY ===== */}
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            {/* ===== META ===== */}
             <div className="flex items-center gap-2.5 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
               <span>{post.source_name}</span>
               <span className="inline-block size-0.75 shrink-0 overflow-hidden rounded-full bg-[#a0a0a0] text-transparent">
@@ -53,16 +57,19 @@ export default function NewsItem({ post }: NewsItemProps) {
               </span>
             </div>
 
+            {/* ===== TITLE ===== */}
             <div>
               <p className="line-clamp-2 text-[14px] leading-[1.4] font-semibold text-[#111111]">
                 {post.title}
               </p>
             </div>
 
+            {/* ===== DESCRIPTION ===== */}
             <p className="line-clamp-2 text-[12px] leading-[1.45] text-[#71717a]">
               {post.description}
             </p>
 
+            {/* ===== SOURCE LINK ===== */}
             <span className="mt-0.5 font-mono text-[11px] font-medium text-[#71717a] w-fit hover:underline">
               Go to {post.source_name} →
             </span>

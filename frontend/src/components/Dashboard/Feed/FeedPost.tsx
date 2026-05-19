@@ -4,10 +4,10 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import PlaceholderIcon from "@/assets/icons/placeholder.svg";
 import { Separator } from "@/components/ui/separator";
 import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
 import BannerFlickerGrid from "./BannerFlickerGrid";
+import ProfileAvatar from "./ProfileAvatar";
 import TradePill from "./TradePill";
 import LikeButton from "./LikeButton";
 import { useState } from "react";
@@ -86,7 +86,7 @@ export default function FeedPost({
       {/* ===== HEADER ===== */}
       <CardHeader className="p-0">
         <div className="flex gap-4 items-center">
-          <img src={PlaceholderIcon} className="size-15" />
+          <ProfileAvatar letter={username} />
           <div>
             <b>{username}</b>
             <p className="text-[#b4b4b4] font-mono">

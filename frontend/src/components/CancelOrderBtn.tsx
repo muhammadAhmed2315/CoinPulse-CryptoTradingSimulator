@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+// ===== TYPES =====
 type CancelOrderBtnProps = {
   transaction_id: string;
   refetch: (
@@ -13,6 +14,7 @@ type CancelOrderBtnProps = {
   ) => Promise<QueryObserverResult<unknown, Error>>;
 };
 
+// ===== API FUNCTIONS =====
 async function cancelOpenOrder(transaction_id: string) {
   const response = await fetch("http://localhost:5000/cancel_open_trade", {
     method: "post",
@@ -60,14 +62,17 @@ export default function CancelOrderBtn({
   return (
     <>
       {successTimer > 0 ? (
+        /* ===== SUCCESS STATE ===== */
         <span className="bg-[#10b981] font-semibold pt-1 px-2 text-[11px] rounded-[6px] text-white">
           Cancelled!
         </span>
       ) : errorTimer > 0 ? (
+        /* ===== ERROR STATE ===== */
         <span className="bg-[#f43f5e] font-semibold pt-1 px-2 text-[11px] rounded-[6px] text-white">
           Error!
         </span>
       ) : (
+        /* ===== CANCEL BUTTON ===== */
         <div
           className="cursor-pointer size-5.5 border flex items-center justify-center border-[#ececef] rounded-[6px] hover:border-[#71717a]"
           onClick={() => cancelOpenTradeMutation.mutate(transaction_id)}

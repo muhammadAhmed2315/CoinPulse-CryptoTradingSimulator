@@ -37,7 +37,7 @@ async function getRedditPosts(coinName: string, after: string) {
 }
 
 export default function RedditFeed({ coinName }: RedditFeedProps) {
-  // ===== REACTQUERY HOOKS =====
+  // ===== REACT QUERY HOOKS =====
   const redditPostsQuery = useInfiniteQuery({
     queryKey: ["reddit-posts", coinName],
     queryFn: ({ pageParam }) => getRedditPosts(coinName, pageParam),

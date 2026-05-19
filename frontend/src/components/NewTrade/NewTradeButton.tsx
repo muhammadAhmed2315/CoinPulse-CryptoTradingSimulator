@@ -13,6 +13,7 @@ import {
 import NewTradeCard from "./NewTradeCard";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
+// ===== TYPES =====
 type NewTradeButtonProps = {
   /** Used to prefetch a list of all the coins in the format Coin[]  */
   prefetchFn: () => Promise<void>;
@@ -24,7 +25,7 @@ type NewTradeButtonProps = {
 export default function NewTradeButton({ prefetchFn }: NewTradeButtonProps) {
   return (
     <Dialog>
-      {/* ===== "New Trade" Button ===== */}
+      {/* ===== TRIGGER BUTTON ===== */}
       <DialogTrigger asChild>
         <RippleButton
           className="cursor-pointer text-xl bg-emerald-500 hover:bg-emerald-600 border-0"
@@ -35,7 +36,7 @@ export default function NewTradeButton({ prefetchFn }: NewTradeButtonProps) {
         </RippleButton>
       </DialogTrigger>
 
-      {/* ===== Content to show when button is clicked ===== */}
+      {/* ===== DIALOG CONTENT ===== */}
       <DialogContent
         className="min-w-200 flex border-0 p-0"
         aria-describedby={undefined}

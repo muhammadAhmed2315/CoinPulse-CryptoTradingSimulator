@@ -25,6 +25,7 @@ import { loadAllCoinsList } from "@/loadAllCoinsList";
 import CustomSkeleton from "./CustomSkeleton";
 import { numToMoney } from "@/utils";
 
+// ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
   const response = await fetch(
     "http://localhost:5000/get_wallet_total_current_value",
@@ -45,7 +46,7 @@ export default function NavBar() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // ===== REACTQUERY HOOKS =====
+  // ===== REACT QUERY HOOKS =====
   const prefetchAllCoinsList = async () => {
     await queryClient.prefetchQuery({
       queryKey: ["all-coins-list"],
@@ -72,6 +73,7 @@ export default function NavBar() {
 
   return (
     <div className="flex justify-between items-center text-lg p-6 mr-4 ml-4">
+      {/* ===== PORTFOLIO VALUE ===== */}
       {portfolioTotalValueQuery.isLoading && (
         <CustomSkeleton className="h-8 w-60" />
       )}
@@ -79,6 +81,7 @@ export default function NavBar() {
         <h1>Portfolio Value: ${numToMoney(portfolioTotalValueQuery.data)}</h1>
       )}
 
+      {/* ===== NAVIGATION LINKS ===== */}
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -135,7 +138,9 @@ export default function NavBar() {
         </NavigationMenuList>
       </NavigationMenu>
 
+      {/* ===== USER MENU & NEW TRADE ===== */}
       <div className="flex gap-4 items-center">
+        {/* ===== USER DROPDOWN ===== */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex gap-2 items-center cursor-pointer outline-none">
             <img src={PlaceHolderIcon} className="size-11.25" />
@@ -151,6 +156,7 @@ export default function NavBar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* ===== NEW TRADE BUTTON ===== */}
         <NewTradeButton prefetchFn={prefetchAllCoinsList} />
       </div>
     </div>

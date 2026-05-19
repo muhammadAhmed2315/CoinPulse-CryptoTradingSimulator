@@ -26,6 +26,7 @@ import { Spinner } from "../ui/spinner";
 import NewPassword from "./NewPassword";
 import NewUsername from "./NewUsername";
 
+// ===== API FUNCTIONS =====
 async function createAccountFunction(data: {
   email: string;
   username: string;
@@ -45,6 +46,7 @@ async function createAccountFunction(data: {
 }
 
 export default function CreateAccount() {
+  // ===== STATE VARIABLES =====
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -58,6 +60,7 @@ export default function CreateAccount() {
   );
   const navigate = useNavigate();
 
+  // ===== REACT QUERY HOOKS =====
   const createAccountMutation = useMutation({
     mutationFn: (data: {
       email: string;
@@ -76,6 +79,7 @@ export default function CreateAccount() {
     },
   });
 
+  // ===== EVENT HANDLERS =====
   function handleCreateAccount() {
     if (!validateEmail(email)) {
       setError([
@@ -120,11 +124,13 @@ export default function CreateAccount() {
 
   return (
     <Card className="w-96">
+      {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
         <CardTitle>Create an account</CardTitle>
         <CardDescription>Join us. It only takes a moment.</CardDescription>
       </CardHeader>
       <CardContent>
+        {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
           <Input
@@ -136,10 +142,13 @@ export default function CreateAccount() {
           />
         </Field>
         <br />
+        {/* ===== USERNAME FIELD ===== */}
         <NewUsername username={username} setUsername={setUsername} />
         <br />
+        {/* ===== PASSWORD FIELD ===== */}
         <NewPassword password={password} setPassword={setPassword} />
         <br />
+        {/* ===== CONFIRM PASSWORD FIELD ===== */}
         <Field>
           <div className="flex items-center">
             <Label htmlFor="input-confirm-password">Confirm password</Label>
@@ -152,6 +161,7 @@ export default function CreateAccount() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </Field>
+        {/* ===== ERROR ALERT ===== */}
         {error.at(0) !== "" && error.at(1) !== "" && (
           <>
             <br />
@@ -164,6 +174,7 @@ export default function CreateAccount() {
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
+        {/* ===== SUBMIT BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           onClick={handleCreateAccount}
@@ -172,6 +183,7 @@ export default function CreateAccount() {
           <RippleButtonRipples />
         </RippleButton>
 
+        {/* ===== OAUTH DIVIDER ===== */}
         <div className="flex w-full items-center">
           <div className="flex-1 border-t border-gray-400" />
           <span className="mx-4 text-sm text-muted-foreground">
@@ -180,6 +192,7 @@ export default function CreateAccount() {
           <div className="flex-1 border-t border-gray-400" />
         </div>
 
+        {/* ===== OAUTH BUTTONS ===== */}
         <div className="flex gap-2 justify-center">
           <RippleButton
             className="cursor-pointer"
@@ -214,6 +227,7 @@ export default function CreateAccount() {
           </RippleButton>
         </div>
 
+        {/* ===== LOGIN LINK ===== */}
         <div className="flex items-center text-sm">
           <span>Already have an account?&nbsp;</span>
           <p

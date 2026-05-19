@@ -1,3 +1,4 @@
+// ===== TYPES =====
 type SparklineGraphProps = {
   data: number[];
   height?: number;
@@ -9,6 +10,7 @@ export default function SparklineGraph({
   height = 64,
   width = 240,
 }: SparklineGraphProps) {
+  // ===== DERIVED STATE =====
   const positive = data.length > 0 ? data.at(0)! < data.at(-1)! : true;
 
   const min = Math.min(...data);
@@ -35,16 +37,19 @@ export default function SparklineGraph({
       height={height}
       style={{ display: "block" }}
     >
+      {/* ===== GRADIENT DEFS ===== */}
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.12" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
+      {/* ===== AREA FILL ===== */}
       <polygon
         points={`0,${height} ${pts} ${width},${height}`}
         fill={`url(#${gradId})`}
       />
+      {/* ===== LINE ===== */}
       <polyline
         points={pts}
         fill="none"
@@ -53,7 +58,9 @@ export default function SparklineGraph({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {/* ===== END DOT ===== */}
       <circle cx={lastX} cy={lastY} r="3" fill={color} />
+      {/* ===== PULSE RING ===== */}
       <circle cx={lastX} cy={lastY} r="6" fill={color} opacity="0.15">
         <animate
           attributeName="r"

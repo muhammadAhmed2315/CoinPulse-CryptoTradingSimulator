@@ -12,6 +12,7 @@ import { Spinner } from "../ui/spinner";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/utils";
 
+// ===== API FUNCTIONS =====
 async function resendActivationEmail(email: string) {
   const response = await fetch(
     "http://localhost:5000/retry_verification_from_email",
@@ -29,17 +30,20 @@ async function resendActivationEmail(email: string) {
 }
 
 export default function ActivationEmailSent() {
+  // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const email = useLocation().state?.email;
   const canResend = useLocation().state?.canResend ?? true;
   const [timer, setTimer] = useState(0);
 
+  // ===== EFFECTS =====
   useEffect(() => {
     if (timer === 0) return;
     const id = setTimeout(() => setTimer((s) => s - 1), 1000);
     return () => clearTimeout(id);
   }, [timer]);
 
+  // ===== REACT QUERY HOOKS =====
   const resendActivationEmailMutation = useMutation({
     mutationFn: () => {
       return resendActivationEmail(email);
@@ -60,6 +64,7 @@ export default function ActivationEmailSent() {
     return null;
   }
 
+  // ===== EVENT HANDLERS =====
   function handleResendEmail() {
     resendActivationEmailMutation.mutate();
   }
@@ -71,14 +76,17 @@ export default function ActivationEmailSent() {
   return (
     <Card className="w-100 p-9">
       <div className="flex flex-col items-center">
+        {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={MailIcon} className="size-7 invert" />
         </div>
 
+        {/* ===== HEADER ===== */}
         <p>ONE MORE STEP</p>
         <p className="text-[22px] font-extrabold">Verify your email address</p>
         <Separator />
 
+        {/* ===== EMAIL CALLOUT ===== */}
         <p>We've sent a verification link to</p>
 
         <div className="flex items-center gap-2">
@@ -86,11 +94,13 @@ export default function ActivationEmailSent() {
           <p className="font-bold">{email}</p>
         </div>
 
+        {/* ===== INSTRUCTIONS ===== */}
         <p>
           Click the link in your inbox to complete sign-up. Check your{" "}
           <b>spam folder</b> if you don't see it.
         </p>
 
+        {/* ===== RESEND BUTTON ===== */}
         {canResend && (
           <RippleButton
             className="w-full cursor-pointer"
@@ -112,6 +122,7 @@ export default function ActivationEmailSent() {
           </RippleButton>
         )}
 
+        {/* ===== BACK BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"

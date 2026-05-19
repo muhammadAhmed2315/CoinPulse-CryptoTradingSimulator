@@ -14,6 +14,7 @@ import { formatTime } from "@/utils";
 // TODO:
 // - Clicking contact support should open an email client
 
+// ===== API FUNCTIONS =====
 async function sendPasswordResetEmail(
   email: string,
 ): Promise<{ error: string } | { success: string }> {
@@ -31,6 +32,7 @@ async function sendPasswordResetEmail(
 }
 
 export default function PasswordResetLinkSent() {
+  // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const email = useLocation().state?.email;
   const [timer, setTimer] = useState(0);
@@ -41,6 +43,7 @@ export default function PasswordResetLinkSent() {
     return null;
   }
 
+  // ===== EFFECTS =====
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (timer === 0) return;
@@ -49,6 +52,7 @@ export default function PasswordResetLinkSent() {
     return () => clearTimeout(id);
   }, [timer]);
 
+  // ===== REACT QUERY HOOKS =====
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const mutation = useMutation({
     mutationFn: () => {
@@ -64,6 +68,7 @@ export default function PasswordResetLinkSent() {
     },
   });
 
+  // ===== EVENT HANDLERS =====
   function handleResendEmail() {
     mutation.mutate();
   }
@@ -75,12 +80,15 @@ export default function PasswordResetLinkSent() {
   return (
     <Card className="w-100 p-9">
       <div className="flex flex-col items-center">
+        {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={TickIcon} className="size-7 invert" />
         </div>
 
+        {/* ===== HEADER ===== */}
         <p className="text-[22px] font-extrabold">Check your inbox</p>
 
+        {/* ===== MESSAGE ===== */}
         <p className="text-center">
           If there's an account associated with <b>{email}</b>, you'll receive a
           link to reset your password shortly. Be sure to check your spam folder
@@ -91,7 +99,9 @@ export default function PasswordResetLinkSent() {
 
         <Separator className="mt-2 mb-4" />
 
+        {/* ===== FOOTER ===== */}
         <div className="flex flex-col items-center w-[75%]">
+          {/* ===== RESEND BUTTON ===== */}
           <RippleButton
             className="w-full cursor-pointer"
             onClick={handleResendEmail}
@@ -110,6 +120,7 @@ export default function PasswordResetLinkSent() {
             )}
             <RippleButtonRipples />
           </RippleButton>
+          {/* ===== BACK BUTTON ===== */}
           <RippleButton
             className="w-full cursor-pointer"
             variant="outline"
@@ -118,6 +129,7 @@ export default function PasswordResetLinkSent() {
             ← Back to login
             <RippleButtonRipples />
           </RippleButton>
+          {/* ===== SUPPORT LINK ===== */}
           <div className="text-sm">
             <span>Need help? </span>
             <span className="hover:underline cursor-pointer">

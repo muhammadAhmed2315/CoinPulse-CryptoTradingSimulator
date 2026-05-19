@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { getStrictContext } from "@/lib/get-strict-context";
 
+// ===== TYPES =====
 interface User {
   id: number;
   username: string;
@@ -14,9 +15,11 @@ interface AuthContextValue {
   isAuthenticated: boolean;
 }
 
+// ===== CONTEXT =====
 const [AuthProvider, useAuth] = getStrictContext<AuthContextValue>("AuthContext");
 
 function AuthContextProvider({ children }: { children: React.ReactNode }) {
+  // ===== REACT QUERY HOOKS =====
   const { data: user = null, isLoading } = useQuery<User | null>({
     queryKey: ["auth", "me"],
     queryFn: async () => {

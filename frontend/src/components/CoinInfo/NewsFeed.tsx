@@ -38,7 +38,7 @@ async function getNewsArticles(coinName: string, nextPage: string) {
 }
 
 export default function NewsFeed({ coinName }: NewsFeedProps) {
-  // ===== REACTQUERY HOOKS =====
+  // ===== REACT QUERY HOOKS =====
   const newsArticlesQuery = useInfiniteQuery({
     queryKey: ["news-articles", coinName],
     queryFn: ({ pageParam }) => getNewsArticles(coinName, pageParam),

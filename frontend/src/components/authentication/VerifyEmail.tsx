@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import LoadingSpinner from "../LoadingSpinner";
 import { useEffect, useRef } from "react";
 
+// ===== API FUNCTIONS =====
 async function sendVerificationRequest(token: string) {
   const response = await fetch(`http://localhost:5000/verify_email/${token}`, {
     method: "GET",
@@ -19,9 +20,11 @@ async function sendVerificationRequest(token: string) {
 }
 
 export default function VerifyEmail() {
+  // ===== STATE VARIABLES =====
   const { token = "" } = useParams();
   const navigate = useNavigate();
 
+  // ===== REACT QUERY HOOKS =====
   const mutation = useMutation({
     mutationFn: () => {
       return sendVerificationRequest(token);
@@ -42,6 +45,7 @@ export default function VerifyEmail() {
     },
   });
 
+  // ===== EFFECTS =====
   const hasFired = useRef(false);
   useEffect(() => {
     if (hasFired.current) return;
@@ -52,6 +56,7 @@ export default function VerifyEmail() {
 
   return (
     <Card className="w-100 p-9">
+      {/* ===== LOADING STATE ===== */}
       <div className="flex flex-col items-center">
         <LoadingSpinner />
         <p className="text-xs mt-4 text-[#bbb]">PLEASE WAIT</p>

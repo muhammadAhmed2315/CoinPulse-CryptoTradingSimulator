@@ -5,6 +5,7 @@ const pulseKeyframes = `
   }
 `;
 
+// ===== TYPES =====
 type TradePillProps = {
   side: "BUY" | "SELL";
   type: "MARKET" | "LIMIT" | "STOP";

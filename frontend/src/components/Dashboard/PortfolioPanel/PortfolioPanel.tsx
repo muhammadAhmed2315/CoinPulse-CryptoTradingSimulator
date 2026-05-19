@@ -9,9 +9,11 @@ import {
 } from "@/components/animate-ui/components/animate/tabs";
 import OpenPositions from "./OpenPositions";
 
+// ===== TYPES =====
 type PanelType = "OVERVIEW" | "POSITIONS";
 
 export default function PortfolioPanel() {
+  // ===== STATE VARIABLES =====
   const [activeTab, setActiveTab] = useState<PanelType>("OVERVIEW");
 
   return (
@@ -20,6 +22,7 @@ export default function PortfolioPanel() {
         onValueChange={(value) => setActiveTab(value as PanelType)}
         value={activeTab}
       >
+        {/* ===== TABS LIST ===== */}
         <TabsList className="mb-2">
           <TabsTrigger
             className="text-xl cursor-pointer"
@@ -37,9 +40,11 @@ export default function PortfolioPanel() {
           </TabsTrigger>
         </TabsList>
         <TabsContents>
+          {/* ===== OVERVIEW ===== */}
           <TabsContent value="OVERVIEW">
             <PortfolioOverview />
           </TabsContent>
+          {/* ===== POSITIONS ===== */}
           <TabsContent value="POSITIONS">
             <OpenPositions />
           </TabsContent>

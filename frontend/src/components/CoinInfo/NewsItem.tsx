@@ -1,6 +1,6 @@
 import type { NewsArticle } from "./NewsFeed";
 
-// ===== TYPES AND INTERFACES =====
+// ===== TYPES =====
 type NewsItemProps = {
   post: NewsArticle;
 };

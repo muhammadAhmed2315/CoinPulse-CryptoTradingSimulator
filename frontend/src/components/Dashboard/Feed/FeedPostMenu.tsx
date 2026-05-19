@@ -11,6 +11,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
 
+// ===== API FUNCTIONS =====
 async function fetchPosts(type: string, page: number = 0) {
   const response = await fetch("http://localhost:5000/get_feedposts", {
     method: "POST",
@@ -24,6 +25,7 @@ async function fetchPosts(type: string, page: number = 0) {
   return await response.json();
 }
 
+// ===== TYPES =====
 type FeedType = "GLOBAL" | "PRIVATE";
 
 export default function FeedPostMenu() {
@@ -51,6 +53,7 @@ export default function FeedPostMenu() {
         onValueChange={(value) => setActiveTab(value as FeedType)}
         value={activeTab}
       >
+        {/* ===== TABS LIST ===== */}
         <TabsList className="mb-2">
           <TabsTrigger
             className="text-xl cursor-pointer"
@@ -68,6 +71,7 @@ export default function FeedPostMenu() {
           </TabsTrigger>
         </TabsList>
         <TabsContents>
+          {/* ===== GLOBAL FEED ===== */}
           <TabsContent value="GLOBAL">
             <InfiniteScroll
               dataLength={globalFeedQuery.data?.pages.length || 0}
@@ -91,6 +95,7 @@ export default function FeedPostMenu() {
               )}
             </InfiniteScroll>
           </TabsContent>
+          {/* ===== PRIVATE FEED ===== */}
           <TabsContent value="PRIVATE">
             <InfiniteScroll
               dataLength={privateFeedQuery.data?.pages.length || 0}

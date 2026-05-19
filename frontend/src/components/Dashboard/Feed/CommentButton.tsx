@@ -17,6 +17,7 @@ function ChatSVG() {
   );
 }
 
+// ===== TYPES =====
 interface CommentButtonProps {
   count: number;
   active: boolean;

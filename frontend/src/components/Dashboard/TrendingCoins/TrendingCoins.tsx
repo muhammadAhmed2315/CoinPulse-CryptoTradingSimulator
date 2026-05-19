@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/carousel";
 import TrendingCoinCard from "./TrendingCoinCard";
 
+// ===== TYPES =====
 type TrendingCoinsProps = {
   data?: {
     name: string;
@@ -25,6 +26,7 @@ type TrendingCoinsProps = {
   isError: boolean;
 };
 
+// ===== CONSTANTS =====
 const arr = Array.from({ length: 15 }, (_, i) => i);
 
 export default function TrendingCoins({
@@ -34,9 +36,11 @@ export default function TrendingCoins({
 }: TrendingCoinsProps) {
   return (
     <div className="flex flex-col gap-y-4">
+      {/* ===== HEADER ===== */}
       <div className="flex justify-between">
         <h1 className="text-2xl">Trending Coins</h1>
       </div>
+      {/* ===== CAROUSEL ===== */}
       <div className="relative px-10">
         <Carousel opts={{ dragFree: true }}>
           <CarouselContent>

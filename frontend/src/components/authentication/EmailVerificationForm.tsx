@@ -21,6 +21,7 @@ import { validateEmail } from "@/utils";
 import { AlertCircleIcon } from "lucide-react";
 import { Spinner } from "../ui/spinner";
 
+// ===== API FUNCTIONS =====
 async function requestVerificationEmail(email: string) {
   const response = await fetch(
     "http://localhost:5000/retry_verification_from_email",
@@ -38,10 +39,12 @@ async function requestVerificationEmail(email: string) {
 }
 
 export default function EmailVerificationForm() {
+  // ===== STATE VARIABLES =====
   const [email, setEmail] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);
   const navigate = useNavigate();
 
+  // ===== REACT QUERY HOOKS =====
   const mutation = useMutation({
     mutationFn: () => {
       return requestVerificationEmail(email);
@@ -54,6 +57,7 @@ export default function EmailVerificationForm() {
     },
   });
 
+  // ===== EVENT HANDLERS =====
   async function handleEmailSubmit(): Promise<void> {
     if (!validateEmail(email)) {
       setErrorVisible(true);
@@ -70,19 +74,23 @@ export default function EmailVerificationForm() {
   return (
     <Card className="w-100 p-9">
       <div className="flex flex-col items-center">
+        {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={InfoIcon} className="size-7 invert" />
         </div>
 
+        {/* ===== HEADER ===== */}
         <p>SOMETHING WENT WRONG</p>
         <p className="text-[22px] font-extrabold">Request a new link</p>
         <Separator />
 
+        {/* ===== INSTRUCTIONS ===== */}
         <p>
           That link is no longer valid — it may have expired or already been
           used. Enter your email below and we'll send you a fresh one.
         </p>
 
+        {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
           <InputGroup>
@@ -99,6 +107,7 @@ export default function EmailVerificationForm() {
           </InputGroup>
         </Field>
 
+        {/* ===== ERROR ALERT ===== */}
         {errorVisible && (
           <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
             <AlertCircleIcon className="text-red-600 dark:text-red-400" />
@@ -109,6 +118,7 @@ export default function EmailVerificationForm() {
           </Alert>
         )}
 
+        {/* ===== SUBMIT BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           onClick={handleEmailSubmit}
@@ -116,6 +126,7 @@ export default function EmailVerificationForm() {
           {mutation.isPending ? <Spinner /> : <>Send new link</>}
           <RippleButtonRipples />
         </RippleButton>
+        {/* ===== SUPPORT LINK ===== */}
         <div className="flex text-sm underline-offset-4 ">
           Need help?&nbsp;
           <a className="hover:underline cursor-pointer">Contact support</a>

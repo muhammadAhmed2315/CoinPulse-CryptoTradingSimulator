@@ -11,10 +11,13 @@ import NewTradeCardRight from "./NewTradeCardRight";
 import CoinSearchBar from "../CoinSearchBar";
 import BitcoinLogo from "../../assets/logos/bitcoin.png";
 
+// ===== TYPES =====
 export type OrderSide = "BUY" | "SELL";
 export type OrderType = "MARKET" | "LIMIT" | "STOP";
 /** Fraction of the user's available balance to use for an order (e.g. 0.25 = 25%). Undefined when no percentage is selected. */
 export type BalancePercentage = 0.1 | 0.25 | 0.5 | 0.75 | 1 | undefined;
+
+// ===== API FUNCTIONS =====
 
 /**
  * Fetches detailed information about a coin from the backend. E.g., price, 24h high +
@@ -88,6 +91,7 @@ async function getCoinBalance(coinId: string) {
 }
 
 export default function NewTradeCard() {
+  // ===== STATE VARIABLES =====
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query.toLowerCase(), 300);
   const [currCoin, setCurrCoin] = useState<Coin>({
@@ -97,6 +101,7 @@ export default function NewTradeCard() {
     imgUrl: BitcoinLogo,
   });
 
+  // ===== REACT QUERY HOOKS =====
   const allCoinsQuery = useQuery({
     queryKey: ["all-coins-list"],
     queryFn: loadAllCoinsList,
@@ -122,6 +127,7 @@ export default function NewTradeCard() {
     queryFn: () => getCoinBalance(currCoin.id),
   });
 
+  // ===== CHILD COMPONENT PROPS =====
   const leftCardProps: NewTradeCardLeftProps = {
     coinDataQuery,
     sparklineQuery,
@@ -139,7 +145,9 @@ export default function NewTradeCard() {
 
   return (
     <>
+      {/* ===== LEFT PANEL ===== */}
       <div className="flex-1 bg-[#fafafa] border-r-gray-100 border-r rounded-l-md p-4">
+        {/* ===== COIN SEARCH BAR ===== */}
         <div className="mb-4">
           {allCoinsQuery.isLoading ? (
             <>Loading...</>
@@ -153,9 +161,11 @@ export default function NewTradeCard() {
             />
           )}
         </div>
+        {/* ===== COIN INFO ===== */}
         <NewTradeCardLeft {...leftCardProps} />
       </div>
 
+      {/* ===== RIGHT PANEL ===== */}
       <NewTradeCardRight {...rightCardProps} />
     </>
   );

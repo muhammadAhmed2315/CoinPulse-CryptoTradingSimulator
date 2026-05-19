@@ -59,6 +59,7 @@ function HeartSVG({ filled }: { filled: boolean }) {
   );
 }
 
+// ===== TYPES =====
 type LikeButtonProps = {
   count: number;
   liked: boolean;
@@ -70,6 +71,7 @@ export default function LikeButton({
   count,
   onToggle,
 }: LikeButtonProps) {
+  // ===== STATE VARIABLES =====
   const [anim, setAnim] = useState<"like" | "unlike" | false>(false);
   const [rings, setRings] = useState<number[]>([]);
   const [dots, setDots] = useState<
@@ -80,6 +82,7 @@ export default function LikeButton({
   >([]);
   const [fadeRings, setFadeRings] = useState<number[]>([]);
 
+  // ===== EVENT HANDLERS =====
   function click() {
     if (!liked) {
       // ── Like animation ──

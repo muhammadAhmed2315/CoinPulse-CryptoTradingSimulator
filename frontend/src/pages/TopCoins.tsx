@@ -150,6 +150,7 @@ export default function TopCoins() {
         field: "identity",
         cellRenderer: identityRenderer,
         cellStyle: defaultCellStyle,
+        cellDataType: false,
         headerName: "Name",
         flex: 1.4,
         minWidth: 160,
@@ -205,6 +206,7 @@ export default function TopCoins() {
       {
         field: "sparkline_in_7d",
         cellRenderer: sparklineRenderer,
+        cellDataType: false,
         autoHeight: true,
         headerName: "Price History (7d)",
         width: 340,
@@ -213,7 +215,7 @@ export default function TopCoins() {
     [],
   );
 
-  // ===== HANDLER FUNCTIONS =====
+  // ===== EVENT HANDLERS =====
   const onGridReady = (e: GridReadyEvent) => setGridApi(e.api);
 
   // Fires when page or total pages changes

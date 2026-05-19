@@ -54,8 +54,7 @@ const rangeSelectorConfig: Highcharts.RangeSelectorOptions = {
   ] as Highcharts.RangeSelectorButtonsOptions[],
 };
 
-// ===== COMPONENT PROP TYPE =====
-
+// ===== TYPES =====
 type MarketChartsCardProps = {
   currCoin: {
     id: string;
@@ -93,7 +92,7 @@ async function getCoinCharts(coin_id: string) {
   return await response.json();
 }
 
-// ===== HELPER VARIABLES =====
+// ===== CONSTANTS =====
 const tabTypeMapping = {
   ohlc: "OHLC Chart",
   price: "Price Chart",
@@ -107,7 +106,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
     "ohlc" | "price" | "marketCap" | "volume"
   >("ohlc");
 
-  // ===== REACTQUERY HOOKS =====
+  // ===== REACT QUERY HOOKS =====
   const ohlcChartQuery = useQuery({
     queryKey: ["ohlc-chart", currCoin.id],
     queryFn: () => getOhlcChart(currCoin.id),
@@ -178,6 +177,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       spacing: [12, 0, 8, 0],
                     },
                     credits: { enabled: false },
+                    accessibility: { enabled: false },
                     rangeSelector: rangeSelectorConfig,
                     navigator: { enabled: false },
                     scrollbar: { enabled: false },
@@ -292,6 +292,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       spacing: [12, 0, 8, 0],
                     },
                     credits: { enabled: false },
+                    accessibility: { enabled: false },
                     rangeSelector: rangeSelectorConfig,
                     navigator: { enabled: false },
                     scrollbar: { enabled: false },

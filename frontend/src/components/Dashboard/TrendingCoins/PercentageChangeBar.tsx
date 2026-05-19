@@ -1,3 +1,4 @@
+// ===== TYPES =====
 type PercentageChangeBarProps = {
   change: number;
 };
@@ -5,8 +6,10 @@ type PercentageChangeBarProps = {
 export default function PercentageChangeBar({
   change,
 }: PercentageChangeBarProps) {
+  // ===== DERIVED STATE =====
   const widthPercent = Math.min(Math.abs(change), 100);
 
+  // ===== POSITIVE STATE =====
   if (change > 0)
     return (
       <div className="flex w-full h-1 bg-gray-200 rounded-full ">
@@ -19,6 +22,7 @@ export default function PercentageChangeBar({
         </div>
       </div>
     );
+  // ===== NEGATIVE STATE =====
   else if (change < 0)
     return (
       <div className="flex w-full h-1 bg-gray-200 rounded-full ">
@@ -31,6 +35,7 @@ export default function PercentageChangeBar({
         <div className="w-full h-1 bg-gray-200 rounded-full"></div>
       </div>
     );
+  // ===== ZERO STATE =====
   else
     return (
       <div className="relative w-full h-1 bg-gray-200 rounded-full">

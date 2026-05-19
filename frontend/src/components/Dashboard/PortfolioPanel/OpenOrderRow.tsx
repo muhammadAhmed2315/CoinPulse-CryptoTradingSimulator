@@ -5,6 +5,7 @@ import type {
   QueryObserverResult,
 } from "@tanstack/react-query";
 
+// ===== TYPES =====
 type OpenOrderRowProps = {
   order: {
     image: string;

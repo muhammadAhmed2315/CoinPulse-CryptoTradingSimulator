@@ -27,6 +27,7 @@ import { Spinner } from "../ui/spinner";
 //       - Update the "You won't be able to reuse your previous password." copy since
 //         that's not true.
 
+// ===== API FUNCTIONS =====
 async function resetPassword(data: {
   email: string;
   password: string;
@@ -49,6 +50,7 @@ async function resetPassword(data: {
 }
 
 export default function ResetPassword() {
+  // ===== STATE VARIABLES =====
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<[string, string]>(["", ""]);
@@ -57,6 +59,7 @@ export default function ResetPassword() {
   const token = useLocation().state?.token;
   const navigate = useNavigate();
 
+  // ===== EFFECTS =====
   // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
   useEffect(() => {
     if (!email || !token)
@@ -78,6 +81,7 @@ export default function ResetPassword() {
     return () => clearTimeout(id);
   }, [email, navigate, successTimer]);
 
+  // ===== REACT QUERY HOOKS =====
   const resetPasswordMutation = useMutation({
     mutationFn: () => {
       return resetPassword({
@@ -98,6 +102,7 @@ export default function ResetPassword() {
     },
   });
 
+  // ===== EVENT HANDLERS =====
   function handleSubmit() {
     const errors = validatePassword(password);
     if (errors.length !== 0) {
@@ -117,6 +122,7 @@ export default function ResetPassword() {
 
   return (
     <Card className="w-96">
+      {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
         <CardTitle>Set a new password</CardTitle>
         <CardDescription>
@@ -125,8 +131,10 @@ export default function ResetPassword() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* ===== PASSWORD FIELD ===== */}
         <NewPassword password={password} setPassword={setPassword} />
         <br />
+        {/* ===== CONFIRM PASSWORD FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-confirm-password">
             Confirm password
@@ -139,6 +147,7 @@ export default function ResetPassword() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </Field>
+        {/* ===== ERROR ALERT ===== */}
         {error.at(0) !== "" && error.at(1) !== "" && (
           <>
             <br />
@@ -151,6 +160,7 @@ export default function ResetPassword() {
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
+        {/* ===== SUBMIT BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           onClick={handleSubmit}
@@ -167,6 +177,7 @@ export default function ResetPassword() {
           )}
           <RippleButtonRipples />
         </RippleButton>
+        {/* ===== BACK BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"

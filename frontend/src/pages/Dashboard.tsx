@@ -3,6 +3,7 @@ import PortfolioPanel from "@/components/Dashboard/PortfolioPanel/PortfolioPanel
 import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
 import { useQuery } from "@tanstack/react-query";
 
+// ===== API FUNCTIONS =====
 async function getTrendingCoins() {
   const response = await fetch("http://localhost:5000/get_trending_coins", {
     method: "GET",
@@ -18,6 +19,7 @@ async function getTrendingCoins() {
 }
 
 export default function Dashboard() {
+  // ===== REACT QUERY HOOKS =====
   const trendingCoinsQuery = useQuery({
     queryKey: ["trendingCoins"],
     queryFn: getTrendingCoins,
@@ -25,17 +27,21 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* ===== TRENDING COINS ===== */}
       <TrendingCoins
         isError={trendingCoinsQuery.isError}
         isLoading={trendingCoinsQuery.isLoading}
         data={trendingCoinsQuery.data || undefined}
       />
 
+      {/* ===== FEED & PORTFOLIO ===== */}
       <div className="flex gap-12.5 mt-6">
+        {/* ===== FEED ===== */}
         <div className="flex flex-col flex-2">
           <FeedPostMenu />
         </div>
 
+        {/* ===== PORTFOLIO ===== */}
         <div className="flex-1 min-w-0">
           <PortfolioPanel />
         </div>

@@ -2,7 +2,7 @@ import { StockChart } from "@highcharts/react/Stock";
 import { AreaSeries } from "@highcharts/react/series/Area";
 import { numToMoney } from "@/utils";
 
-// ==== COMPONENT PROP TYPE =====
+// ===== TYPES =====
 type CustomAreaChartProps = {
   data: [number, number][];
   height?: string | undefined;
@@ -14,6 +14,7 @@ export default function CustomAreaChart({
   height = undefined,
   colored = false,
 }: CustomAreaChartProps) {
+  // ===== DERIVED STATE =====
   const trendColor =
     data.length > 1 && data.at(-1)![1] < data[0][1] ? "#ef4444" : "#21c45d";
   const lineColor = colored ? trendColor : "#71717a";
@@ -51,6 +52,7 @@ export default function CustomAreaChart({
           spacing: [12, 0, 8, 0],
         },
         credits: { enabled: false },
+        accessibility: { enabled: false },
         rangeSelector: {
           enabled: true,
           selected: 5,

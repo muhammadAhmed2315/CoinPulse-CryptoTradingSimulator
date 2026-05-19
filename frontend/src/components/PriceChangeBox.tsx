@@ -1,5 +1,6 @@
 import { numToMoney } from "@/utils";
 
+// ===== TYPES =====
 type PriceChangeBoxProps = {
   priceChange: number;
   fontSize?: string;

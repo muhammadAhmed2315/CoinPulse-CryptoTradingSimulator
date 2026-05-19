@@ -18,6 +18,7 @@ export default function CoinInfo() {
 
   return (
     <div className="w-full flex flex-col gap-4 px-4">
+      {/* ===== TOP ROW ===== */}
       <div className="flex w-full gap-4">
         <CoinInfoCard currCoin={currCoin} setCurrCoin={setCurrCoin} />
         <MarketChartsCard
@@ -28,6 +29,7 @@ export default function CoinInfo() {
           }}
         />
       </div>
+      {/* ===== BOTTOM ROW ===== */}
       <div className="flex w-full gap-4">
         <NewsFeed coinName={currCoin.name} />
         <RedditFeedCard coinName={currCoin.name} />

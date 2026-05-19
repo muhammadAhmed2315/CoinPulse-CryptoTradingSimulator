@@ -55,9 +55,10 @@ function App() {
     <AuthContextProvider>
       <BrowserRouter>
         <Routes>
+          {/* ===== HOME REDIRECT ===== */}
           <Route path="/" element={<HomeRedirect />} />
 
-          {/* Authentication routes */}
+          {/* ===== AUTHENTICATION ROUTES ===== */}
           <Route element={<AuthenticationBase />}>
             <Route path="/login" element={<Login />} />
             <Route path="/create_account" element={<CreateAccount />} />
@@ -102,7 +103,7 @@ function App() {
             />
           </Route>
 
-          {/* Authenticated routes */}
+          {/* ===== AUTHENTICATED ROUTES ===== */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AuthenticatedBase />}>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -112,7 +113,7 @@ function App() {
             </Route>
           </Route>
 
-          {/* Catch-all for unmatched routes */}
+          {/* ===== CATCH-ALL ===== */}
           <Route path="*" element={<NotFoundHandler />} />
         </Routes>
       </BrowserRouter>

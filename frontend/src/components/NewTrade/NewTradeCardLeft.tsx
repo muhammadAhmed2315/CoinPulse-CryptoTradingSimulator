@@ -9,6 +9,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import PlayUSD from "@/assets/play-usd.svg";
 import type { Coin } from "@/loadAllCoinsList";
 
+// ===== TYPES =====
 export type NewTradeCardLeftProps = {
   coinDataQuery: UseQueryResult<any, Error>;
   sparklineQuery: UseQueryResult<any, Error>;
@@ -30,7 +31,7 @@ export default function NewTradeCardLeft({
 }: NewTradeCardLeftProps) {
   return (
     <div>
-      {/* Display currently selected coin */}
+      {/* ===== CURRENT COIN ===== */}
       <div className="flex flex-row gap-2 bg-white px-2 py-1 border border-gray-200 rounded-sm mb-2">
         <img src={currCoin.imgUrl} className="rounded-3xl size-12" />
         <div>
@@ -39,7 +40,7 @@ export default function NewTradeCardLeft({
         </div>
       </div>
 
-      {/* Display current coin price + percentage change */}
+      {/* ===== PRICE ===== */}
       <p className="text-xs font-mono text-gray-400">PRICE</p>
       <div className="flex items-center justify-between mb-4">
         <p className="text-3xl font-bold ">
@@ -60,7 +61,7 @@ export default function NewTradeCardLeft({
         </div>
       </div>
 
-      {/* Sparkline graph */}
+      {/* ===== SPARKLINE GRAPH ===== */}
       <div className="flex items-center justify-center h-16 w-80 mb-4">
         {sparklineQuery.isLoading ? (
           <Spinner className="size-7" />
@@ -69,7 +70,7 @@ export default function NewTradeCardLeft({
         )}
       </div>
 
-      {/* Information grid (4 boxes) */}
+      {/* ===== STATS GRID ===== */}
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-sm bg-white border border-gray-200 p-2">
           <p className="text-xs font-semibold">24H HIGH</p>
@@ -109,7 +110,7 @@ export default function NewTradeCardLeft({
 
       <Separator className="my-4" />
 
-      {/* User's current PlayUSD balance */}
+      {/* ===== USD BALANCE ===== */}
       <div className="flex justify-between items-center mb-2">
         <div>
           <p className="text-xs text-gray-400 font-mono">USD BALANCE</p>
@@ -122,7 +123,7 @@ export default function NewTradeCardLeft({
         <img src={PlayUSD} className="size-6.5" />
       </div>
 
-      {/* User's current coin balance */}
+      {/* ===== COIN BALANCE ===== */}
       <div className="flex justify-between items-center">
         <div>
           <p className="text-xs text-gray-400 font-mono uppercase">

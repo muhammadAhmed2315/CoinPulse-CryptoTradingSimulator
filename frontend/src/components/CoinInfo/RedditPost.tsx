@@ -1,6 +1,6 @@
 import type { RedditPost } from "./RedditFeed";
 
-// ===== TYPES AND INTERFACES =====
+// ===== TYPES =====
 type RedditPostProps = {
   post: RedditPost;
 };

@@ -7,6 +7,8 @@ import { useDebounce } from "use-debounce";
 import CustomSkeleton from "../CustomSkeleton";
 import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
+
+// ===== TYPES =====
 type CoinInfoCardProps = {
   currCoin: Coin;
   setCurrCoin: React.Dispatch<React.SetStateAction<Coin>>;
@@ -45,6 +47,7 @@ export default function CoinInfoCard({
   currCoin,
   setCurrCoin,
 }: CoinInfoCardProps) {
+  // ===== STATE VARIABLES =====
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query.toLowerCase(), 300);
 
@@ -75,6 +78,7 @@ export default function CoinInfoCard({
 
   return (
     <Card className="flex-3 p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+      {/* ===== HEADER ===== */}
       <div className="flex items-end justify-between gap-4 px-6 pt-5.5 pb-4.5 border-b border-[#f0f0f0]">
         <div className="flex flex-col gap-2">
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">

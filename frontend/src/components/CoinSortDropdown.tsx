@@ -16,11 +16,13 @@ import { type ApiSorts } from "@/pages/TopCoins";
 import UpArrowIcon from "@/assets/icons/arrow-up.svg";
 import DownArrowIcon from "@/assets/icons/arrow-down.svg";
 
+// ===== TYPES =====
 type CoinSortDropdownProps = {
   sortBy: ApiSorts;
   setSortBy: React.Dispatch<React.SetStateAction<ApiSorts>>;
 };
 
+// ===== CONSTANTS =====
 const sortByMap: Record<ApiSorts, string> = {
   market_cap_asc: "Market Cap Ascending",
   market_cap_desc: "Market Cap Descending",
@@ -32,6 +34,7 @@ export default function CoinSortDropDown({
   sortBy,
   setSortBy,
 }: CoinSortDropdownProps) {
+  // ===== EVENT HANDLERS =====
   function handleCapAscClick() {
     setSortBy("market_cap_asc");
   }
@@ -50,6 +53,7 @@ export default function CoinSortDropDown({
 
   return (
     <DropdownMenu>
+      {/* ===== TRIGGER BUTTON ===== */}
       <DropdownMenuTrigger asChild>
         <RippleButton
           variant="outline"
@@ -67,11 +71,13 @@ export default function CoinSortDropDown({
           <RippleButtonRipples />
         </RippleButton>
       </DropdownMenuTrigger>
+      {/* ===== DROPDOWN MENU ===== */}
       <DropdownMenuContent
         align="end"
         sideOffset={6}
         className="min-w-60 p-1.5 rounded-[10px] border border-[#ececef] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
       >
+        {/* ===== MARKET CAP GROUP ===== */}
         <DropdownMenuGroup>
           <DropdownMenuLabel className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a] px-2.5 py-1">
             Market Cap
@@ -92,6 +98,7 @@ export default function CoinSortDropDown({
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator className="bg-[#f0f0f0] my-1" />
+        {/* ===== VOLUME GROUP ===== */}
         <DropdownMenuLabel className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a] px-2.5 py-1">
           Volume
         </DropdownMenuLabel>

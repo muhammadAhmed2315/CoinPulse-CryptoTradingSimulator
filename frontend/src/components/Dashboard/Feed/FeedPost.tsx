@@ -13,7 +13,7 @@ import LikeButton from "./LikeButton";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
-// ===== HTTP REQUEST FUNCTIONS =====
+// ===== API FUNCTIONS =====
 async function updateLikes(transactionID: string, isIncrement: boolean) {
   const response = await fetch("http://localhost:5000/update_likes", {
     method: "POST",
@@ -27,11 +27,7 @@ async function updateLikes(transactionID: string, isIncrement: boolean) {
   return await response.json();
 }
 
-// data = request.get_json()
-// is_increment = data["isIncrement"]
-// transaction_id = data["transactionID"]
-
-// ===== FEEDPOST COMPONENT PROPS TYPE =====
+// ===== TYPES =====
 type FeedPostProps = {
   coin_id: string;
   comment: string;
@@ -46,7 +42,6 @@ type FeedPostProps = {
   username: string;
 };
 
-// ===== FEEDPOST COMPONENT =====
 export default function FeedPost({
   coin_id,
   comment,
@@ -60,9 +55,11 @@ export default function FeedPost({
   transaction_type,
   username,
 }: FeedPostProps) {
+  // ===== STATE VARIABLES =====
   const [currentlyLiked, setCurrentlyLiked] = useState(curr_user_liked);
   const [currLikes, setCurrLikes] = useState(likes);
 
+  // ===== REACT QUERY HOOKS =====
   const likeButtonQuery = useMutation({
     mutationFn: (isIncrement: boolean) => updateLikes(id, isIncrement),
 
@@ -86,6 +83,7 @@ export default function FeedPost({
 
   return (
     <Card className="p-6 mb-6 gap-4">
+      {/* ===== HEADER ===== */}
       <CardHeader className="p-0">
         <div className="flex gap-4 items-center">
           <img src={PlaceholderIcon} className="size-15" />
@@ -98,6 +96,7 @@ export default function FeedPost({
         </div>
       </CardHeader>
       <CardContent className="p-0">
+        {/* ===== TRADE BANNER ===== */}
         <div className="relative h-13 rounded-md bg-[#fafafa] mb-4">
           <BannerFlickerGrid
             squareSize={3}
@@ -130,6 +129,7 @@ export default function FeedPost({
             </p>
           </div>
         </div>
+        {/* ===== COMMENT ===== */}
         {comment && <p className="text-lg text-[#3f3f46]">{comment}</p>}
         {!comment && (
           <p className="text-lg text-[#a0a0a0] italic">
@@ -138,6 +138,7 @@ export default function FeedPost({
         )}
       </CardContent>
       <Separator />
+      {/* ===== FOOTER ===== */}
       <CardFooter className="p-0 flex justify-end">
         <LikeButton
           liked={currentlyLiked}

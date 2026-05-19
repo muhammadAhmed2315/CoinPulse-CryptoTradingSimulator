@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "../ui/spinner";
 import { formatTime } from "@/utils";
 
+// ===== API FUNCTIONS =====
 async function resendEmail(token: string) {
   const response = await fetch(
     "http://localhost:5000/retry_verification_from_token",
@@ -29,16 +30,19 @@ async function resendEmail(token: string) {
 }
 
 export default function EmailVerificationUnsuccessful() {
+  // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const token = useLocation().state?.token;
   const [timer, setTimer] = useState(0);
 
+  // ===== EFFECTS =====
   useEffect(() => {
     if (timer === 0) return;
     const id = setTimeout(() => setTimer((s) => s - 1), 1000);
     return () => clearTimeout(id);
   }, [timer]);
 
+  // ===== REACT QUERY HOOKS =====
   const mutation = useMutation({
     mutationFn: () => {
       return resendEmail(token);
@@ -59,6 +63,7 @@ export default function EmailVerificationUnsuccessful() {
     return null;
   }
 
+  // ===== EVENT HANDLERS =====
   function handleBackToLogin() {
     navigate("/login");
   }
@@ -70,26 +75,31 @@ export default function EmailVerificationUnsuccessful() {
   return (
     <Card className="w-100 p-9">
       <div className="flex flex-col items-center">
+        {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={WarningIcon} className="size-7 invert" />
         </div>
 
+        {/* ===== HEADER ===== */}
         <p>VERIFICATION FAILED</p>
         <p className="text-[22px] font-extrabold">
           Email could not be verified
         </p>
         <Separator />
 
+        {/* ===== STATUS BADGE ===== */}
         <div className="flex items-center gap-2 mt-2">
           <img src={DotRed} className="size-2" />
           <p className="font-bold text-[#ef4444]">Not verified</p>
         </div>
 
+        {/* ===== MESSAGE ===== */}
         <p className="text-center text-sm">
           This verification link is <b>invalid or has expired.</b> Verification
           links are only valid for 1 hour after they are sent.
         </p>
 
+        {/* ===== RESEND BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           onClick={handleResendEmail}
@@ -106,6 +116,7 @@ export default function EmailVerificationUnsuccessful() {
           )}
           <RippleButtonRipples />
         </RippleButton>
+        {/* ===== BACK BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"

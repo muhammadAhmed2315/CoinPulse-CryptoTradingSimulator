@@ -5,6 +5,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 
+// ===== TYPES =====
 type CustomTooltipProps = {
   trigger: string;
   content: string;

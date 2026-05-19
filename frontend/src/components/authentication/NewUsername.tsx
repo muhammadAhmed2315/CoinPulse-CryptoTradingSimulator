@@ -3,6 +3,7 @@ import { validateUsernameRule } from "@/utils";
 import { Field, FieldDescription, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 
+// ===== TYPES =====
 type NewUsernameProps = {
   username: string;
   setUsername: Dispatch<SetStateAction<string>>;

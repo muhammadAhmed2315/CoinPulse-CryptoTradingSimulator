@@ -19,24 +19,29 @@ export default function AuthenticationPageNotFound() {
   return (
     <Card className="w-100 p-9">
       <div className="flex flex-col items-center">
+        {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={ChainIcon} className="size-7 " />
         </div>
 
+        {/* ===== HEADER ===== */}
         <p>404</p>
         <p className="text-[22px] font-extrabold">Page Not Found</p>
         <Separator />
 
+        {/* ===== PATH CALLOUT ===== */}
         <div className="flex items-center gap-2 mt-2 bg-[#fde8e8] rounded-xl pl-2 pr-2 pt-1 pb-1">
           <img src={DotRed} className="size-2" />
           <p className="font-bold text-[#b91c1c]">{location.pathname}</p>
         </div>
 
+        {/* ===== MESSAGE ===== */}
         <p className="text-center">
           The page you're looking for doesn't exist or has been moved.
         </p>
         <br />
 
+        {/* ===== BACK BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           onClick={() => navigate("/login")}

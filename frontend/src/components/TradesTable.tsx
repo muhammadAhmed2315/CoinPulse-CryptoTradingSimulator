@@ -218,7 +218,7 @@ export default function TradesTable() {
     "all" | "open" | "cancelled" | "finished"
   >("all");
 
-  // ===== REACTQUERY HOOKS =====
+  // ===== REACT QUERY HOOKS =====
   const tradeHistoryQuery = useQuery({
     queryKey: ["trade-history", page, filter],
     queryFn: () => fetchTradesHistory(page, filter),
@@ -293,7 +293,7 @@ export default function TradesTable() {
     },
   ];
 
-  // ===== HANDLER FUNCTIONS =====
+  // ===== EVENT HANDLERS =====
   function handlePrevBtnClick() {
     if (page !== 1) setPage((prev) => prev - 1);
   }

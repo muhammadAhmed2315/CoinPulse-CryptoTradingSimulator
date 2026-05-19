@@ -24,6 +24,7 @@ import type { Coin } from "@/loadAllCoinsList";
  * Places an order with the backend based on the provided configuration.
  * @throws {Error} Parsed JSON error body if the request fails.
  */
+// ===== API FUNCTIONS =====
 async function placeOrder(
   orderSide: OrderSide,
   orderType: OrderType,
@@ -55,6 +56,7 @@ async function placeOrder(
   return await response.json();
 }
 
+// ===== TYPES =====
 export type NewTradeCardRightProps = {
   userBalanceQuery: UseQueryResult<any, Error>;
   coinDataQuery: UseQueryResult<any, Error>;
@@ -104,7 +106,7 @@ export default function NewTradeCardRight({
     parseFloat(coinAmount) === 0 ||
     coinAmount === "";
 
-  // ===== REACT QUERY MUTATIONS =====
+  // ===== REACT QUERY HOOKS =====
   const placeOrderMutation = useMutation({
     mutationFn: () =>
       placeOrder(
@@ -135,7 +137,7 @@ export default function NewTradeCardRight({
     },
   });
 
-  // ===== USEEFFECT HOOKS =====
+  // ===== EFFECTS =====
   useEffect(() => {
     if (successTimer === 0) return;
     const id = setTimeout(() => setSuccessTimer((s) => s - 1), 1_000);
@@ -148,7 +150,7 @@ export default function NewTradeCardRight({
     return () => clearTimeout(id);
   }, [errorTimer]);
 
-  // ===== EVENT HANDLER FUNCTIONS =====
+  // ===== EVENT HANDLERS =====
   function handleUsdAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
     setBalancePercentage(undefined);
@@ -228,12 +230,13 @@ export default function NewTradeCardRight({
 
   return (
     <div className="flex-2 p-4">
+      {/* ===== HEADER ===== */}
       <p className="text-xs font-mono mt-2 mb-1 text-gray-400">ORDER ENTRY</p>
       <p className="font-bold text-xl mb-4">
         {toTitleCase(orderSide)} {currCoin.ticker.toUpperCase()}
       </p>
 
-      {/* Buy/Sell toggle group */}
+      {/* ===== BUY/SELL TOGGLE ===== */}
       <div className="relative flex w-full py-1.5 mb-4 cursor-pointer bg-[#f5f5f5] rounded-sm overflow-hidden">
         <div
           className={`absolute inset-y-0 w-1/2 rounded-sm transition-all duration-300 ease-in-out ${orderSide === "BUY" ? "left-0 bg-black" : "left-1/2 bg-orange-500"}`}
@@ -252,7 +255,7 @@ export default function NewTradeCardRight({
         </div>
       </div>
 
-      {/* Market/Limit/Stop toggle group */}
+      {/* ===== ORDER TYPE TOGGLE ===== */}
       <div className="flex gap-2 mb-4">
         {["↯ Market", "◎ Limit", "◈ Stop"].map((typeRaw) => {
           const type = typeRaw.slice(2).toUpperCase();
@@ -270,7 +273,7 @@ export default function NewTradeCardRight({
         })}
       </div>
 
-      {/* PlayUSD input */}
+      {/* ===== USD AMOUNT INPUT ===== */}
       <p className="text-xs text-gray-400 mb-2 font-mono">TOTAL (USD)</p>
       <Field
         data-invalid={
@@ -305,7 +308,7 @@ export default function NewTradeCardRight({
         )}
       <div className="mb-2" />
 
-      {/* Balance percentage toggle group */}
+      {/* ===== BALANCE PERCENTAGE TOGGLE ===== */}
       <div className="flex w-full gap-2 mb-4">
         {[0.1, 0.25, 0.5, 0.75, 1].map((num) => {
           return userBalanceQuery.isLoading ? (
@@ -326,7 +329,7 @@ export default function NewTradeCardRight({
         })}
       </div>
 
-      {/* LIMIT/STOP price input */}
+      {/* ===== LIMIT/STOP PRICE INPUT ===== */}
       {(orderType === "LIMIT" || orderType === "STOP") && (
         <>
           <p className="text-xs mb-2 text-gray-400 font-mono">
@@ -363,7 +366,7 @@ export default function NewTradeCardRight({
         </>
       )}
 
-      {/* Coin amount input */}
+      {/* ===== COIN AMOUNT INPUT ===== */}
       <p className="text-xs mb-2 text-gray-400 font-mono uppercase">
         AMOUNT ({currCoin.ticker})
       </p>
@@ -400,7 +403,7 @@ export default function NewTradeCardRight({
 
       <Separator className="mt-6 mb-4" />
 
-      {/* Share on timeline header*/}
+      {/* ===== TIMELINE TOGGLE ===== */}
       <div className="flex justify-between mb-2">
         <p className="text-sm text-gray-600">Share Trade on Timeline</p>
         <Switch
@@ -409,7 +412,7 @@ export default function NewTradeCardRight({
         />
       </div>
 
-      {/* Share on timeline text area */}
+      {/* ===== TIMELINE MESSAGE ===== */}
       <Field data-invalid={invalidTimelineMsg} className="mb-4 gap-1">
         <Textarea
           className="bg-[#fafafa] w-full h-25 resize-none"
@@ -423,7 +426,7 @@ export default function NewTradeCardRight({
         />
       </Field>
 
-      {/* PLACE ORDER BUTTON */}
+      {/* ===== PLACE ORDER BUTTON ===== */}
       <RippleButton
         variant="default"
         className={`font-bold w-full cursor-pointer ${orderSide === "SELL" && !(successTimer > 0) && !(errorTimer > 0) && "bg-orange-500 hover:bg-orange-600"} ${successTimer > 0 && "bg-emerald-500"} ${errorTimer > 0 && "bg-red-500"}`}

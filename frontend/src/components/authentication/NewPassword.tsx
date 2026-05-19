@@ -3,6 +3,7 @@ import { Field, FieldDescription, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import { validatePasswordRule } from "@/utils";
 
+// ===== TYPES =====
 type NewPasswordProps = {
   password: string;
   setPassword: Dispatch<SetStateAction<string>>;

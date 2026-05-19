@@ -24,6 +24,7 @@ import { validateEmail } from "@/utils";
 // TODO:
 // - Add comments
 
+// ===== API FUNCTIONS =====
 async function sendPasswordResetEmail(
   email: string,
 ): Promise<{ error: string } | { success: string }> {
@@ -39,14 +40,17 @@ async function sendPasswordResetEmail(
 }
 
 export default function RequestPasswordReset() {
+  // ===== STATE VARIABLES =====
   const [email, setEmail] = useState(useLocation().state?.email);
   const [invalidEmail, setInvalidEmail] = useState(false);
   const navigate = useNavigate();
 
+  // ===== REACT QUERY HOOKS =====
   const sendResetEmailMutation = useMutation({
     mutationFn: () => sendPasswordResetEmail(email),
   });
 
+  // ===== EVENT HANDLERS =====
   function handleEmailInput(e: ChangeEvent<HTMLInputElement>): void {
     setEmail(e.target.value);
   }
@@ -69,6 +73,7 @@ export default function RequestPasswordReset() {
 
   return (
     <Card className="w-96">
+      {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
         <CardTitle>Reset your password</CardTitle>
         <CardDescription>
@@ -77,6 +82,7 @@ export default function RequestPasswordReset() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
           <Input
@@ -87,6 +93,7 @@ export default function RequestPasswordReset() {
             onChange={handleEmailInput}
           />
         </Field>
+        {/* ===== ERROR ALERTS ===== */}
         {invalidEmail && (
           <>
             <br />
@@ -111,6 +118,7 @@ export default function RequestPasswordReset() {
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
+        {/* ===== SEND BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           onClick={handleSendEmailClick}
@@ -122,6 +130,7 @@ export default function RequestPasswordReset() {
           )}
           <RippleButtonRipples />
         </RippleButton>
+        {/* ===== BACK BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"

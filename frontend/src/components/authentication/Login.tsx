@@ -24,6 +24,7 @@ import { AlertCircleIcon } from "lucide-react";
 import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
 
+// ===== API FUNCTIONS =====
 async function loginFunction(data: { email: string; password: string }) {
   const response = await fetch("http://localhost:5000/login", {
     method: "POST",
@@ -41,6 +42,7 @@ async function loginFunction(data: { email: string; password: string }) {
 }
 
 export default function Login() {
+  // ===== STATE VARIABLES =====
   const prefillEmail: string = useLocation().state?.prefillEmail ?? "";
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
@@ -54,6 +56,7 @@ export default function Login() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // ===== REACT QUERY HOOKS =====
   const loginMutation = useMutation({
     mutationFn: (data: { email: string; password: string }) => {
       return loginFunction(data);
@@ -87,6 +90,7 @@ export default function Login() {
     },
   });
 
+  // ===== EVENT HANDLERS =====
   async function handleLogin(): Promise<void> {
     if (!validateEmail(email)) {
       setError([
@@ -112,6 +116,7 @@ export default function Login() {
 
   return (
     <Card className="w-96">
+      {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
         <CardTitle>Welcome back</CardTitle>
         <CardDescription>
@@ -119,6 +124,7 @@ export default function Login() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
           <Input
@@ -130,6 +136,7 @@ export default function Login() {
           />
         </Field>
         <br />
+        {/* ===== PASSWORD FIELD ===== */}
         <Field>
           <div className="flex items-center">
             <Label htmlFor="input-password">Password</Label>
@@ -148,6 +155,7 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
+        {/* ===== ERROR ALERT ===== */}
         {error.at(0) !== "" && error.at(1) !== "" && (
           <>
             <br />
@@ -160,11 +168,13 @@ export default function Login() {
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
+        {/* ===== LOGIN BUTTON ===== */}
         <RippleButton className="w-full cursor-pointer" onClick={handleLogin}>
           {loginMutation.isPending ? <Spinner /> : <>Login</>}
           <RippleButtonRipples />
         </RippleButton>
 
+        {/* ===== TEST LOGIN BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"
@@ -174,6 +184,7 @@ export default function Login() {
           <RippleButtonRipples />
         </RippleButton>
 
+        {/* ===== OAUTH DIVIDER ===== */}
         <div className="flex w-full items-center">
           <div className="flex-1 border-t border-gray-400" />
           <span className="mx-4 text-sm text-muted-foreground">
@@ -182,6 +193,7 @@ export default function Login() {
           <div className="flex-1 border-t border-gray-400" />
         </div>
 
+        {/* ===== OAUTH BUTTONS ===== */}
         <div className="flex gap-2 justify-center">
           <RippleButton
             className="cursor-pointer"
@@ -216,6 +228,7 @@ export default function Login() {
           </RippleButton>
         </div>
 
+        {/* ===== SIGNUP LINK ===== */}
         <div className="flex items-center text-sm">
           <span>Don't have an account?&nbsp;</span>
           <p

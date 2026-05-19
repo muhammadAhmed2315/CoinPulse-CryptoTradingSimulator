@@ -13,6 +13,7 @@ import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { Separator } from "@/components/ui/separator";
 import OpenOrderRow from "./OpenOrderRow";
 
+// ===== API FUNCTIONS =====
 async function getOpenTrades() {
   const response = await fetch("http://localhost:5000/get_open_trades", {
     method: "get",
@@ -24,6 +25,7 @@ async function getOpenTrades() {
   return await response.json();
 }
 
+// ===== HELPER FUNCTIONS =====
 function filterOrdersByType(
   tradesData: any,
   orderType: string,
@@ -85,7 +87,7 @@ export default function OpenPositions() {
 
   return (
     <Card className="gap-0 p-0">
-      {/* ===== HEADER =====  */}
+      {/* ===== HEADER ===== */}
       <div className="p-5 pb-0">
         {/* ===== RESERVED VALUE ===== */}
         <p className="text-xs text-gray-500 font-mono">RESERVED VALUE</p>

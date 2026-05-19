@@ -8,6 +8,17 @@ import PlayUSD from "@/assets/play-usd.svg";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 
+// ===== TYPES =====
+type WalletAsset = {
+  id: string;
+  name: string;
+  ticker: string;
+  image: string;
+  amount: number;
+  totalValue: number;
+  priceChange24h: number;
+};
+
 // ===== HELPER FUNCTIONS =====
 function formatCoinAmount(n: number) {
   return new Intl.NumberFormat("en-US", {
@@ -16,7 +27,7 @@ function formatCoinAmount(n: number) {
   }).format(n);
 }
 
-// ===== API REQUESTS =====
+// ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
   const response = await fetch(
     "http://localhost:5000/get_wallet_total_current_value",
@@ -31,7 +42,7 @@ async function fetchTotalPortfolioValue() {
   return await response.json();
 }
 
-async function fetchWalletAssets() {
+async function fetchWalletAssets(): Promise<WalletAsset[]> {
   const response = await fetch("http://localhost:5000/get_wallet_assets", {
     method: "GET",
     credentials: "include",
@@ -54,9 +65,11 @@ export default function PortfolioOverview() {
     queryFn: fetchWalletAssets,
   });
 
+  // ===== STATE VARIABLES =====
   const [isAtBottom, setIsAtBottom] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ===== EVENT HANDLERS =====
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -65,8 +78,9 @@ export default function PortfolioOverview() {
 
   return (
     <Card className="p-0 gap-2">
-      {/* HEADER */}
+      {/* ===== HEADER ===== */}
       <div className="p-5 pb-2 gap-[-2px]">
+        {/* ===== PORTFOLIO VALUE ===== */}
         <p className="text-xs text-gray-500 font-mono">PORTFOLIO VALUE</p>
         {totalPortfolioValueQuery.isLoading && (
           <CustomSkeleton className="h-8 w-90" />
@@ -76,6 +90,7 @@ export default function PortfolioOverview() {
             ${numToMoney(totalPortfolioValueQuery.data)}
           </h1>
         )}
+        {/* ===== BREAKDOWN BAR ===== */}
         <HoldingsBreakdownBar
           holdings={
             walletAssetsQuery.data?.map((coin) => {
@@ -90,6 +105,7 @@ export default function PortfolioOverview() {
       </div>
       <Separator />
 
+      {/* ===== HOLDINGS LIST ===== */}
       <div className="px-5 pt-2 pb-0 gap-[-2px]">
         <div className="flex justify-between text-xs text-gray-500 pb-1">
           <p>HOLDINGS</p>
@@ -104,7 +120,10 @@ export default function PortfolioOverview() {
           >
             {walletAssetsQuery.data &&
               walletAssetsQuery.data.map((c) => (
-                <div className="flex justify-between py-2.5 border-b border-[#f0f0f0]">
+                <div
+                  key={c.id}
+                  className="flex justify-between py-2.5 border-b border-[#f0f0f0]"
+                >
                   <div className="flex gap-3 items-center">
                     <img
                       src={c.id === "playusd" ? PlayUSD : c.image}

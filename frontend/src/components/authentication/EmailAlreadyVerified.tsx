@@ -18,6 +18,7 @@ export default function EmailAlreadyVerified() {
     return null;
   }
 
+  // ===== EVENT HANDLERS =====
   function handleLogin() {
     // TODO: This should go straight to the dashboard, you'll have to update the
     //      "/verify_email" endpoint so that it returns an authentication token and you
@@ -28,21 +29,25 @@ export default function EmailAlreadyVerified() {
   return (
     <Card className="w-100 p-9">
       <div className="flex flex-col items-center">
+        {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={ClockIcon} className="size-7 invert" />
         </div>
 
+        {/* ===== HEADER ===== */}
         <p>ALREADY DONE</p>
         <p className="text-[22px] font-extrabold text-center">
           This email has already been verified
         </p>
         <Separator />
 
+        {/* ===== STATUS BADGE ===== */}
         <div className="flex items-center gap-2 mt-2 bg-[#d6e4f6] rounded-xl pl-2 pr-2 pt-1 pb-1">
           <img src={DotBlue} className="size-2" />
           <p className="font-bold text-[#3266ad]">Already verified</p>
         </div>
 
+        {/* ===== MESSAGE ===== */}
         <p className="text-center text-sm">
           Your email adress <b>{email}</b> was already verified. No further
           action is needed.
@@ -50,6 +55,7 @@ export default function EmailAlreadyVerified() {
 
         <p className="text-sm">You can now access your account.</p>
 
+        {/* ===== LOGIN BUTTON ===== */}
         <RippleButton className="w-full cursor-pointer" onClick={handleLogin}>
           Log in
           <RippleButtonRipples />

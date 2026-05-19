@@ -1,5 +1,6 @@
 import { Skeleton } from "./ui/skeleton";
 
+// ===== TYPES =====
 type CustomSkeletonProps = {
   className?: string;
 };

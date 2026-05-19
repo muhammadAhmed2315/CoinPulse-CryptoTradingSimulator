@@ -15,6 +15,7 @@ import CustomTooltip from "@/components/CustomTooltip";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import { Separator } from "@/components/ui/separator";
 
+// ===== TYPES =====
 type TrendingCoinCardProps = {
   data?: {
     name: string;
@@ -38,7 +39,10 @@ export default function TrendingCoinCard({
   isLoading,
   isError,
 }: TrendingCoinCardProps) {
+  // ===== STATE VARIABLES =====
   const [hovered, setHovered] = useState(false);
+
+  // ===== DERIVED STATE =====
   const priceChange = data ? data.price_change_percentage_24h.usd : undefined;
   const borderBeamColor = isError ? "#ff0000" : "#444";
 
@@ -48,6 +52,7 @@ export default function TrendingCoinCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+      {/* ===== BORDER BEAM ===== */}
       {hovered && (
         <>
           <BorderBeam
@@ -68,10 +73,12 @@ export default function TrendingCoinCard({
         </>
       )}
       {isLoading ? (
+        /* ===== LOADING STATE ===== */
         <div className="flex h-full items-center justify-center">
           <Spinner className="size-8" />
         </div>
       ) : isError ? (
+        /* ===== ERROR STATE ===== */
         <div className="flex flex-col items-center justify-center py-5 px-3 gap-2.5 text-center">
           <img src={RedWarningIcon} />
           <div>
@@ -85,6 +92,7 @@ export default function TrendingCoinCard({
         </div>
       ) : (
         <>
+          {/* ===== HEADER ===== */}
           <CardHeader className="flex px-2 justify-between mb-2">
             <div>
               <div className="flex">
@@ -107,6 +115,7 @@ export default function TrendingCoinCard({
             />
           </CardHeader>
 
+          {/* ===== BODY ===== */}
           <CardContent className="px-2">
             <p className="text-gray-500 font-mono">PRICE</p>
 
@@ -123,6 +132,7 @@ export default function TrendingCoinCard({
 
           <Separator className="mt-2 mb-3" />
 
+          {/* ===== FOOTER ===== */}
           <CardFooter className="h-8">
             <div className="flex-2">
               <p className="text-xs text-gray-500 font-mono">MKT CAP</p>

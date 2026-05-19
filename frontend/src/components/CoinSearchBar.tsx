@@ -4,6 +4,7 @@ import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { SearchIcon } from "lucide-react";
 
+// ===== TYPES =====
 type CoinSearchBarProps = {
   coins: Coin[];
   debouncedQuery: string;
@@ -19,8 +20,10 @@ export default function CoinSearchBar({
   query,
   setCurrCoin,
 }: CoinSearchBarProps) {
+  // ===== STATE VARIABLES =====
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // ===== DERIVED STATE =====
   const coinMatching = useCallback(() => {
     if (debouncedQuery === "") return [];
     return coins.filter((c) => c.name.toLowerCase().startsWith(debouncedQuery));
@@ -28,6 +31,7 @@ export default function CoinSearchBar({
 
   const matchingCoins = coinMatching();
 
+  // ===== EVENT HANDLERS =====
   function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {
     setQuery(e.target.value);
     setShowDropdown(true);
@@ -41,6 +45,7 @@ export default function CoinSearchBar({
 
   return (
     <div className="relative flex flex-col gap-1">
+      {/* ===== SEARCH INPUT ===== */}
       <Field className="max-w-sm">
         <InputGroup>
           <InputGroupInput
@@ -54,6 +59,7 @@ export default function CoinSearchBar({
         </InputGroup>
       </Field>
 
+      {/* ===== RESULTS DROPDOWN ===== */}
       <div className="absolute top-full left-0 w-full z-10 bg-white">
         {showDropdown &&
           matchingCoins.slice(0, 10).map((c) => (

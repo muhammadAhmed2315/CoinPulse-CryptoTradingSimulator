@@ -1,6 +1,7 @@
 import CustomSkeleton from "@/components/CustomSkeleton";
 import { useState } from "react";
 
+// ===== CONSTANTS =====
 const COLORS = [
   "#000000",
   "#1a1a1a",
@@ -13,6 +14,7 @@ const COLORS = [
   "#cccccc",
 ];
 
+// ===== HELPER FUNCTIONS =====
 function convertHoldingsToPercentages(
   holdings: { id: string; ticker: string; totalValue: number }[],
 ) {
@@ -46,6 +48,7 @@ function convertHoldingsToPercentages(
   ];
 }
 
+// ===== TYPES =====
 type HoldingsBreakdownBarProps = {
   holdings: { id: string; ticker: string; totalValue: number }[];
 };
@@ -63,6 +66,7 @@ export default function HoldingsBreakdownBar({
 
   return (
     <div className="flex flex-col gap-0.5">
+      {/* ===== BAR ===== */}
       <div className="flex gap-0.5 mb-1">
         {holdingsWithPercentages.map((coin) => (
           <div
@@ -80,6 +84,7 @@ export default function HoldingsBreakdownBar({
           />
         ))}
       </div>
+      {/* ===== LEGEND ===== */}
       <div className="flex flex-wrap gap-x-2">
         {holdingsWithPercentages.map((coin) => (
           <div

@@ -1,55 +1,54 @@
 import { Card } from "../ui/card";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
-import RedditPost from "./RedditPost";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import NewsItem from "./NewsItem";
 
 // ===== TYPES =====
-type RedditFeedProps = {
+type NewsFeedProps = {
   coinName: string;
 };
 
-export type RedditPost = {
-  comment_count: number;
-  content: string;
-  fullname: string;
-  id: string;
-  score: number;
-  subreddit: string;
-  thumbnail: string;
-  timestamp: string;
+export type NewsArticle = {
   title: string;
-  url: string;
+  image_url: string;
+  pubDate: string;
+  pubDateTZ: string;
+  article_id: string;
+  source_name: string;
+  source_url: string;
+  link: string;
+  description: string;
 };
 
 // ===== API FUNCTIONS =====
-async function getRedditPosts(coinName: string, after: string) {
-  const response = await fetch("http://localhost:5000/get_reddit_posts", {
+async function getNewsArticles(coinName: string, nextPage: string) {
+  const response = await fetch("http://localhost:5000/get_news_articles", {
     method: "post",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: coinName, after: after }),
+    body: JSON.stringify({ query: coinName, nextPage: nextPage }),
     credentials: "include",
   });
 
-  if (!response.ok) throw await response.json();
+  if (!response.ok) {
+    throw foo;
+  }
 
   return await response.json();
 }
 
-export default function RedditFeed({ coinName }: RedditFeedProps) {
+export default function NewsFeed({ coinName }: NewsFeedProps) {
   // ===== REACTQUERY HOOKS =====
-  const redditPostsQuery = useInfiniteQuery({
-    queryKey: ["reddit-posts", coinName],
-    queryFn: ({ pageParam }) => getRedditPosts(coinName, pageParam),
-    getNextPageParam: (lastPage) => {
-      return lastPage.length > 0 ? lastPage.at(-1)!.fullname : undefined;
-    },
+  const newsArticlesQuery = useInfiniteQuery({
+    queryKey: ["news-articles", coinName],
+    queryFn: ({ pageParam }) => getNewsArticles(coinName, pageParam),
+    getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: "",
   });
 
   // ===== DERIVED STATE =====
-  const numPosts = redditPostsQuery.data
-    ? redditPostsQuery.data.pages.flatMap((page) => page).length
+  const numPosts = newsArticlesQuery.data
+    ? newsArticlesQuery.data.pages[0].totalResults
     : 0;
 
   return (
@@ -57,10 +56,10 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
       <div className="flex items-end justify-between gap-4 border-b border-[#f0f0f0] px-6 pt-5.5 pb-4.5">
         <div className="flex flex-col gap-2">
           <p className="font-mono text-[11px] leading-none font-semibold tracking-[0.06em] text-[#71717a] uppercase">
-            REDDIT
+            NEWS
           </p>
           <p className="text-[22px] leading-none font-bold text-[#111111]">
-            Recent Reddit Posts on {coinName}
+            Recent {coinName} News
           </p>
         </div>
         <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
@@ -69,9 +68,9 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
       </div>
 
       <InfiniteScroll
-        dataLength={redditPostsQuery.data?.pages.length || 0}
-        next={redditPostsQuery.fetchNextPage}
-        hasMore={!!redditPostsQuery.hasNextPage}
+        dataLength={newsArticlesQuery.data?.pages.length || 0}
+        next={newsArticlesQuery.fetchNextPage}
+        hasMore={!!newsArticlesQuery.hasNextPage}
         loader={<span></span>}
         endMessage={
           <p style={{ textAlign: "center" }}>
@@ -80,10 +79,12 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
         }
         className="flex flex-col pb-8"
       >
-        {redditPostsQuery.data?.pages.map((page) =>
-          page.map((pg) => <RedditPost key={pg.fullname} post={pg} />),
-        )}
-        {redditPostsQuery.isFetching && (
+        {newsArticlesQuery.data?.pages.map((page) => {
+          return page.results.map((artcl) => {
+            return <NewsItem key={artcl.article_id} post={artcl} />;
+          });
+        })}
+        {newsArticlesQuery.isFetching && (
           <div className="pt-4 w-full flex justify-center">
             <Spinner className="size-10" />
           </div>

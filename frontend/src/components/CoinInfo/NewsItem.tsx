@@ -1,25 +1,22 @@
-import type { RedditPost } from "./RedditFeed";
+import type { NewsArticle } from "./NewsFeed";
 
-// ===== TYPES AND INTERFACES =====
-type RedditPostProps = {
-  post: RedditPost;
+type NewsItemProps = {
+  post: NewsArticle;
 };
 
-export default function RedditPost({ post }: RedditPostProps) {
+export default function NewsItem({ post }: NewsItemProps) {
   return (
     <div className="border-b border-[#f0f0f0] last:border-b-0">
       <a
         className="block"
-        href={post.url}
+        href={post.link}
         rel="noopener noreferrer"
         target="_blank"
       >
         <div className="flex gap-3.5 px-6 py-4.5 hover:bg-[#fafafa]">
-          {post.thumbnail !== "" &&
-          post.thumbnail !== "default" &&
-          post.thumbnail !== "image" ? (
+          {post.image_url ? (
             <img
-              src={post.thumbnail}
+              src={post.image_url}
               className="size-21 shrink-0 rounded-[10px] border border-[#ececef] bg-[#fafafa] object-cover"
             />
           ) : (
@@ -47,11 +44,13 @@ export default function RedditPost({ post }: RedditPostProps) {
 
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <div className="flex items-center gap-2.5 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
-              <span>{post.subreddit}</span>
+              <span>{post.source_name}</span>
               <span className="inline-block size-0.75 shrink-0 overflow-hidden rounded-full bg-[#a0a0a0] text-transparent">
                 .
               </span>
-              <span>{post.timestamp}</span>
+              <span>
+                {post.pubDate} {post.pubDateTZ}
+              </span>
             </div>
 
             <div>
@@ -60,13 +59,13 @@ export default function RedditPost({ post }: RedditPostProps) {
               </p>
             </div>
 
-            <div className="mt-0.5 flex items-center gap-2.5 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#a0a0a0] uppercase">
-              <p>{post.score} votes</p>
-              <span className="inline-block size-0.75 shrink-0 overflow-hidden rounded-full bg-[#a0a0a0] text-transparent">
-                .
-              </span>
-              <p>{post.comment_count} comments</p>
-            </div>
+            <p className="line-clamp-2 text-[12px] leading-[1.45] text-[#71717a]">
+              {post.description}
+            </p>
+
+            <span className="mt-0.5 font-mono text-[11px] font-medium text-[#71717a] w-fit hover:underline">
+              Go to {post.source_name} →
+            </span>
           </div>
         </div>
       </a>

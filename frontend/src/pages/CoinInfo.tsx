@@ -1,6 +1,6 @@
 import CoinInfoCard from "@/components/CoinInfo/CoinInfoCard";
 import MarketChartsCard from "@/components/CoinInfo/MarketChartsCard";
-import NewsFeedCard from "@/components/CoinInfo/NewsFeedCard";
+import NewsFeed from "@/components/CoinInfo/NewsFeed";
 import RedditFeedCard from "@/components/CoinInfo/RedditFeed";
 
 import BitcoinLogo from "../assets/logos/bitcoin.png";
@@ -29,7 +29,7 @@ export default function CoinInfo() {
         />
       </div>
       <div className="flex w-full gap-4">
-        <NewsFeedCard />
+        <NewsFeed coinName={currCoin.name} />
         <RedditFeedCard coinName={currCoin.name} />
       </div>
     </div>

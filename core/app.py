@@ -1,3 +1,4 @@
+from constants import NEWSDATA_API_KEY
 import json
 import math
 import time
@@ -677,9 +678,9 @@ def coin_info():
     )
 
 
-@core.route("/get_news", methods=["POST"])
+@core.route("/get_news_articles", methods=["POST"])
 @jwt_required()
-def get_news():
+def get_news_articles():
     """
     Fetch news articles based on a user-specified query and page number.
 
@@ -691,31 +692,31 @@ def get_news():
               Each article includes details like the title, URL, UNIX timestamp,
               description, and publisher.
     """
-    data = request.get_json()
-    query = data["query"]
-    page = data["page"]
+    try:
+        data = request.get_json()
+        query = data["query"]
+        next_page = data["nextPage"]
 
-    # Create YahooNewsScraper object
-    scraper = YahooNewsScaper()
+        print(f"QUERY {query}")
+        print(f"NEXT PAGE {next_page}")
 
-    # Search for news articles
-    articles = scraper.search(query, page)
+        url = (
+            f"https://newsdata.io/api/1/crypto"
+            f"?apikey={NEWSDATA_API_KEY}"
+            f"&q={query}"
+            f"&removeduplicate=1"
+            f"&language=en"
+        )
 
-    res = []
+        if next_page != "":
+            url += f"&page={next_page}"
 
-    # Extract necessary data from each article
-    for article in articles:
-        temp = {}
-        temp["title"] = article.title
-        temp["url"] = article.url
-        temp["timestamp"] = article.timestamp
-        temp["description"] = article.description
-        temp["publisher"] = article.publisher
-        res.append(temp)
+        response = requests.get(url)
+        data = response.json()
 
-    return jsonify(
-        {"success": "News articles successfully fetched", "articles": res}, 200
-    )
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch news: {str(e)}"}), 500
 
 
 @core.route("/get_reddit_posts", methods=["POST"])

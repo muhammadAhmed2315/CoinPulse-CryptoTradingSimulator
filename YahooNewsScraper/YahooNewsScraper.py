@@ -39,10 +39,41 @@ class YahooNewsScaper:
         url_encoded_query = urllib.parse.quote(query)
         url = self.base_url + f"?q={url_encoded_query}"
         url += f"&b={(10 * (page - 1)) + 1}"
+        print("*" * 25)
+        print(url)
+        print("*" * 25)
 
         # Get page and pass to BeautifulSoup
-        ynews_page = requests.get(url).text
+        session = requests.Session()
+        session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
+                "Upgrade-Insecure-Requests": "1",
+            }
+        )
+        session.get("https://www.yahoo.com/")  # prime cookies
+        r = session.get(url)
+        print("*" * 25)
+        print("requested:", url)
+        print("final:   ", r.url)
+        print("status:  ", r.status_code)
+        for h in r.history:
+            print(h.status_code, "->", h.headers.get("Location"))
+        ynews_page = r.text
+        print(ynews_page)
+        print("*" * 25)
         doc = BeautifulSoup(ynews_page, "html.parser")
+        print("*" * 25)
+        print(doc)
+        print("*" * 25)
         news_articles = doc.find_all("div", class_="dd NewsArticle")
         print(news_articles)
 

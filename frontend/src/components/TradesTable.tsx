@@ -29,8 +29,6 @@ async function fetchTradesHistory(page: number, filter: string) {
   });
 
   if (!response.ok) {
-    const foo = await response.json();
-    console.log(foo);
     throw await response.json();
   }
 

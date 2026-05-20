@@ -10,12 +10,11 @@ from flask_jwt_extended import (
 )
 from rapidfuzz import process
 
-from constants import COINGECKO_API_HEADERS
+from constants import COINGECKO_API_HEADERS, NEWSDATA_API_KEY
 from core.app import time_ago, update_user_wallet_value_in_background
 from extensions import db
 from models import Transaction, TransactionLikes, User, Wallet
 from RedditScraper.RedditScraper import RedditScraper
-from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 
 api = Blueprint("api", __name__)
 
@@ -1070,33 +1069,38 @@ def get_coin_historical_volume_data():
 @jwt_required()
 def get_coin_news_articles():
     """
-    Fetches news articles from Yahoo News related to a specified cryptocurrency coin.
+    Fetches news articles related to a specified cryptocurrency using its coin ID.
 
-    This endpoint retrieves news articles for a given cryptocurrency using the coin ID
-    provided in the request parameters. It uses a Yahoo news scraper to fetch relevant
-    articles. The function requires a JWT token for authorization.
+    This endpoint requires JWT authentication and queries the NewsData API for the
+    most recent English-language crypto news matching the coin name. The coin ID
+    must be provided as a query parameter, and an optional 'next_page' parameter
+    can be used to paginate through the results. The value of the 'next_page'
+    parameter should be the 'nextPage' cursor returned by the previous response.
 
     Parameters:
-        coin_id (str): A unique identifier for the cryptocurrency. This should be
-                       passed as a query parameter.
-        page (int, optional): The page number of the news results to return. Defaults
-                              to 1 if not specified.
+        coin_id (str): The unique identifier for the cryptocurrency, passed as a
+                       query parameter.
+        next_page (str): A cursor for pagination, passed as a query parameter.
+                         Defaults to an empty string.
 
     Returns:
-        jsonify: A JSON object containing a list of news articles with their details
-                 such as title, url, timestamp, description, and publisher, if
-                 successful. If there are any issues with the request parameters (such
-                 as missing or invalid `coin_id` or `page`), appropriate error messages
-                 and status codes are returned.
+        json: A JSON response containing the fetched news articles or an error
+            message. The successful response is the raw NewsData payload, which
+            includes a list of articles with details such as title, link,
+            description, publisher, and publication timestamp.
+            Error responses are sent with appropriate HTTP status codes and
+            messages indicating missing or invalid parameters.
+
+    Raises:
+        HTTP 400: If 'coin_id' is missing or invalid, indicating client-side input
+                  errors.
+        HTTP 500: If fetching news articles from the NewsData API fails.
     """
     coin_id = request.args.get("coin_id")
-    page = int(request.args.get("page", 1))
+    next_page = request.args.get("next_page", "")
 
-    if not request.args.get("coin_id"):
+    if not coin_id:
         return jsonify({"msg": "Missing coin_id"}), 400
-
-    if page < 1:
-        return jsonify({"msg": "Invalid page number"}), 400
 
     # Get the coin name from the coin_id
     query = ""
@@ -1115,27 +1119,24 @@ def get_coin_news_articles():
             400,
         )
 
-    # Create YahooNewsScraper object
-    scraper = YahooNewsScaper()
+    try:
+        url = (
+            f"https://newsdata.io/api/1/crypto"
+            f"?apikey={NEWSDATA_API_KEY}"
+            f"&q={query}"
+            f"&removeduplicate=1"
+            f"&language=en"
+        )
 
-    # Search for news articles
-    articles = scraper.search(query, page)
+        if next_page != "":
+            url += f"&page={next_page}"
 
-    res = []
+        response = requests.get(url)
+        data = response.json()
 
-    # Extract necessary data from each article
-    for article in articles:
-        temp = {}
-        temp["title"] = article.title
-        temp["url"] = article.url
-        temp["timestamp"] = article.timestamp
-        temp["description"] = article.description
-        temp["publisher"] = article.publisher
-        res.append(temp)
-
-    return jsonify(
-        {"success": "News articles successfully fetched", "articles": res}, 200
-    )
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch news: {str(e)}"}), 500
 
 
 @api.route("/coins/reddit", methods=["GET"])

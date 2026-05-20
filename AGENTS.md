@@ -9,6 +9,7 @@ CoinPulse is a cryptocurrency trading simulator with a Flask backend, React (Vit
 ## Development Commands
 
 ### Backend (Flask)
+
 ```bash
 pip install -r requirements.txt      # Install Python dependencies
 python dbCreator.py                   # Create the PostgreSQL database (first-time only)
@@ -18,6 +19,7 @@ python app.py                         # Start with background threads for order 
 ```
 
 ### Frontend (React/Vite)
+
 ```bash
 cd frontend
 npm install                           # Install Node dependencies
@@ -27,11 +29,13 @@ npm run lint                          # ESLint
 ```
 
 ### Coin Image Scraper
+
 ```bash
 node --env-file=.env scraper.js       # Scrapes coin images into frontend/public/coins.tsv
 ```
 
 ### Formatter
+
 The project uses `black` for Python formatting (listed in requirements.txt).
 
 ## Architecture
@@ -54,6 +58,7 @@ Both threads batch CoinGecko API calls in groups of 250 coins to stay within rat
 ### Database Models (`models.py`)
 
 PostgreSQL with UUID primary keys throughout. Key relationships:
+
 - **User** -> has one **Wallet** (1:1)
 - **Wallet** -> has many **Transaction**s, has one **ValueHistory**
 - **Transaction** -> has one **TransactionLikes** (stores array of user UUIDs who liked)
@@ -73,7 +78,6 @@ React 19 + TypeScript + Vite + Tailwind CSS v4. Key patterns:
 
 ### Scrapers
 
-- **`YahooNewsScraper/`** - Scrapes Yahoo News for coin-related articles using BeautifulSoup.
 - **`RedditScraper/`** - Fetches Reddit posts via the Reddit API (requires Reddit API credentials).
 - **`scraper.js`** - One-off Node script that scrapes CoinGecko for coin images and merges with API coin list, outputs `frontend/public/coins.tsv`.
 

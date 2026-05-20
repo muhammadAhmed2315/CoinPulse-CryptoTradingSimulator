@@ -27,7 +27,6 @@ from constants import (
 from extensions import db
 from models import Transaction, TransactionLikes, User, Wallet
 from RedditScraper.RedditScraper import RedditScraper
-from YahooNewsScraper.YahooNewsScraper import YahooNewsScaper
 
 core = Blueprint("core", __name__)
 
@@ -685,7 +684,7 @@ def get_news_articles():
     Fetch news articles based on a user-specified query and page number.
 
     This endpoint accepts a JSON payload with the search query and page number to fetch
-    news articles using the YahooNewsScraper class.
+    news articles using the NewsData API.
 
     Returns:
         json: A JSON object containing a success message and a list of news articles.

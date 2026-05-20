@@ -12,7 +12,7 @@ export default function PriceChangeBox({
 }: PriceChangeBoxProps) {
   return (
     <div
-      className={`flex gap-1 rounded-md px-2 py-0.5 ${priceChange! > 0 ? "bg-green-50" : priceChange! < 0 ? "bg-red-50" : "bg-black/5"}`}
+      className={`flex gap-1 rounded-md px-2 py-0.5 whitespace-nowrap ${priceChange! > 0 ? "bg-green-50" : priceChange! < 0 ? "bg-red-50" : "bg-black/5"}`}
     >
       <p
         className={`${priceChange! >= 0 ? "text-[#21c45d]" : "text-[#ef4444]"} text-${fontSize} font-bold`}

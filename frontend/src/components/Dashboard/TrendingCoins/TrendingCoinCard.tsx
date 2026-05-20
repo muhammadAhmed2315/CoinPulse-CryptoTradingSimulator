@@ -14,10 +14,12 @@ import { Spinner } from "@/components/ui/spinner";
 import CustomTooltip from "@/components/CustomTooltip";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 
 // ===== TYPES =====
 type TrendingCoinCardProps = {
   data?: {
+    coin_id: string;
     name: string;
     thumb: string;
     symbol: string;
@@ -41,6 +43,7 @@ export default function TrendingCoinCard({
 }: TrendingCoinCardProps) {
   // ===== STATE VARIABLES =====
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
 
   // ===== DERIVED STATE =====
   const priceChange = data ? data.price_change_percentage_24h.usd : undefined;
@@ -51,6 +54,7 @@ export default function TrendingCoinCard({
       className="relative cursor-pointer p-3 gap-0 w-60 overflow-hidden"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/coin_info/${data?.coin_id}`)}
     >
       {/* ===== BORDER BEAM ===== */}
       {hovered && (
@@ -124,11 +128,13 @@ export default function TrendingCoinCard({
               Price
             </p>
 
-            <div className="flex justify-between items-center mb-3">
-              <b className="font-mono text-[20px] font-semibold tracking-[-0.02em] leading-none">
+            <div className="flex justify-between items-center gap-2 mb-3">
+              <b className="font-mono text-[20px] font-semibold tracking-[-0.02em] leading-none min-w-0 truncate">
                 ${numToMoney(data!.price)}
               </b>
-              <PriceChangeBox priceChange={priceChange!} fontSize="sm" />
+              <div className="shrink-0">
+                <PriceChangeBox priceChange={priceChange!} fontSize="sm" />
+              </div>
             </div>
 
             <CurrencyBenchmarkList

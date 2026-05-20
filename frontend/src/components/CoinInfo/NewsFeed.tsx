@@ -30,9 +30,7 @@ async function getNewsArticles(coinName: string, nextPage: string) {
     credentials: "include",
   });
 
-  if (!response.ok) {
-    throw foo;
-  }
+  if (!response.ok) throw await response.json();
 
   return await response.json();
 }

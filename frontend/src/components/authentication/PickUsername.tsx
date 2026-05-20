@@ -5,11 +5,10 @@ import {
 import { Card } from "@/components/ui/card";
 import AtSymbolIcon from "@/assets/icons/at-symbol.svg";
 import { Separator } from "../ui/separator";
-import { Input } from "@/components/ui/input";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import { Spinner } from "../ui/spinner";
 import NewUsername from "./NewUsername";

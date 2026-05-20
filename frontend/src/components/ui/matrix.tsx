@@ -1,38 +1,38 @@
-import type React from "react"
-import { forwardRef } from "react"
-import { Shader } from "react-shaders"
-import { cn } from "~/lib/utils"
+import type React from "react";
+import { forwardRef } from "react";
+import { Shader } from "react-shaders";
+import { cn } from "@/lib/utils";
 
 export interface MatrixShadersProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Digital rain speed
    * @default 1.0
    */
-  speed?: number
+  speed?: number;
 
   /**
    * Rain density and column count
    * @default 1.0
    */
-  density?: number
+  density?: number;
 
   /**
    * Character brightness and contrast
    * @default 1.0
    */
-  brightness?: number
+  brightness?: number;
 
   /**
    * Green color intensity
    * @default 1.0
    */
-  greenIntensity?: number
+  greenIntensity?: number;
 
   /**
    * Character variation and randomness
    * @default 1.0
    */
-  variation?: number
+  variation?: number;
 }
 
 const fragmentShader = `
@@ -138,7 +138,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     fragColor = vec4(finalColor, 1.0);
 }
-`
+`;
 
 export const MatrixShaders = forwardRef<HTMLDivElement, MatrixShadersProps>(
   (
@@ -154,7 +154,11 @@ export const MatrixShaders = forwardRef<HTMLDivElement, MatrixShadersProps>(
     ref,
   ) => {
     return (
-      <div className={cn("w-full h-full", className)} ref={ref} {...(props as any)}>
+      <div
+        className={cn("w-full h-full", className)}
+        ref={ref}
+        {...(props as any)}
+      >
         <Shader
           fs={fragmentShader}
           style={{ width: "100%", height: "100%" } as CSSStyleDeclaration}
@@ -167,10 +171,10 @@ export const MatrixShaders = forwardRef<HTMLDivElement, MatrixShadersProps>(
           }}
         />
       </div>
-    )
+    );
   },
-)
+);
 
-MatrixShaders.displayName = "MatrixShaders"
+MatrixShaders.displayName = "MatrixShaders";
 
-export default MatrixShaders
+export default MatrixShaders;

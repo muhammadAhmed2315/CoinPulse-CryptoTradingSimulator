@@ -28,7 +28,7 @@ import type { Coin } from "@/loadAllCoinsList";
 async function placeOrder(
   orderSide: OrderSide,
   orderType: OrderType,
-  quantity: string,
+  quantity: number,
   coin_id: string,
   pricePerUnit: number,
   visibility: boolean,
@@ -37,9 +37,9 @@ async function placeOrder(
   const data = {
     transactionType: orderSide.toLowerCase(),
     orderType: orderType.toLowerCase(),
-    quantity: parseFloat(quantity),
+    quantity: quantity,
     coin_id: coin_id,
-    price_per_unit: parseFloat(pricePerUnit),
+    price_per_unit: pricePerUnit,
     visibility: visibility,
     comment: comment,
   };
@@ -112,11 +112,11 @@ export default function NewTradeCardRight({
       placeOrder(
         orderSide,
         orderType,
-        coinAmount,
+        parseFloat(coinAmount),
         currCoin.id,
         orderType === "MARKET"
           ? coinDataQuery.data[0].current_price
-          : orderPrice,
+          : parseFloat(orderPrice),
         shareOnTimeline,
         timelineMsg,
       ),
@@ -132,7 +132,7 @@ export default function NewTradeCardRight({
       setTimelineMsg("");
     },
 
-    onError: (e) => {
+    onError: () => {
       setErrorTimer(5);
     },
   });

@@ -10,7 +10,6 @@ import ResetPassword from "./components/authentication/ResetPassword";
 import AuthenticatedBase from "./pages/AuthenticatedBase";
 import ActivationEmailSent from "./components/authentication/ActivationEmailSent";
 import PickUsername from "./components/authentication/PickUsername";
-import CoinInfo from "./pages/CoinInfo";
 import PasswordResetLinkSent from "./components/authentication/PasswordResetLinkSent";
 import CreateAccount from "./components/authentication/Register";
 import VerifyEmail from "./components/authentication/VerifyEmail";
@@ -25,6 +24,7 @@ import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerifi
 import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
 import AuthenticatedPageNotFound from "./components/AuthenticatedPageNotFound.tsx";
 import NavBar from "./components/NavBar";
+import CoinInfo from "./pages/CoinInfo.tsx";
 
 function NotFoundHandler() {
   const { isAuthenticated, isLoading } = useAuth();

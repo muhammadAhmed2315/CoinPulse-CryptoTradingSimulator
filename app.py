@@ -29,7 +29,11 @@ def create_app():
     """
     # Initialize Flask app
     app = Flask(__name__)
-    CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://127.0.0.1:5173"])
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    )
 
     # Configure app
     database_url = os.environ.get("DATABASE_URL")
@@ -103,8 +107,10 @@ app, mail_server = create_app()
 
 if __name__ == "__main__":
     # Create the background task thread
-    from core.app import (update_open_trades_in_background,
-                          update_user_wallet_value_in_background)
+    from core.app import (
+        update_open_trades_in_background,
+        update_user_wallet_value_in_background,
+    )
 
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         # Run thread to continuously update user wallet value in the background

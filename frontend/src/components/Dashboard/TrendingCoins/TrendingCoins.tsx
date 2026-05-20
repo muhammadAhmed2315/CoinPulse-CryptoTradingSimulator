@@ -10,6 +10,7 @@ import TrendingCoinCard from "./TrendingCoinCard";
 // ===== TYPES =====
 type TrendingCoinsProps = {
   data?: {
+    coin_id: string;
     name: string;
     thumb: string;
     symbol: string;

@@ -1488,6 +1488,7 @@ def get_trending_coins():
 
         data = [
             {
+                "coin_id": coin["id"],
                 "name": coin["name"],
                 "thumb": coin["thumb"],
                 "symbol": coin["symbol"],

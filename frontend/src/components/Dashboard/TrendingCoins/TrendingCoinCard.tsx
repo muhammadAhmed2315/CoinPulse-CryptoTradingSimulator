@@ -54,7 +54,18 @@ export default function TrendingCoinCard({
       className="relative cursor-pointer p-3 gap-0 w-60 overflow-hidden"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/coin_info/${data?.coin_id}`)}
+      onClick={() =>
+        navigate(`/coin_info`, {
+          state: {
+            coin: {
+              id: data?.coin_id,
+              name: data?.name,
+              ticker: data?.symbol,
+              imgUrl: data?.thumb,
+            },
+          },
+        })
+      }
     >
       {/* ===== BORDER BEAM ===== */}
       {hovered && (

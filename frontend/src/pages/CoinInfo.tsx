@@ -6,15 +6,22 @@ import RedditFeedCard from "@/components/CoinInfo/RedditFeed";
 import BitcoinLogo from "../assets/logos/bitcoin.png";
 import { useState } from "react";
 import type { Coin } from "@/loadAllCoinsList";
+import { useLocation } from "react-router-dom";
 
 export default function CoinInfo() {
   // ===== STATE VARIABLES =====
-  const [currCoin, setCurrCoin] = useState<Coin>({
-    id: "bitcoin",
-    name: "Bitcoin",
-    ticker: "btc",
-    imgUrl: BitcoinLogo,
-  });
+  const location = useLocation();
+
+  const [currCoin, setCurrCoin] = useState<Coin>(
+    location.state
+      ? location.state.coin
+      : {
+          id: "bitcoin",
+          name: "Bitcoin",
+          ticker: "btc",
+          imgUrl: BitcoinLogo,
+        },
+  );
 
   return (
     <div className="w-full flex flex-col gap-4 px-4">

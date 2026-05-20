@@ -93,17 +93,19 @@ export default function TrendingCoinCard({
       ) : (
         <>
           {/* ===== HEADER ===== */}
-          <CardHeader className="flex px-2 justify-between mb-2">
+          <CardHeader className="flex px-2 justify-between items-center mb-3">
             <div>
-              <div className="flex">
-                <img src={data!.thumb} className="size-8 rounded-full mr-2" />
-                <div className="flex flex-col">
+              <div className="flex items-center">
+                <img src={data!.thumb} className="size-8 rounded-full mr-2.5" />
+                <div className="flex flex-col gap-1">
                   <CustomTooltip
-                    trigger={`${data!.name.slice(0, 10)}...`}
+                    trigger={`${data!.name.slice(0, 10)}${data!.name.length > 10 ? "..." : ""}`}
                     content={`${data!.name} (${data!.symbol})`}
-                    triggerStyle="text-sm font-semibold"
+                    triggerStyle="text-sm font-bold tracking-[-0.01em] leading-none"
                   />
-                  <p className="text-xs">{data!.symbol}</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-zinc-500 font-medium leading-none">
+                    {data!.symbol}
+                  </p>
                 </div>
               </div>
             </div>
@@ -112,15 +114,20 @@ export default function TrendingCoinCard({
             <CustomTooltip
               trigger={`#${data!.market_cap_rank}`}
               content={`Market Cap Rank: #${data!.market_cap_rank}`}
+              triggerStyle="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 bg-zinc-50 border border-[#ececef] px-1.5 py-[3px] rounded-md"
             />
           </CardHeader>
 
           {/* ===== BODY ===== */}
           <CardContent className="px-2">
-            <p className="text-gray-500 font-mono">PRICE</p>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none mb-1.5">
+              Price
+            </p>
 
             <div className="flex justify-between items-center mb-3">
-              <b className="text-lg">${numToMoney(data!.price)}</b>
+              <b className="font-mono text-[20px] font-semibold tracking-[-0.02em] leading-none">
+                ${numToMoney(data!.price)}
+              </b>
               <PriceChangeBox priceChange={priceChange!} fontSize="sm" />
             </div>
 
@@ -130,18 +137,26 @@ export default function TrendingCoinCard({
             />
           </CardContent>
 
-          <Separator className="mt-2 mb-3" />
+          <Separator className="mt-3 mb-3" />
 
           {/* ===== FOOTER ===== */}
-          <CardFooter className="h-8">
-            <div className="flex-2">
-              <p className="text-xs text-gray-500 font-mono">MKT CAP</p>
-              <b>${formatCompactValue(data!.market_cap ?? 0)}</b>
+          <CardFooter className="h-8 px-2">
+            <div className="flex-2 flex flex-col gap-1">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+                Mkt Cap
+              </p>
+              <b className="font-mono text-sm tracking-[-0.01em] leading-none">
+                ${formatCompactValue(data!.market_cap ?? 0)}
+              </b>
             </div>
             <Separator orientation="vertical" className="mr-3" />
-            <div className="flex-2">
-              <p className="text-xs text-gray-500 font-mono">VOLUME</p>
-              <b>${formatCompactValue(data!.total_volume ?? 0)}</b>
+            <div className="flex-2 flex flex-col gap-1">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+                Volume
+              </p>
+              <b className="font-mono text-sm tracking-[-0.01em] leading-none">
+                ${formatCompactValue(data!.total_volume ?? 0)}
+              </b>
             </div>
           </CardFooter>
         </>

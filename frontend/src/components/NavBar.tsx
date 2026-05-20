@@ -153,7 +153,7 @@ export default function NavBar() {
 
             <p>{user?.username}</p>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="z-100">
             <DropdownMenuItem
               className="cursor-pointer text-base"
               onClick={() => logoutMutation.mutate()}

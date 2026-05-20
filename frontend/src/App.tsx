@@ -35,9 +35,7 @@ function NotFoundHandler() {
     return (
       <div>
         <NavBar />
-        <div className="pl-12 pr-12 pt-6 pb-6">
-          <AuthenticatedPageNotFound />
-        </div>
+        <AuthenticatedPageNotFound />
       </div>
     );
   }

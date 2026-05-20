@@ -12,7 +12,7 @@ type ProfileAvatarProps = {
 
 export default function ProfileAvatar({
   letter,
-  size = 60,
+  size = 50,
   squareSize = 2,
   gridGap = 2,
   flickerChance = 1,

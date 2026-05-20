@@ -24,7 +24,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerified";
 import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
 import AuthenticatedPageNotFound from "./components/AuthenticatedPageNotFound.tsx";
-import FlickeringGrid from "./components/authentication/FlickeringGrid";
 import NavBar from "./components/NavBar";
 
 function NotFoundHandler() {
@@ -43,11 +42,7 @@ function NotFoundHandler() {
     );
   }
 
-  return (
-    <FlickeringGrid color="#ffffff" backgroundColor="#000000">
-      <AuthenticationPageNotFound />
-    </FlickeringGrid>
-  );
+  return <AuthenticationPageNotFound />;
 }
 
 function App() {

@@ -15,7 +15,6 @@ import HomeIcon from "@/assets/icons/home.svg";
 import InfoIcon from "@/assets/icons/info.svg";
 import BarChartIcon from "@/assets/icons/bar-chart.svg";
 import LineChartAscendingIcon from "@/assets/icons/line-chart-ascending.svg";
-import PlaceHolderIcon from "@/assets/icons/placeholder.svg";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +23,7 @@ import NewTradeButton from "./NewTrade/NewTradeButton";
 import { loadAllCoinsList } from "@/loadAllCoinsList";
 import CustomSkeleton from "./CustomSkeleton";
 import { numToMoney } from "@/utils";
+import ProfileAvatar from "./Dashboard/Feed/ProfileAvatar";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -72,13 +72,15 @@ export default function NavBar() {
   });
 
   return (
-    <div className="flex justify-between items-center text-lg p-6 mr-4 ml-4">
+    <div className="sticky top-0 z-100 bg-white flex justify-between items-center text-lg py-6 px-10 border-b border-[#f0f0f0]">
       {/* ===== PORTFOLIO VALUE ===== */}
       {portfolioTotalValueQuery.isLoading && (
         <CustomSkeleton className="h-8 w-60" />
       )}
       {portfolioTotalValueQuery.data && (
-        <h1>Portfolio Value: ${numToMoney(portfolioTotalValueQuery.data)}</h1>
+        <h1 className="font-semibold">
+          Portfolio Value: ${numToMoney(portfolioTotalValueQuery.data)}
+        </h1>
       )}
 
       {/* ===== NAVIGATION LINKS ===== */}
@@ -139,11 +141,16 @@ export default function NavBar() {
       </NavigationMenu>
 
       {/* ===== USER MENU & NEW TRADE ===== */}
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center justify-center">
         {/* ===== USER DROPDOWN ===== */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex gap-2 items-center cursor-pointer outline-none">
-            <img src={PlaceHolderIcon} className="size-11.25" />
+            {user?.username ? (
+              <ProfileAvatar letter={user.username} />
+            ) : (
+              <div></div>
+            )}
+
             <p>{user?.username}</p>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

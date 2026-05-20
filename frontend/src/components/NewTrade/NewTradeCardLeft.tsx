@@ -46,7 +46,7 @@ export default function NewTradeCardLeft({
         <p className="text-3xl font-bold ">
           $
           {coinDataQuery.data
-            ? numToMoney(coinDataQuery.data[0].current_price)
+            ? numToMoney(coinDataQuery.data.current_price)
             : "Undefined"}
         </p>
         <div className="w-fit ">
@@ -54,7 +54,7 @@ export default function NewTradeCardLeft({
             "Undefined"
           ) : (
             <PriceChangeBox
-              priceChange={coinDataQuery.data[0].price_change_percentage_24h}
+              priceChange={coinDataQuery.data.price_change_percentage_24h}
               fontSize="sm"
             />
           )}
@@ -77,7 +77,7 @@ export default function NewTradeCardLeft({
           <p className="font-bold">
             $
             {coinDataQuery.data
-              ? numToMoney(coinDataQuery.data[0].high_24h)
+              ? numToMoney(coinDataQuery.data.high_24h)
               : "Undefined"}
           </p>
         </div>
@@ -86,7 +86,7 @@ export default function NewTradeCardLeft({
           <p className="font-bold">
             $
             {coinDataQuery.data
-              ? numToMoney(coinDataQuery.data[0].low_24h)
+              ? numToMoney(coinDataQuery.data.low_24h)
               : "Undefined"}
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function NewTradeCardLeft({
           <p className="text-xs font-semibold">MARKET CAP</p>
           <p className="font-bold">
             {coinDataQuery.data
-              ? formatCompactValue(coinDataQuery.data[0].market_cap)
+              ? formatCompactValue(coinDataQuery.data.market_cap)
               : "Undefined"}
           </p>
         </div>
@@ -102,7 +102,7 @@ export default function NewTradeCardLeft({
           <p className="text-xs font-semibold">VOLUME</p>
           <p className="font-bold">
             {coinDataQuery.data
-              ? formatCompactValue(coinDataQuery.data[0].total_volume)
+              ? formatCompactValue(coinDataQuery.data.total_volume)
               : "Undefined"}
           </p>
         </div>

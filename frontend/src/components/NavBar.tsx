@@ -78,9 +78,14 @@ export default function NavBar() {
         <CustomSkeleton className="h-8 w-60" />
       )}
       {portfolioTotalValueQuery.data && (
-        <h1 className="font-semibold">
-          Portfolio Value: ${numToMoney(portfolioTotalValueQuery.data)}
-        </h1>
+        <div className="flex flex-col gap-1.5">
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+            Portfolio Value
+          </span>
+          <p className="font-mono text-[22px] font-semibold tracking-[-0.02em] leading-none">
+            ${numToMoney(portfolioTotalValueQuery.data)}
+          </p>
+        </div>
       )}
 
       {/* ===== NAVIGATION LINKS ===== */}

@@ -89,7 +89,7 @@ export default function CoinInfoCard({
           </h2>
         </div>
 
-        <div>
+        <div className="w-[50%]">
           {allCoinsQuery.isLoading ? (
             <>Loading...</>
           ) : (

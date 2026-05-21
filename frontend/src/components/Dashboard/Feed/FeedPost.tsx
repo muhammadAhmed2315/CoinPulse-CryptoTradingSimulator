@@ -87,73 +87,71 @@ export default function FeedPost({
 
   return (
     <Card className="p-6 mb-6 gap-4" ref={ref}>
-      {inView && (
-        <>
-          {/* ===== HEADER ===== */}
-          <CardHeader className="p-0">
-            <div className="flex gap-4 items-center">
-              <ProfileAvatar letter={username} />
-              <div>
-                <b>{username}</b>
-                <p className="text-[#b4b4b4] font-mono">
-                  {formatRelativeOrAbsoluteDate(timestamp)}
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {/* ===== TRADE BANNER ===== */}
-            <div className="relative h-13 rounded-md bg-[#fafafa] mb-4">
-              <BannerFlickerGrid
-                squareSize={3}
-                gridGap={4}
-                flickerChance={0.3}
-                maxOpacity={0.1}
-              />
-              <div className="relative z-1 flex items-center h-full px-4 justify-between">
-                <div className="flex gap-2 items-center ">
-                  {transaction_type && (
-                    <TradePill
-                      side={transaction_type.toUpperCase() as "BUY" | "SELL"}
-                      type={order_type}
-                    />
-                  )}
-                  <p
-                    className={`text-lg font-semibold font-mono ${transaction_type?.toUpperCase() === "BUY" ? "text-emerald-500" : "text-rose-500"}`}
-                  >
-                    {transaction_type?.toUpperCase() === "BUY" ? "+" : "-"}
-                    {quantity?.toFixed(4)}
-                  </p>
-                  <p className="text-[#71717a] font-medium capitalize">
-                    {coin_id && coin_id} @ ${numToMoney(price_per_unit)}
-                  </p>
-                </div>
-                <p
-                  className={`font-mono text-base font-semibold ${transaction_type?.toUpperCase() === "BUY" ? "text-emerald-500" : "text-rose-500"}`}
-                >
-                  ≈ ${numToMoney(price_per_unit * quantity)}
-                </p>
-              </div>
-            </div>
-            {/* ===== COMMENT ===== */}
-            {comment && <p className="text-lg text-[#3f3f46]">{comment}</p>}
-            {!comment && (
-              <p className="text-lg text-[#a0a0a0] italic">
-                This trade has no description.
-              </p>
-            )}
-          </CardContent>
-          <Separator />
-          {/* ===== FOOTER ===== */}
-          <CardFooter className="p-0 flex justify-end">
-            <LikeButton
-              liked={currentlyLiked}
-              count={currLikes}
-              onToggle={() => likeButtonQuery.mutate(!currentlyLiked)}
+      {/* ===== HEADER ===== */}
+      <CardHeader className="p-0">
+        <div className="flex gap-4 items-center">
+          {inView && <ProfileAvatar letter={username} />}
+          <div>
+            <b>{username}</b>
+            <p className="text-[#b4b4b4] font-mono">
+              {formatRelativeOrAbsoluteDate(timestamp)}
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        {/* ===== TRADE BANNER ===== */}
+        <div className="relative h-13 rounded-md bg-[#fafafa] mb-4">
+          {inView && (
+            <BannerFlickerGrid
+              squareSize={3}
+              gridGap={4}
+              flickerChance={0.3}
+              maxOpacity={0.1}
             />
-          </CardFooter>
-        </>
-      )}
+          )}
+          <div className="relative z-1 flex items-center h-full px-4 justify-between">
+            <div className="flex gap-2 items-center ">
+              {transaction_type && (
+                <TradePill
+                  side={transaction_type.toUpperCase() as "BUY" | "SELL"}
+                  type={order_type}
+                />
+              )}
+              <p
+                className={`text-lg font-semibold font-mono ${transaction_type?.toUpperCase() === "BUY" ? "text-emerald-500" : "text-rose-500"}`}
+              >
+                {transaction_type?.toUpperCase() === "BUY" ? "+" : "-"}
+                {quantity?.toFixed(4)}
+              </p>
+              <p className="text-[#71717a] font-medium capitalize">
+                {coin_id && coin_id} @ ${numToMoney(price_per_unit)}
+              </p>
+            </div>
+            <p
+              className={`font-mono text-base font-semibold ${transaction_type?.toUpperCase() === "BUY" ? "text-emerald-500" : "text-rose-500"}`}
+            >
+              ≈ ${numToMoney(price_per_unit * quantity)}
+            </p>
+          </div>
+        </div>
+        {/* ===== COMMENT ===== */}
+        {comment && <p className="text-lg text-[#3f3f46]">{comment}</p>}
+        {!comment && (
+          <p className="text-lg text-[#a0a0a0] italic">
+            This trade has no description.
+          </p>
+        )}
+      </CardContent>
+      <Separator />
+      {/* ===== FOOTER ===== */}
+      <CardFooter className="p-0 flex justify-end">
+        <LikeButton
+          liked={currentlyLiked}
+          count={currLikes}
+          onToggle={() => likeButtonQuery.mutate(!currentlyLiked)}
+        />
+      </CardFooter>
     </Card>
   );
 }

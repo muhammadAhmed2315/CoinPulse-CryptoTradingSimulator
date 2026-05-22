@@ -106,6 +106,9 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
   const [activeTab, setActiveTab] = useState<
     "ohlc" | "price" | "marketCap" | "volume"
   >("ohlc");
+  const [hoveredTab, setHoveredTab] = useState<
+    "ohlc" | "price" | "marketCap" | "volume" | undefined
+  >(undefined);
   const [ohlcOpened, setOhlcOpened] = useState(0);
   const [priceOpened, setPriceOpened] = useState(0);
   const [marketCapOpened, setMarketCapOpened] = useState(0);
@@ -163,16 +166,36 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
         {/* ===== TABS LIST ===== */}
         <div className="px-6 py-4 border-b border-[#f0f0f0]">
           <TabsList className="h-auto bg-[#fafafa] border border-[#ececef] rounded-[10px] p-1">
-            <TabsTrigger value="ohlc" className={tabTriggerClass}>
+            <TabsTrigger
+              value="ohlc"
+              className={tabTriggerClass}
+              onHoverStart={() => setHoveredTab("ohlc")}
+              onHoverEnd={() => setHoveredTab(undefined)}
+            >
               OHLC
             </TabsTrigger>
-            <TabsTrigger value="price" className={tabTriggerClass}>
+            <TabsTrigger
+              value="price"
+              className={tabTriggerClass}
+              onHoverStart={() => setHoveredTab("price")}
+              onHoverEnd={() => setHoveredTab(undefined)}
+            >
               PRICE
             </TabsTrigger>
-            <TabsTrigger value="marketCap" className={tabTriggerClass}>
+            <TabsTrigger
+              value="marketCap"
+              className={tabTriggerClass}
+              onHoverStart={() => setHoveredTab("marketCap")}
+              onHoverEnd={() => setHoveredTab(undefined)}
+            >
               MARKET CAP
             </TabsTrigger>
-            <TabsTrigger value="volume" className={tabTriggerClass}>
+            <TabsTrigger
+              value="volume"
+              className={tabTriggerClass}
+              onHoverStart={() => setHoveredTab("volume")}
+              onHoverEnd={() => setHoveredTab(undefined)}
+            >
               VOLUME
             </TabsTrigger>
           </TabsList>
@@ -186,7 +209,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="h-full flex flex-col gap-6"
             ref={ohlcRef}
           >
-            {ohlcChartQuery.data && ohlcInView ? (
+            {ohlcChartQuery.data && (ohlcInView || hoveredTab === "ohlc") ? (
               <div>
                 <StockChart
                   options={{
@@ -279,7 +302,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={priceRef}
           >
-            {coinChartsQuery.data && priceInView ? (
+            {coinChartsQuery.data && (priceInView || hoveredTab === "price") ? (
               <div>
                 <CustomAreaChart
                   animation={priceOpened < 2}
@@ -299,7 +322,8 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={marketCapRef}
           >
-            {coinChartsQuery.data && marketCapInView ? (
+            {coinChartsQuery.data &&
+            (marketCapInView || hoveredTab === "marketCap") ? (
               <div>
                 <CustomAreaChart
                   animation={marketCapOpened < 2}
@@ -319,7 +343,8 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={volumeRef}
           >
-            {coinChartsQuery.data && volumeInView ? (
+            {coinChartsQuery.data &&
+            (volumeInView || hoveredTab === "volume") ? (
               <div>
                 <StockChart
                   options={{

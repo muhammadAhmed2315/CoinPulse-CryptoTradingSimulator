@@ -3,7 +3,7 @@ import axios from "axios";
 import { useCallback, useMemo, useState } from "react";
 import { AgGridReact, type CustomCellRendererProps } from "ag-grid-react";
 
-import type { ColDef } from "ag-grid-community";
+import type { ColDef, RowClickedEvent } from "ag-grid-community";
 
 import CoinSortDropdown from "@/components/CoinSortDropdown";
 import { Card } from "@/components/ui/card";
@@ -13,11 +13,11 @@ import SparklineGraph from "@/components/SparklineGraph";
 import { Spinner } from "@/components/ui/spinner";
 import formatCompactValue, { numToMoney } from "@/utils";
 import type { GridApi, GridReadyEvent } from "ag-grid-community";
+import { useNavigate } from "react-router";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// TODO:
-// - Clicking on a coin should take you to its coin info page
+const maxPages = 10;
 
 // ===== TYPES =====
 type Coin = {
@@ -64,7 +64,12 @@ function identityRenderer(props: CustomCellRendererProps) {
       <span className="text-[14px] font-semibold text-[#111]">
         {props.value.name}
       </span>
-      <span className="font-mono text-[11px] uppercase tracking-[0.04em] text-[#71717a]">
+      <span
+        className={`
+          font-mono text-[11px] uppercase tracking-[0.04em]
+          text-[#71717a]
+        `}
+      >
         {props.value.symbol}
       </span>
     </div>
@@ -104,7 +109,7 @@ function pctRenderer(props: CustomCellRendererProps) {
 }
 
 function sparklineRenderer(props: CustomCellRendererProps) {
-  return <SparklineGraph data={props.value} width={300} />;
+  return <SparklineGraph data={props.value} width={300} height={60} />;
 }
 
 // ===== CONSTANTS =====
@@ -125,9 +130,8 @@ export default function TopCoins() {
   // ===== STATE VARIABLES =====
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [currPage, setCurrPage] = useState(1);
-  const maxPages = 4;
-
   const [apiSort, setApiSort] = useState<ApiSorts>("market_cap_desc");
+  const navigate = useNavigate();
 
   // ===== REACT QUERY HOOKS =====
   const { data, isLoading, isError, error } = useQuery({
@@ -207,7 +211,6 @@ export default function TopCoins() {
         field: "sparkline_in_7d",
         cellRenderer: sparklineRenderer,
         cellDataType: false,
-        autoHeight: true,
         headerName: "Price History (7d)",
         width: 340,
       },
@@ -218,6 +221,19 @@ export default function TopCoins() {
   // ===== EVENT HANDLERS =====
   const onGridReady = (e: GridReadyEvent) => setGridApi(e.api);
 
+  const handleRowClick = (e: RowClickedEvent) => {
+    navigate(`/coin_info`, {
+      state: {
+        coin: {
+          id: e.data.id,
+          name: e.data.name,
+          ticker: e.data.symbol,
+          imgUrl: e.data.image,
+        },
+      },
+    });
+  };
+
   // Fires when page or total pages changes
   const onPaginationChanged = useCallback(() => {
     if (!gridApi) return;
@@ -225,18 +241,34 @@ export default function TopCoins() {
   }, [gridApi]);
 
   return (
-    <Card className="p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)] bg-white">
+    <Card
+      className={`
+        p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0]
+        shadow-[0_1px_2px_rgba(0,0,0,0.04)] bg-white flex flex-col
+        h-[calc(100vh-9.5rem)]
+      `}
+    >
       {/* ===== HEADER ===== */}
-      <div className="flex items-end justify-between gap-4 px-7 pt-6 pb-5.5">
+      <div className="flex items-end justify-between gap-4 px-7 py-4">
         {/* ===== TITLE & DESCRIPTION ===== */}
         <div>
-          <p className="font-mono text-[13px] uppercase tracking-[0.01em] text-[#71717a] m-0">
+          <p
+            className={`
+              font-mono text-[12px] uppercase tracking-[0.01em]
+              text-[#71717a] m-0
+            `}
+          >
             Cryptocurrencies
           </p>
-          <h1 className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111] mt-2 mb-0">
+          <h1
+            className={`
+              text-[26px] font-bold tracking-[-0.02em] leading-none
+              text-[#111] mt-1.5 mb-0
+            `}
+          >
             Top 100 coins by {sortLabels[apiSort]}
           </h1>
-          <p className="mt-2 mb-0 text-[14px] text-[#71717a]">
+          <p className="mt-1.5 mb-0 text-[13px] text-[#71717a]">
             See the 100 top performing cryptocurrencies.
           </p>
         </div>
@@ -249,15 +281,46 @@ export default function TopCoins() {
       {data && (
         <>
           {/* ===== AGGRID TABLE ===== */}
-          <div className="ag-theme-alpine h-180 [--ag-font-family:'DM_Sans',sans-serif] [--ag-font-size:13px] [--ag-foreground-color:#111] [--ag-background-color:transparent] [--ag-header-background-color:transparent] [--ag-header-foreground-color:#71717a] [--ag-border-color:#f0f0f0] [--ag-row-border-color:#f0f0f0] [--ag-row-hover-color:#fafafa] [--ag-selected-row-background-color:transparent] [--ag-cell-horizontal-padding:18px] [--ag-header-column-separator-display:none] [--ag-header-column-resize-handle-display:none] [--ag-header-height:42px] [--ag-row-height:64px] [&_.ag-header-cell-text]:font-mono [&_.ag-header-cell-text]:text-[11px] [&_.ag-header-cell-text]:font-semibold [&_.ag-header-cell-text]:tracking-[0.06em] [&_.ag-header-cell-text]:uppercase [&_.ag-root-wrapper]:border-0 [&_.ag-header]:border-b [&_.ag-header]:border-[#f0f0f0] [&_.ag-paging-panel]:border-t [&_.ag-paging-panel]:border-[#f0f0f0] [&_.ag-paging-panel]:px-7">
+          <div
+            className={`
+              p-4 pt-0 ag-theme-alpine flex-1 min-h-0
+              [--ag-font-family:'DM_Sans',sans-serif]
+              [--ag-font-size:13px]
+              [--ag-foreground-color:#111]
+              [--ag-background-color:transparent]
+              [--ag-header-background-color:transparent]
+              [--ag-header-foreground-color:#71717a]
+              [--ag-border-color:#f0f0f0]
+              [--ag-row-border-color:#f0f0f0]
+              [--ag-row-hover-color:#fafafa]
+              [--ag-selected-row-background-color:transparent]
+              [--ag-cell-horizontal-padding:18px]
+              [--ag-header-column-separator-display:none]
+              [--ag-header-column-resize-handle-display:none]
+              [--ag-header-height:38px]
+              [--ag-row-height:calc((100vh-22rem)/10)]
+              [&_.ag-header-cell-text]:font-mono
+              [&_.ag-header-cell-text]:text-[11px]
+              [&_.ag-header-cell-text]:font-semibold
+              [&_.ag-header-cell-text]:tracking-[0.06em]
+              [&_.ag-header-cell-text]:uppercase
+              [&_.ag-root-wrapper]:border-0
+              [&_.ag-header]:border-b [&_.ag-header]:border-[#f0f0f0]
+              [&_.ag-paging-panel]:border-t [&_.ag-paging-panel]:border-[#f0f0f0]
+              [&_.ag-paging-panel]:px-7
+              [&_.ag-row]:cursor-pointer
+            `}
+          >
             <AgGridReact
               rowData={data}
               columnDefs={colDefs}
               pagination={true}
-              paginationPageSize={25}
+              paginationPageSize={10}
               suppressPaginationPanel // hide default UI
+              suppressCellFocus
               onGridReady={onGridReady}
               onPaginationChanged={onPaginationChanged}
+              onRowClicked={handleRowClick}
             />
           </div>
 
@@ -265,21 +328,44 @@ export default function TopCoins() {
           <div className="h-px bg-[#f0f0f0] w-full" />
 
           {/* ===== PAGINATION ===== */}
-          <div className="flex items-center justify-between px-6 py-3.5">
+          <div className="flex items-center justify-between px-6 ">
             {/* ===== PAGE INDICATOR ===== */}
-            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
+            <p
+              className={`
+                font-mono text-[11px] uppercase tracking-[0.06em]
+                text-[#71717a]
+              `}
+            >
               Page {currPage + 1} of {maxPages}
             </p>
             {/* ===== PREV / NEXT BUTTONS ===== */}
             <div className="inline-flex items-center gap-1.5">
               <p
-                className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${currPage === 0 ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+                className={`
+                  font-mono text-[11px] uppercase tracking-[0.06em]
+                  px-3 py-1.5 border border-[#ececef] rounded-md bg-white
+                  cursor-pointer hover:border-[#71717a]
+                  ${
+                    currPage === 0
+                      ? "opacity-40 cursor-not-allowed text-[#111]"
+                      : "text-[#111]"
+                  }
+                `}
                 onClick={() => gridApi?.paginationGoToPreviousPage()}
               >
                 Prev
               </p>
               <p
-                className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${currPage === maxPages - 1 ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+                className={`
+                  font-mono text-[11px] uppercase tracking-[0.06em]
+                  px-3 py-1.5 border border-[#ececef] rounded-md bg-white
+                  cursor-pointer hover:border-[#71717a]
+                  ${
+                    currPage === maxPages - 1
+                      ? "opacity-40 cursor-not-allowed text-[#111]"
+                      : "text-[#111]"
+                  }
+                `}
                 onClick={() => gridApi?.paginationGoToNextPage()}
               >
                 Next

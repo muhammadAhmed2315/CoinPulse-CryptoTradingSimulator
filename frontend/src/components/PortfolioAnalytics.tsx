@@ -28,6 +28,9 @@ export default function PortfolioAnalytics() {
   const [activeTab, setActiveTab] = useState<
     "totalValue" | "assets" | "balance"
   >("totalValue");
+  const [hoveredTab, setHoveredTab] = useState<
+    "totalValue" | "assets" | "balance" | undefined
+  >(undefined);
   const [totalValueOpened, setTotalValueOpened] = useState(1);
   const [assetsOpened, setAssetsOpened] = useState(0);
   const [balanceOpened, setBalanceOpened] = useState(0);
@@ -68,13 +71,28 @@ export default function PortfolioAnalytics() {
             {/* ===== TABS ===== */}
             <CardAction>
               <TabsList>
-                <TabsTrigger value="totalValue" className="cursor-pointer">
+                <TabsTrigger
+                  value="totalValue"
+                  className="cursor-pointer"
+                  onHoverStart={() => setHoveredTab("totalValue")}
+                  onHoverEnd={() => setHoveredTab(undefined)}
+                >
                   Total Value
                 </TabsTrigger>
-                <TabsTrigger value="assets" className="cursor-pointer">
+                <TabsTrigger
+                  value="assets"
+                  className="cursor-pointer"
+                  onHoverStart={() => setHoveredTab("assets")}
+                  onHoverEnd={() => setHoveredTab(undefined)}
+                >
                   Assets
                 </TabsTrigger>
-                <TabsTrigger value="balance" className="cursor-pointer">
+                <TabsTrigger
+                  value="balance"
+                  className="cursor-pointer"
+                  onHoverStart={() => setHoveredTab("balance")}
+                  onHoverEnd={() => setHoveredTab(undefined)}
+                >
                   Balance
                 </TabsTrigger>
               </TabsList>
@@ -84,30 +102,33 @@ export default function PortfolioAnalytics() {
           {/* ===== CHART + OHLC STATS ===== */}
           <TabsContents className="w-full">
             <TabsContent value="totalValue">
-              {portfolioHistoryQuery.data && activeTab === "totalValue" && (
-                <PortfolioChartPanel
-                  data={portfolioHistoryQuery.data.totalValue}
-                  animation={totalValueOpened < 2}
-                />
-              )}
+              {portfolioHistoryQuery.data &&
+                (activeTab === "totalValue" || hoveredTab === "totalValue") && (
+                  <PortfolioChartPanel
+                    data={portfolioHistoryQuery.data.totalValue}
+                    animation={totalValueOpened < 2}
+                  />
+                )}
             </TabsContent>
 
             <TabsContent value="assets">
-              {portfolioHistoryQuery.data && activeTab === "assets" && (
-                <PortfolioChartPanel
-                  data={portfolioHistoryQuery.data.assets}
-                  animation={assetsOpened < 2}
-                />
-              )}
+              {portfolioHistoryQuery.data &&
+                (activeTab === "assets" || hoveredTab === "assets") && (
+                  <PortfolioChartPanel
+                    data={portfolioHistoryQuery.data.assets}
+                    animation={assetsOpened < 2}
+                  />
+                )}
             </TabsContent>
 
             <TabsContent value="balance">
-              {portfolioHistoryQuery.data && activeTab === "balance" && (
-                <PortfolioChartPanel
-                  data={portfolioHistoryQuery.data.balance}
-                  animation={balanceOpened < 2}
-                />
-              )}
+              {portfolioHistoryQuery.data &&
+                (activeTab === "balance" || hoveredTab === "balance") && (
+                  <PortfolioChartPanel
+                    data={portfolioHistoryQuery.data.balance}
+                    animation={balanceOpened < 2}
+                  />
+                )}
             </TabsContent>
           </TabsContents>
         </Card>
@@ -115,10 +136,3 @@ export default function PortfolioAnalytics() {
     </div>
   );
 }
-
-// NEW GRAPH SETTINGS:
-// Line: #111
-// Fill top: rgba(0,0,0,0.12)
-// Fill bottom: rgba(0,0,0,0.01)
-// Black background hover boxes with white text
-// #999999 for the 1m 3m 6m ytd 1y all labels

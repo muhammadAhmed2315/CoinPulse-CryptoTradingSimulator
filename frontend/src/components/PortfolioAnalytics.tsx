@@ -1,17 +1,15 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "./ui/separator";
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs";
+import { Card, CardAction, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { formatUnixToDayMonthYear, numToMoney } from "@/utils";
-import CustomAreaChart from "./CustomAreaChart";
+import { numToMoney } from "@/utils";
+import PortfolioChartPanel from "./PortfolioChartPanel";
 
 // ===== API FUNCTIONS =====
 async function fetchPortfolioHistory() {
@@ -25,38 +23,14 @@ async function fetchPortfolioHistory() {
   return await response.json();
 }
 
-// ===== HELPER FUNCTIONS =====
-function findOHLC(values: [number, number][]) {
-  if (values.length === 0) return {};
-
-  const max = values.reduce((a, b) => (a[1] > b[1] ? a : b));
-  const min = values.reduce((a, b) => (a[1] < b[1] ? a : b));
-
-  return {
-    open: {
-      value: `$${numToMoney(values.at(0)![1])}`,
-      timestamp: formatUnixToDayMonthYear(values.at(0)![0]),
-    },
-    high: {
-      value: `$${numToMoney(max[1])}`,
-      timestamp: formatUnixToDayMonthYear(max[0]),
-    },
-    low: {
-      value: `$${numToMoney(min[1])}`,
-      timestamp: formatUnixToDayMonthYear(min[0]),
-    },
-    close: {
-      value: `$${numToMoney(values.at(-1)![1])}`,
-      timestamp: formatUnixToDayMonthYear(values.at(-1)![0]),
-    },
-  };
-}
-
 export default function PortfolioAnalytics() {
   // ===== STATE VARIABLES =====
-  const [activeChart, setActiveChart] = useState<
+  const [activeTab, setActiveTab] = useState<
     "totalValue" | "assets" | "balance"
   >("totalValue");
+  const [totalValueOpened, setTotalValueOpened] = useState(1);
+  const [assetsOpened, setAssetsOpened] = useState(0);
+  const [balanceOpened, setBalanceOpened] = useState(0);
 
   // ===== REACT QUERY HOOKS =====
   const portfolioHistoryQuery = useQuery({
@@ -64,40 +38,35 @@ export default function PortfolioAnalytics() {
     queryFn: fetchPortfolioHistory,
   });
 
-  // ===== DERIVED STATE =====
-  const ohlcData = portfolioHistoryQuery.data
-    ? {
-        totalValue: findOHLC(portfolioHistoryQuery.data.assets),
-        assets: findOHLC(portfolioHistoryQuery.data.balance),
-        balance: findOHLC(portfolioHistoryQuery.data.totalValue),
-      }
-    : {};
-
   return (
     <div>
-      <Card>
-        {/* ===== HEADER ===== */}
-        <CardHeader>
-          <CardTitle className="flex flex-col gap-2 min-w-0">
-            {/* ===== TITLE ===== */}
-            <p className="font-mono text-sm font-normal uppercase text-muted-foreground">
-              Portfolio Analytics
-            </p>
-            {/* ===== CURRENT VALUE ===== */}
-            {portfolioHistoryQuery.data && (
-              <p className="text-3xl font-bold tracking-tight">
-                ${numToMoney(portfolioHistoryQuery.data[activeChart].at(-1)[1])}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          setActiveTab(value as typeof activeTab);
+
+          if (value === "totalValue") setTotalValueOpened((prev) => prev + 1);
+          else if (value === "assets") setAssetsOpened((prev) => prev + 1);
+          else if (value === "balance") setBalanceOpened((prev) => prev + 1);
+        }}
+      >
+        <Card>
+          {/* ===== HEADER ===== */}
+          <CardHeader>
+            <CardTitle className="flex flex-col gap-2 min-w-0">
+              {/* ===== TITLE ===== */}
+              <p className="font-mono text-sm font-normal uppercase text-muted-foreground">
+                Portfolio Analytics
               </p>
-            )}
-          </CardTitle>
-          {/* ===== TABS ===== */}
-          <CardAction>
-            <Tabs
-              defaultValue="totalValue"
-              onValueChange={(value) =>
-                setActiveChart(value as typeof activeChart)
-              }
-            >
+              {/* ===== CURRENT VALUE ===== */}
+              {portfolioHistoryQuery.data && (
+                <p className="text-3xl font-bold tracking-tight">
+                  ${numToMoney(portfolioHistoryQuery.data[activeTab].at(-1)[1])}
+                </p>
+              )}
+            </CardTitle>
+            {/* ===== TABS ===== */}
+            <CardAction>
               <TabsList>
                 <TabsTrigger value="totalValue" className="cursor-pointer">
                   Total Value
@@ -109,75 +78,40 @@ export default function PortfolioAnalytics() {
                   Balance
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
-          </CardAction>
-        </CardHeader>
+            </CardAction>
+          </CardHeader>
 
-        {/* ===== LINE CHART ===== */}
-        <CardContent>
-          {portfolioHistoryQuery.data && (
-            <CustomAreaChart data={portfolioHistoryQuery.data[activeChart]} />
-          )}
-        </CardContent>
+          {/* ===== CHART + OHLC STATS ===== */}
+          <TabsContents className="w-full">
+            <TabsContent value="totalValue">
+              {portfolioHistoryQuery.data && activeTab === "totalValue" && (
+                <PortfolioChartPanel
+                  data={portfolioHistoryQuery.data.totalValue}
+                  animation={totalValueOpened < 2}
+                />
+              )}
+            </TabsContent>
 
-        {/* ===== OHLC STATS ===== */}
-        <CardFooter className="flex flex-col p-0">
-          <Separator className="bg-[#f0f0f0]" />
-          <div className="grid grid-cols-4 w-full">
-            {/* ===== OPEN ===== */}
-            <div className="flex flex-col gap-1 px-6 py-4">
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Open
-              </span>
-              <span className="font-mono text-base font-bold">
-                {ohlcData && ohlcData[activeChart]?.open?.value}
-              </span>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground -mt-1">
-                {ohlcData && ohlcData[activeChart]?.open?.timestamp}
-              </span>
-            </div>
+            <TabsContent value="assets">
+              {portfolioHistoryQuery.data && activeTab === "assets" && (
+                <PortfolioChartPanel
+                  data={portfolioHistoryQuery.data.assets}
+                  animation={assetsOpened < 2}
+                />
+              )}
+            </TabsContent>
 
-            {/* ===== HIGH ===== */}
-            <div className="flex flex-col gap-1 px-6 py-4 border-l border-[#f0f0f0]">
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                High
-              </span>
-              <span className="font-mono text-base font-bold">
-                {ohlcData && ohlcData[activeChart]?.high?.value}
-              </span>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground -mt-1">
-                {ohlcData && ohlcData[activeChart]?.high?.timestamp}
-              </span>
-            </div>
-
-            {/* ===== LOW ===== */}
-            <div className="flex flex-col gap-1 px-6 py-4 border-l border-[#f0f0f0]">
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Low
-              </span>
-              <span className="font-mono text-base font-bold">
-                {ohlcData && ohlcData[activeChart]?.low?.value}
-              </span>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground -mt-1">
-                {ohlcData && ohlcData[activeChart]?.low?.timestamp}
-              </span>
-            </div>
-
-            {/* ===== CLOSE ===== */}
-            <div className="flex flex-col gap-1 px-6 py-4 border-l border-[#f0f0f0]">
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Close
-              </span>
-              <span className="font-mono text-base font-bold">
-                {ohlcData && ohlcData[activeChart]?.close?.value}
-              </span>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground -mt-1">
-                {ohlcData && ohlcData[activeChart]?.close?.timestamp}
-              </span>
-            </div>
-          </div>
-        </CardFooter>
-      </Card>
+            <TabsContent value="balance">
+              {portfolioHistoryQuery.data && activeTab === "balance" && (
+                <PortfolioChartPanel
+                  data={portfolioHistoryQuery.data.balance}
+                  animation={balanceOpened < 2}
+                />
+              )}
+            </TabsContent>
+          </TabsContents>
+        </Card>
+      </Tabs>
     </div>
   );
 }

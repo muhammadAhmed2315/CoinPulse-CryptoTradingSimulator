@@ -72,7 +72,7 @@ export default function NavBar() {
   });
 
   return (
-    <div className="sticky top-0 z-100 bg-white flex justify-between items-center text-lg py-6 px-10 border-b border-[#f0f0f0]">
+    <div className="sticky top-0 z-10 bg-white flex justify-between items-center py-5 px-10 border-b border-[#f0f0f0]">
       {/* ===== PORTFOLIO VALUE ===== */}
       {portfolioTotalValueQuery.isLoading && (
         <CustomSkeleton className="h-8 w-60" />
@@ -93,13 +93,19 @@ export default function NavBar() {
 
       {/* ===== NAVIGATION LINKS ===== */}
       <NavigationMenu>
-        <NavigationMenuList>
+        <NavigationMenuList className="gap-1">
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer text-lg">
+            <NavigationMenuLink asChild className="cursor-pointer">
               <NavLink to="/dashboard">
                 {({ isActive }) => (
-                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
-                    <img src={HomeIcon} />
+                  <div
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                      isActive
+                        ? "text-zinc-900 bg-zinc-100"
+                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                    }`}
+                  >
+                    <img src={HomeIcon} className="size-4 opacity-80" />
                     <p>Home</p>
                   </div>
                 )}
@@ -108,11 +114,17 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer text-lg">
+            <NavigationMenuLink asChild className="cursor-pointer">
               <NavLink to="/my_trades">
                 {({ isActive }) => (
-                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
-                    <img src={BarChartIcon} />
+                  <div
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                      isActive
+                        ? "text-zinc-900 bg-zinc-100"
+                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                    }`}
+                  >
+                    <img src={BarChartIcon} className="size-4 opacity-80" />
                     <p>My Trades</p>
                   </div>
                 )}
@@ -121,11 +133,20 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer text-lg">
+            <NavigationMenuLink asChild className="cursor-pointer">
               <NavLink to="/top_coins">
                 {({ isActive }) => (
-                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
-                    <img src={LineChartAscendingIcon} />
+                  <div
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                      isActive
+                        ? "text-zinc-900 bg-zinc-100"
+                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                    }`}
+                  >
+                    <img
+                      src={LineChartAscendingIcon}
+                      className="size-4 opacity-80"
+                    />
                     <p>Top Coins</p>
                   </div>
                 )}
@@ -134,11 +155,17 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer text-lg">
+            <NavigationMenuLink asChild className="cursor-pointer">
               <NavLink to="/coin_info">
                 {({ isActive }) => (
-                  <div className={`flex gap-1 ${isActive ? "font-bold" : ""}`}>
-                    <img src={InfoIcon} />
+                  <div
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                      isActive
+                        ? "text-zinc-900 bg-zinc-100"
+                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                    }`}
+                  >
+                    <img src={InfoIcon} className="size-4 opacity-80" />
                     <p>Coin Info</p>
                   </div>
                 )}
@@ -150,20 +177,24 @@ export default function NavBar() {
 
       {/* ===== USER MENU & NEW TRADE ===== */}
       <div className="flex gap-4 items-center justify-center">
-        {/* ===== USER DROPDOWN ===== */}
+        {/* ===== USER + AVATAR GROUP ===== */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex gap-2 items-center cursor-pointer outline-none">
+          <DropdownMenuTrigger className="flex gap-1.5 items-center pl-1.5 pr-3 py-1 rounded-lg border border-[#f0f0f0] bg-white hover:bg-zinc-50 transition-colors cursor-pointer outline-none">
             {user?.username ? (
-              <ProfileAvatar letter={user.username} />
+              <ProfileAvatar letter={user.username} size={50} />
             ) : (
               <div></div>
             )}
-
-            <p>{user?.username}</p>
+            <p className="text-base font-semibold tracking-[-0.01em] text-zinc-900 leading-none">
+              {user?.username}
+            </p>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="z-100">
+          <DropdownMenuContent
+            align="end"
+            className="z-100 w-[var(--radix-dropdown-menu-trigger-width)] min-w-0"
+          >
             <DropdownMenuItem
-              className="cursor-pointer text-base"
+              className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] justify-center"
               onClick={() => logoutMutation.mutate()}
             >
               Log out

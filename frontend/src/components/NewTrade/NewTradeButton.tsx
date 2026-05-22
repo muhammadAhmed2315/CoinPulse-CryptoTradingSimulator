@@ -28,7 +28,7 @@ export default function NewTradeButton({ prefetchFn }: NewTradeButtonProps) {
       {/* ===== TRIGGER BUTTON ===== */}
       <DialogTrigger asChild>
         <RippleButton
-          className="cursor-pointer text-xl bg-emerald-500 hover:bg-emerald-600 border-0"
+          className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] bg-zinc-900 hover:bg-zinc-800 text-white border-0 px-5 py-3 rounded-md"
           onMouseEnter={prefetchFn}
         >
           New Trade

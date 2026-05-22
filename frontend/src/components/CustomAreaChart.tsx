@@ -7,12 +7,14 @@ type CustomAreaChartProps = {
   data: [number, number][];
   height?: string | undefined;
   colored?: boolean;
+  animation?: boolean;
 };
 
 export default function CustomAreaChart({
   data,
   height = undefined,
   colored = false,
+  animation = true,
 }: CustomAreaChartProps) {
   // ===== DERIVED STATE =====
   const trendColor =
@@ -50,7 +52,9 @@ export default function CustomAreaChart({
           height: height,
           style: { fontFamily: "DM Sans, sans-serif" },
           spacing: [12, 0, 8, 0],
+          animation: false,
         },
+        plotOptions: { series: { animation: animation } },
         credits: { enabled: false },
         accessibility: { enabled: false },
         rangeSelector: {

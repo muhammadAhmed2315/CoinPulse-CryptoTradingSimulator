@@ -179,7 +179,7 @@ export default function NavBar() {
       <div className="flex gap-4 items-center justify-center">
         {/* ===== USER + AVATAR GROUP ===== */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex gap-1.5 items-center pl-1.5 pr-3 py-1 rounded-lg border border-[#f0f0f0] bg-white hover:bg-zinc-50 transition-colors cursor-pointer outline-none">
+          <DropdownMenuTrigger className="cursor-pointer flex gap-2 items-center outline-none pl-1.5 pr-3 py-1 rounded-lg border border-[#f0f0f0] bg-white hover:bg-zinc-50 transition-colors">
             {user?.username ? (
               <ProfileAvatar letter={user.username} size={50} />
             ) : (
@@ -191,10 +191,11 @@ export default function NavBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="z-100 w-[var(--radix-dropdown-menu-trigger-width)] min-w-0"
+            sideOffset={0}
+            className="z-100 w-(--radix-dropdown-menu-trigger-width) min-w-0 p-0"
           >
             <DropdownMenuItem
-              className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] justify-center"
+              className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] justify-center py-2.5"
               onClick={() => logoutMutation.mutate()}
             >
               Log out

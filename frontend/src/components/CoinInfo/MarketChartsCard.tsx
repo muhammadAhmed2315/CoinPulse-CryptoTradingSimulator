@@ -14,6 +14,7 @@ import type Highcharts from "highcharts";
 import { useState } from "react";
 import CustomAreaChart from "../CustomAreaChart";
 import { numToMoney } from "@/utils";
+import { useInView } from "react-intersection-observer";
 
 // ===== SHARED RANGE SELECTOR CONFIG =====
 const rangeSelectorConfig: Highcharts.RangeSelectorOptions = {
@@ -105,6 +106,16 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
   const [activeTab, setActiveTab] = useState<
     "ohlc" | "price" | "marketCap" | "volume"
   >("ohlc");
+  const [ohlcOpened, setOhlcOpened] = useState(0);
+  const [priceOpened, setPriceOpened] = useState(0);
+  const [marketCapOpened, setMarketCapOpened] = useState(0);
+  const [volumeOpened, setVolumeOpened] = useState(0);
+
+  // ===== INTERSECTION OBSERVER =====
+  const [ohlcRef, ohlcInView] = useInView();
+  const [priceRef, priceInView] = useInView();
+  const [marketCapRef, marketCapInView] = useInView();
+  const [volumeRef, volumeInView] = useInView();
 
   // ===== REACT QUERY HOOKS =====
   const ohlcChartQuery = useQuery({
@@ -139,9 +150,14 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) =>
-          setActiveTab(v as "ohlc" | "price" | "marketCap" | "volume")
-        }
+        onValueChange={(v) => {
+          setActiveTab(v as "ohlc" | "price" | "marketCap" | "volume");
+
+          if (v === "ohlc") setOhlcOpened((prev) => prev + 1);
+          else if (v === "price") setPriceOpened((prev) => prev + 1);
+          else if (v === "marketCap") setMarketCapOpened((prev) => prev + 1);
+          else if (v === "volume") setVolumeOpened((prev) => prev + 1);
+        }}
         className="gap-0"
       >
         {/* ===== TABS LIST ===== */}
@@ -165,8 +181,12 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
         {/* ===== CHART CONTENT ===== */}
         <TabsContents className="px-3 pt-2 pb-4">
           {/* ===== OHLC CHART ===== */}
-          <TabsContent value="ohlc" className="h-full flex flex-col gap-6">
-            {ohlcChartQuery.data ? (
+          <TabsContent
+            value="ohlc"
+            className="h-full flex flex-col gap-6"
+            ref={ohlcRef}
+          >
+            {ohlcChartQuery.data && ohlcInView ? (
               <div>
                 <StockChart
                   options={{
@@ -175,6 +195,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       backgroundColor: "transparent",
                       style: { fontFamily: "DM Sans, sans-serif" },
                       spacing: [12, 0, 8, 0],
+                      animation: false,
                     },
                     credits: { enabled: false },
                     accessibility: { enabled: false },
@@ -235,6 +256,9 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                         lineColor: "#ef4444",
                         upLineColor: "#21c45d",
                       },
+                      series: {
+                        animation: ohlcOpened < 2,
+                      },
                     },
                   }}
                 >
@@ -250,38 +274,52 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
           </TabsContent>
 
           {/* ===== PRICE CHART ===== */}
-          <TabsContent value="price" className="flex flex-col gap-6">
-            <div>
-              {coinChartsQuery.data ? (
-                <CustomAreaChart
-                  data={coinChartsQuery.data.prices}
-                  height="45%"
-                  colored
-                />
-              ) : (
-                <p>Loading...</p>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ===== MARKET CAP CHART ===== */}
-          <TabsContent value="marketCap" className="flex flex-col gap-6">
-            {coinChartsQuery.data ? (
+          <TabsContent
+            value="price"
+            className="flex flex-col gap-6"
+            ref={priceRef}
+          >
+            {coinChartsQuery.data && priceInView ? (
               <div>
                 <CustomAreaChart
-                  data={coinChartsQuery.data.market_caps}
-                  height="45%"
+                  animation={priceOpened < 2}
                   colored
+                  data={coinChartsQuery.data.prices}
+                  height="45%"
                 />
               </div>
             ) : (
-              <p>Loading...</p>
+              <>Loading...</>
+            )}
+          </TabsContent>
+
+          {/* ===== MARKET CAP CHART ===== */}
+          <TabsContent
+            value="marketCap"
+            className="flex flex-col gap-6"
+            ref={marketCapRef}
+          >
+            {coinChartsQuery.data && marketCapInView ? (
+              <div>
+                <CustomAreaChart
+                  animation={marketCapOpened < 2}
+                  colored
+                  data={coinChartsQuery.data.market_caps}
+                  height="45%"
+                />
+              </div>
+            ) : (
+              <>Loading...</>
             )}
           </TabsContent>
 
           {/* ===== VOLUME CHART ===== */}
-          <TabsContent value="volume" className="flex flex-col gap-6">
-            {coinChartsQuery.data ? (
+          <TabsContent
+            value="volume"
+            className="flex flex-col gap-6"
+            ref={volumeRef}
+          >
+            {coinChartsQuery.data && volumeInView ? (
               <div>
                 <StockChart
                   options={{
@@ -290,6 +328,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       backgroundColor: "transparent",
                       style: { fontFamily: "DM Sans, sans-serif" },
                       spacing: [12, 0, 8, 0],
+                      animation: false,
                     },
                     credits: { enabled: false },
                     accessibility: { enabled: false },
@@ -339,6 +378,9 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                         borderWidth: 0,
                         pointPadding: 0.05,
                         groupPadding: 0.05,
+                      },
+                      series: {
+                        animation: volumeOpened < 2,
                       },
                     },
                   }}

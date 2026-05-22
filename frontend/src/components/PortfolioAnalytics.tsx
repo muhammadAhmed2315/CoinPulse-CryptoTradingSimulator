@@ -53,7 +53,7 @@ export default function PortfolioAnalytics() {
           else if (value === "balance") setBalanceOpened((prev) => prev + 1);
         }}
       >
-        <Card>
+        <Card className="pb-0">
           {/* ===== HEADER ===== */}
           <CardHeader>
             <CardTitle className="flex flex-col gap-2 min-w-0">

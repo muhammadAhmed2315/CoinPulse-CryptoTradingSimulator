@@ -5,9 +5,12 @@ import type {
   RefetchOptions,
 } from "@tanstack/react-query";
 import {
-  RippleButton,
-  RippleButtonRipples,
-} from "@/components/animate-ui/components/buttons/ripple";
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs";
 
 import DotGreen from "@/assets/dot-green.svg";
 import DotAmber from "@/assets/dot-amber.svg";
@@ -80,7 +83,7 @@ function formatFullTimestamp(unixTimestamp: number): string {
 // ===== AGGRID CELL RENDERERS =====
 const idCellRenderer = (params: ICellRendererParams) => {
   return (
-    <span className="font-mono text-[12px] text-[#71717a]">{params.value}</span>
+    <span className="font-mono text-[13px] text-[#71717a]">{params.value}</span>
   );
 };
 
@@ -177,11 +180,11 @@ const executionPriceRenderer = (params: ICellRendererParams) => {
 
 const timestampRenderer = (params: ICellRendererParams) => {
   return (
-    <div className="flex flex-col leading-[1.2] font-mono">
-      <span className="text-[12px] font-semibold text-[#111] uppercase tracking-[0.04em]">
+    <div className="flex flex-col leading-[1.2] font-mono gap-0.5">
+      <span className="text-[13px] font-semibold text-[#111] uppercase tracking-[0.04em]">
         {formatRelativeOrAbsoluteDate(params.value)}
       </span>
-      <span className="text-[10px] text-[#71717a] uppercase tracking-[0.06em]">
+      <span className="text-[11px] text-[#71717a] uppercase tracking-[0.06em]">
         {formatFullTimestamp(params.value)}
       </span>
     </div>
@@ -203,9 +206,9 @@ const actionRenderer = (
 
 const commentRenderer = (params: ICellRendererParams) => {
   return params.value === "" ? (
-    <span className="text-[12px] text-[#a0a0a0] italic">No description</span>
+    <span className="text-[13px] text-[#a0a0a0] italic">No description</span>
   ) : (
-    <span className="text-[12px] text-[#3f3f46] leading-[1.35] line-clamp-2">
+    <span className="text-[13px] text-[#3f3f46] leading-[1.35] line-clamp-2">
       {params.value}
     </span>
   );
@@ -217,6 +220,9 @@ export default function TradesTable() {
   const [filter, setFilter] = useState<
     "all" | "open" | "cancelled" | "finished"
   >("all");
+  const [hoveredTab, setHoveredTab] = useState<
+    "all" | "open" | "cancelled" | "finished" | undefined
+  >(undefined);
 
   // ===== REACT QUERY HOOKS =====
   const tradeHistoryQuery = useQuery({
@@ -273,23 +279,19 @@ export default function TradesTable() {
       field: "timestamp",
       headerName: "Time Placed",
       cellRenderer: timestampRenderer,
-      autoHeight: true,
       width: 180,
-      cellStyle: { display: "flex", alignItems: "center" },
     },
     {
       field: "action",
       cellRenderer: (params: ICellRendererParams) =>
         actionRenderer(params, tradeHistoryQuery.refetch),
       width: 80,
-      cellStyle: { display: "flex", alignItems: "center" },
     },
     {
       field: "comment",
       cellRenderer: commentRenderer,
       flex: 1,
       minWidth: 200,
-      cellStyle: { display: "flex", alignItems: "center" },
     },
   ];
 
@@ -302,59 +304,102 @@ export default function TradesTable() {
     if (page !== maxPages) setPage((prev) => prev + 1);
   }
 
-  return (
-    <Card className="p-0 gap-0 overflow-hidden rounded-xl border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-      {/* ===== HEADER ===== */}
-      <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-5">
-        {/* ===== TITLE & RECORD COUNT ===== */}
-        <div className="flex flex-col gap-2 min-w-0">
-          <p className="font-mono text-[13px] font-normal uppercase text-[#71717a] tracking-[0.01em] m-0">
-            My Trades
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111]">
-              {filterCounts?.[filter] ?? 0}
-            </span>
-            <span className="text-sm text-[#71717a]">records</span>
-          </div>
-        </div>
+  // ===== AGGRID PANEL ===== */
+  const gridClassName = `
+    ag-theme-alpine trades-grid w-full
+    [--ag-font-family:'DM_Sans',sans-serif]
+    [--ag-font-size:13px]
+    [--ag-foreground-color:#111]
+    [--ag-background-color:transparent]
+    [--ag-header-background-color:transparent]
+    [--ag-header-foreground-color:#71717a]
+    [--ag-border-color:#f0f0f0]
+    [--ag-row-border-color:#f0f0f0]
+    [--ag-row-hover-color:#fafafa]
+    [--ag-selected-row-background-color:transparent]
+    [--ag-cell-horizontal-padding:18px]
+    [--ag-header-column-separator-display:none]
+    [--ag-header-column-resize-handle-display:none]
+    [--ag-header-height:38px]
+    [--ag-row-height:60px]
+    [&_.ag-header-cell-text]:font-mono
+    [&_.ag-header-cell-text]:text-[11px]
+    [&_.ag-header-cell-text]:font-semibold
+    [&_.ag-header-cell-text]:tracking-[0.06em]
+    [&_.ag-header-cell-text]:uppercase
+    [&_.ag-root-wrapper]:border-0
+    [&_.ag-header]:border-b [&_.ag-header]:border-[#f0f0f0]
+  `;
 
-        {/* ===== FILTER BUTTONS ===== */}
-        <div className="inline-flex items-center bg-[#f4f4f5] p-0.75 rounded-lg gap-0.5">
-          {/* ===== ALL FILTER ===== */}
-          <RippleButton
-            className={`inline-flex! items-center! gap-1.5! px-3! py-1.5! text-xs! font-medium! rounded-md! border! shadow-none! cursor-pointer ${
-              filter === "all"
-                ? "bg-white! text-[#111]! border-black/5! shadow-[0_1px_2px_rgba(0,0,0,0.06)]!"
-                : "bg-transparent! text-[#11111199]! border-transparent! hover:text-[#111]!"
-            }`}
-            onClick={() => setFilter("all")}
-          >
-            All
-            {filterCounts !== undefined && (
-              <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4]">
-                {filterCounts.all}
+  const grid = (
+    <div className={`${gridClassName} px-6`}>
+      <AgGridReact
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={{
+          cellStyle: { display: "flex", alignItems: "center" },
+        }}
+        pagination={false}
+        suppressCellFocus
+        domLayout="autoHeight"
+      />
+    </div>
+  );
+
+  const triggerBase =
+    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer text-[#11111199] data-[state=active]:text-[#111] hover:text-[#111] capitalize";
+
+  return (
+    <Tabs
+      value={filter}
+      onValueChange={(value) => setFilter(value as typeof filter)}
+    >
+      <Card className="p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+        {/* ===== HEADER ===== */}
+        <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-5">
+          {/* ===== TITLE & RECORD COUNT ===== */}
+          <div className="flex flex-col gap-2 min-w-0">
+            <p className="font-mono text-[13px] font-normal uppercase text-[#71717a] tracking-[0.01em] m-0">
+              My Trades
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111]">
+                {filterCounts?.[filter] ?? 0}
               </span>
-            )}
-            <RippleButtonRipples />
-          </RippleButton>
-          {/* ===== STATUS FILTERS ===== */}
-          {(
-            [
-              ["open", DotGreen],
-              ["finished", DotAmber],
-              ["cancelled", DotRed],
-            ] as const
-          ).map(([key, imgUrl]) => {
-            return (
-              <RippleButton
+              <span className="text-sm text-[#71717a]">records</span>
+            </div>
+          </div>
+
+          {/* ===== FILTER TABS ===== */}
+          <TabsList className="h-auto bg-[#f4f4f5] p-0.75 rounded-lg gap-0.5">
+            {/* ===== ALL FILTER ===== */}
+            <TabsTrigger
+              value="all"
+              className={triggerBase}
+              onHoverStart={() => setHoveredTab("all")}
+              onHoverEnd={() => setHoveredTab(undefined)}
+            >
+              All
+              {filterCounts !== undefined && (
+                <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4]">
+                  {filterCounts.all}
+                </span>
+              )}
+            </TabsTrigger>
+            {/* ===== STATUS FILTERS ===== */}
+            {(
+              [
+                ["open", DotGreen],
+                ["finished", DotAmber],
+                ["cancelled", DotRed],
+              ] as const
+            ).map(([key, imgUrl]) => (
+              <TabsTrigger
                 key={key}
-                className={`inline-flex! items-center! gap-1.5! px-3! py-1.5! text-xs! font-medium! rounded-md! border! shadow-none! cursor-pointer capitalize ${
-                  filter === key
-                    ? "bg-white! text-[#111]! border-black/5! shadow-[0_1px_2px_rgba(0,0,0,0.06)]!"
-                    : "bg-transparent! text-[#11111199]! border-transparent! hover:text-[#111]!"
-                }`}
-                onClick={() => setFilter(key)}
+                value={key}
+                className={triggerBase}
+                onHoverStart={() => setHoveredTab(key)}
+                onHoverEnd={() => setHoveredTab(undefined)}
               >
                 <img className="w-1.5 h-1.5" src={imgUrl} />
                 {key === "open" ? "active" : key}
@@ -363,50 +408,53 @@ export default function TradesTable() {
                     {filterCounts[key]}
                   </span>
                 )}
-                <RippleButtonRipples />
-              </RippleButton>
-            );
-          })}
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
-      </div>
 
-      {/* ===== DIVIDER ===== */}
-      <div className="h-px bg-[#f0f0f0] w-full" />
+        {/* ===== AGGRID PANELS ===== */}
+        <TabsContents className="pb-4">
+          <TabsContent value="all">
+            {(filter === "all" || hoveredTab === "all") && grid}
+          </TabsContent>
+          <TabsContent value="open">
+            {(filter === "open" || hoveredTab === "open") && grid}
+          </TabsContent>
+          <TabsContent value="finished">
+            {(filter === "finished" || hoveredTab === "finished") && grid}
+          </TabsContent>
+          <TabsContent value="cancelled">
+            {(filter === "cancelled" || hoveredTab === "cancelled") && grid}
+          </TabsContent>
+        </TabsContents>
 
-      {/* ===== AGGRID TABLE ===== */}
-      <div className="ag-theme-alpine trades-grid w-full h-187.5 [--ag-font-family:'DM_Sans',sans-serif] [--ag-foreground-color:#111] [--ag-background-color:transparent] [--ag-header-background-color:transparent] [--ag-header-foreground-color:#71717a] [--ag-border-color:#f0f0f0] [--ag-row-border-color:#f0f0f0] [--ag-row-hover-color:#fafafa] [--ag-selected-row-background-color:transparent] [--ag-cell-horizontal-padding:18px] [--ag-header-column-separator-display:none] [--ag-header-column-resize-handle-display:none]">
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={columnDefs}
-          pagination={false}
-        />
-      </div>
+        {/* ===== DIVIDER ===== */}
+        <div className="h-px bg-[#f0f0f0] w-full" />
 
-      {/* ===== DIVIDER ===== */}
-      <div className="h-px bg-[#f0f0f0] w-full" />
-
-      {/* ===== PAGINATION ===== */}
-      <div className="flex items-center justify-between px-6 py-3.5">
-        {/* ===== PAGE INDICATOR ===== */}
-        <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
-          Page {page} of {maxPages}
-        </p>
-        {/* ===== PREV / NEXT BUTTONS ===== */}
-        <div className="inline-flex items-center gap-1.5">
-          <p
-            className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === 1 ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
-            onClick={handlePrevBtnClick}
-          >
-            Prev
+        {/* ===== PAGINATION ===== */}
+        <div className="flex items-center justify-between px-6 py-3.5">
+          {/* ===== PAGE INDICATOR ===== */}
+          <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
+            Page {page} of {maxPages}
           </p>
-          <p
-            className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === maxPages ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
-            onClick={handleNextBtnClick}
-          >
-            Next
-          </p>
+          {/* ===== PREV / NEXT BUTTONS ===== */}
+          <div className="inline-flex items-center gap-1.5">
+            <p
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === 1 ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+              onClick={handlePrevBtnClick}
+            >
+              Prev
+            </p>
+            <p
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === maxPages ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+              onClick={handleNextBtnClick}
+            >
+              Next
+            </p>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </Tabs>
   );
 }

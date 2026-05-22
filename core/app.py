@@ -131,7 +131,7 @@ def get_trades_info():
     JSON response) a paginated list of transactions sorted according to the specified
     criteria.
 
-    Each page contains up to 25 transactions, and if a user has no transactions an
+    Each page contains up to 10 transactions, and if a user has no transactions an
     empty list is returned. The response also includes the total number of pages based
     on the number of transactions.
 
@@ -182,7 +182,7 @@ def get_trades_info():
         # If the user has transactions, sort them based on the specified criteria and
         # paginate the results
         if transactions:
-            max_pages = (len(transactions) // 25) + 1
+            max_pages = (len(transactions) // 10) + 1
 
             # Filter the transactions
             if dataFilter != "all":
@@ -190,7 +190,7 @@ def get_trades_info():
                     trnsctn for trnsctn in transactions if trnsctn.status == dataFilter
                 ]
 
-            transactions = transactions[(page - 1) * 25 : page * 25]
+            transactions = transactions[(page - 1) * 10 : page * 10]
 
             res = []
 

@@ -45,7 +45,7 @@ type OHLCStatProps = {
 function OHLCStat({ label, entry, withDivider }: OHLCStatProps) {
   return (
     <div
-      className={`flex flex-col gap-1 px-6 py-4 ${
+      className={`flex flex-col gap-1 px-6 py-4 pb-6 ${
         withDivider ? "border-l border-[#f0f0f0]" : ""
       }`}
     >

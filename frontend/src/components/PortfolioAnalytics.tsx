@@ -6,10 +6,21 @@ import {
   TabsTrigger,
 } from "@/components/animate-ui/components/animate/tabs";
 import { Card, CardAction, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { numToMoney } from "@/utils";
 import PortfolioChartPanel from "./PortfolioChartPanel";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchPortfolioAnalytics(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["portfolio-history"],
+      queryFn: fetchPortfolioHistory,
+      staleTime: 30_000,
+    }),
+  ]);
+}
 
 // ===== API FUNCTIONS =====
 async function fetchPortfolioHistory() {

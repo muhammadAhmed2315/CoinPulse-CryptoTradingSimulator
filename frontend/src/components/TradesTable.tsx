@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type ICellRendererParams, type ColDef } from "ag-grid-community";
 import type {
+  QueryClient,
   QueryObserverResult,
   RefetchOptions,
 } from "@tanstack/react-query";
@@ -21,6 +22,21 @@ import { useQuery } from "@tanstack/react-query";
 import { AgGridReact } from "ag-grid-react";
 import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
 import CancelOrderBtn from "./CancelOrderBtn";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchTradesTable(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["trade-history", 1, "all"],
+      queryFn: () => fetchTradesHistory(1, "all"),
+      staleTime: 30_000,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["trade-filter-counts"],
+      queryFn: fetchTradeFilterCounts,
+    }),
+  ]);
+}
 
 // ===== API FUNCTIONS =====
 async function fetchTradesHistory(page: number, filter: string) {

@@ -24,6 +24,8 @@ import { loadAllCoinsList } from "@/loadAllCoinsList";
 import CustomSkeleton from "./CustomSkeleton";
 import { numToMoney } from "@/utils";
 import ProfileAvatar from "./Dashboard/Feed/ProfileAvatar";
+import { prefetchTradesTable } from "./TradesTable";
+import { prefetchPortfolioAnalytics } from "./PortfolioAnalytics";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -115,7 +117,17 @@ export default function NavBar() {
 
           <NavigationMenuItem>
             <NavigationMenuLink asChild className="cursor-pointer">
-              <NavLink to="/my_trades">
+              <NavLink
+                to="/my_trades"
+                onFocus={() => {
+                  prefetchTradesTable(queryClient);
+                  prefetchPortfolioAnalytics(queryClient);
+                }}
+                onMouseEnter={() => {
+                  prefetchTradesTable(queryClient);
+                  prefetchPortfolioAnalytics(queryClient);
+                }}
+              >
                 {({ isActive }) => (
                   <div
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${

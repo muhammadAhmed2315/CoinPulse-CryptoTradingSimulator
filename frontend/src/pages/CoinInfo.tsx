@@ -1,12 +1,29 @@
-import CoinInfoCard from "@/components/CoinInfo/CoinInfoCard";
-import MarketChartsCard from "@/components/CoinInfo/MarketChartsCard";
-import NewsFeed from "@/components/CoinInfo/NewsFeed";
-import RedditFeedCard from "@/components/CoinInfo/RedditFeed";
+import CoinInfoCard, {
+  prefetchCoinInfoCard,
+} from "@/components/CoinInfo/CoinInfoCard";
+import MarketChartsCard, {
+  prefetchMarketChartsCard,
+} from "@/components/CoinInfo/MarketChartsCard";
+import NewsFeed, { prefetchNewsFeed } from "@/components/CoinInfo/NewsFeed";
+import RedditFeedCard, {
+  prefetchRedditFeed,
+} from "@/components/CoinInfo/RedditFeed";
 
 import BitcoinLogo from "../assets/logos/bitcoin.png";
 import { useState } from "react";
 import type { Coin } from "@/loadAllCoinsList";
 import { useLocation } from "react-router-dom";
+import { QueryClient } from "@tanstack/react-query";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchCoinInfo(queryClient: QueryClient) {
+  return Promise.all([
+    prefetchCoinInfoCard(queryClient),
+    prefetchMarketChartsCard(queryClient),
+    prefetchNewsFeed(queryClient),
+    prefetchRedditFeed(queryClient),
+  ]);
+}
 
 export default function CoinInfo() {
   // ===== STATE VARIABLES =====

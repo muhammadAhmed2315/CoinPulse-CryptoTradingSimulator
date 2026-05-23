@@ -27,14 +27,9 @@ import ProfileAvatar from "./Dashboard/Feed/ProfileAvatar";
 import { prefetchTradesTable } from "./TradesTable";
 import { prefetchPortfolioAnalytics } from "./PortfolioAnalytics";
 import { prefetchTopCoins } from "@/pages/TopCoins";
-import { prefetchCoinInfoCard } from "./CoinInfo/CoinInfoCard";
-import { prefetchMarketChartsCard } from "./CoinInfo/MarketChartsCard";
-import { prefetchNewsFeed } from "./CoinInfo/NewsFeed";
-import { prefetchRedditFeed } from "./CoinInfo/RedditFeed";
+import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { prefetchDashboard } from "@/pages/Dashboard";
-import { prefetchOpenPositions } from "./Dashboard/PortfolioPanel/OpenPositions";
-import { prefetchFeedPosts } from "./Dashboard/Feed/FeedPostMenu";
-import { prefetchPortfolioOverview } from "./Dashboard/PortfolioPanel/PortfolioOverview";
+import { prefetchMyTrades } from "@/pages/MyTrades";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -111,15 +106,9 @@ export default function NavBar() {
                 to="/dashboard"
                 onFocus={() => {
                   prefetchDashboard(queryClient);
-                  prefetchFeedPosts(queryClient);
-                  prefetchPortfolioOverview(queryClient);
-                  prefetchOpenPositions(queryClient);
                 }}
                 onMouseEnter={() => {
                   prefetchDashboard(queryClient);
-                  prefetchFeedPosts(queryClient);
-                  prefetchPortfolioOverview(queryClient);
-                  prefetchOpenPositions(queryClient);
                 }}
               >
                 {({ isActive }) => (
@@ -143,12 +132,10 @@ export default function NavBar() {
               <NavLink
                 to="/my_trades"
                 onFocus={() => {
-                  prefetchTradesTable(queryClient);
-                  prefetchPortfolioAnalytics(queryClient);
+                  prefetchMyTrades(queryClient);
                 }}
                 onMouseEnter={() => {
-                  prefetchTradesTable(queryClient);
-                  prefetchPortfolioAnalytics(queryClient);
+                  prefetchMyTrades(queryClient);
                 }}
               >
                 {({ isActive }) => (
@@ -202,16 +189,10 @@ export default function NavBar() {
               <NavLink
                 to="/coin_info"
                 onFocus={() => {
-                  prefetchCoinInfoCard(queryClient);
-                  prefetchMarketChartsCard(queryClient);
-                  prefetchNewsFeed(queryClient);
-                  prefetchRedditFeed(queryClient);
+                  prefetchCoinInfo(queryClient);
                 }}
                 onMouseEnter={() => {
-                  prefetchCoinInfoCard(queryClient);
-                  prefetchMarketChartsCard(queryClient);
-                  prefetchNewsFeed(queryClient);
-                  prefetchRedditFeed(queryClient);
+                  prefetchCoinInfo(queryClient);
                 }}
               >
                 {({ isActive }) => (

@@ -1,4 +1,8 @@
-import FeedPostMenu from "@/components/Dashboard/Feed/FeedPostMenu";
+import FeedPostMenu, {
+  prefetchFeedPosts,
+} from "@/components/Dashboard/Feed/FeedPostMenu";
+import { prefetchOpenPositions } from "@/components/Dashboard/PortfolioPanel/OpenPositions";
+import { prefetchPortfolioOverview } from "@/components/Dashboard/PortfolioPanel/PortfolioOverview";
 import PortfolioPanel from "@/components/Dashboard/PortfolioPanel/PortfolioPanel";
 import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
 import { QueryClient, useQuery } from "@tanstack/react-query";
@@ -10,6 +14,9 @@ export function prefetchDashboard(queryClient: QueryClient) {
       queryKey: ["trendingCoins"],
       queryFn: getTrendingCoins,
     }),
+    prefetchFeedPosts(queryClient),
+    prefetchPortfolioOverview(queryClient),
+    prefetchOpenPositions(queryClient),
   ]);
 }
 

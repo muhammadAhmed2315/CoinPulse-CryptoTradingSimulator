@@ -2,7 +2,21 @@ import { Card } from "../ui/card";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
 import RedditPost from "./RedditPost";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchRedditFeed(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchInfiniteQuery({
+      queryKey: ["reddit-posts", "Bitcoin"],
+      queryFn: ({ pageParam }) => getRedditPosts("Bitcoin", pageParam),
+      getNextPageParam: (lastPage: any) => {
+        return lastPage.length > 0 ? lastPage.at(-1)!.fullname : undefined;
+      },
+      initialPageParam: "",
+    }),
+  ]);
+}
 
 // ===== TYPES =====
 type RedditFeedProps = {

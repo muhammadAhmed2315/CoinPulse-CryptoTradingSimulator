@@ -8,13 +8,27 @@ import {
 import { Card } from "@/components/ui/card";
 import { StockChart } from "@highcharts/react/Stock";
 import { CandlestickSeries } from "@highcharts/react/series/Candlestick";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ColumnSeries } from "@highcharts/react/series/Column";
 import type Highcharts from "highcharts";
 import { useState } from "react";
 import CustomAreaChart from "../CustomAreaChart";
 import { numToMoney } from "@/utils";
 import { useInView } from "react-intersection-observer";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchMarketChartsCard(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["ohlc-chart", "bitcoin"],
+      queryFn: () => getOhlcChart("bitcoin"),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["coin-charts", "bitcoin"],
+      queryFn: () => getCoinCharts("bitcoin"),
+    }),
+  ]);
+}
 
 // ===== SHARED RANGE SELECTOR CONFIG =====
 const rangeSelectorConfig: Highcharts.RangeSelectorOptions = {

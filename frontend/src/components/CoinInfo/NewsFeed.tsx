@@ -1,8 +1,20 @@
 import { Card } from "../ui/card";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import NewsItem from "./NewsItem";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchNewsFeed(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchInfiniteQuery({
+      queryKey: ["news-articles", "Bitcoin"],
+      queryFn: ({ pageParam }) => getNewsArticles("Bitcoin", pageParam),
+      getNextPageParam: (lastPage) => lastPage.nextPage,
+      initialPageParam: "",
+    }),
+  ]);
+}
 
 // ===== TYPES =====
 type NewsFeedProps = {

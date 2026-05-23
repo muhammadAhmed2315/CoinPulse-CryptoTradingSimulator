@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import CoinSearchBar from "../CoinSearchBar";
 import { Card } from "../ui/card";
 import { loadAllCoinsList, type Coin } from "@/loadAllCoinsList";
@@ -7,6 +7,20 @@ import { useDebounce } from "use-debounce";
 import CustomSkeleton from "../CustomSkeleton";
 import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchCoinInfoCard(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["detailed-coin-data", "bitcoin"],
+      queryFn: () => getDetailedCoinData("bitcoin"),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["coin-sparkline", "bitcoin"],
+      queryFn: () => getCoinSparkline("bitcoin"),
+    }),
+  ]);
+}
 
 // ===== TYPES =====
 type CoinInfoCardProps = {

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useCallback, useMemo, useState } from "react";
 import { AgGridReact, type CustomCellRendererProps } from "ag-grid-react";
@@ -18,6 +18,16 @@ import { useNavigate } from "react-router";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const maxPages = 10;
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchTopCoins(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["coins", "market_cap_desc"],
+      queryFn: () => fetchTopCoins("market_cap_desc"),
+    }),
+  ]);
+}
 
 // ===== TYPES =====
 type Coin = {

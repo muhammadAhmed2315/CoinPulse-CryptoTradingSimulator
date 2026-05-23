@@ -23,6 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
+import { prefetchDashboard } from "@/pages/Dashboard";
 
 // ===== API FUNCTIONS =====
 async function loginFunction(data: { email: string; password: string }) {
@@ -64,6 +65,7 @@ export default function Login() {
 
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      prefetchDashboard(queryClient);
       navigate("/dashboard");
     },
 
@@ -86,6 +88,7 @@ export default function Login() {
 
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      prefetchDashboard(queryClient);
       navigate("/dashboard");
     },
   });

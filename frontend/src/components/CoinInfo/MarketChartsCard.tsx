@@ -17,15 +17,18 @@ import { numToMoney } from "@/utils";
 import { useInView } from "react-intersection-observer";
 
 // ===== NAVBAR PREFETCH =====
-export function prefetchMarketChartsCard(queryClient: QueryClient) {
+export function prefetchMarketChartsCard(
+  queryClient: QueryClient,
+  coinId: string = "bitcoin",
+) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["ohlc-chart", "bitcoin"],
-      queryFn: () => getOhlcChart("bitcoin"),
+      queryKey: ["ohlc-chart", coinId],
+      queryFn: () => getOhlcChart(coinId),
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coin-charts", "bitcoin"],
-      queryFn: () => getCoinCharts("bitcoin"),
+      queryKey: ["coin-charts", coinId],
+      queryFn: () => getCoinCharts(coinId),
     }),
   ]);
 }

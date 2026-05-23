@@ -9,15 +9,18 @@ import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
 
 // ===== NAVBAR PREFETCH =====
-export function prefetchCoinInfoCard(queryClient: QueryClient) {
+export function prefetchCoinInfoCard(
+  queryClient: QueryClient,
+  coinId: string = "bitcoin",
+) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["detailed-coin-data", "bitcoin"],
-      queryFn: () => getDetailedCoinData("bitcoin"),
+      queryKey: ["detailed-coin-data", coinId],
+      queryFn: () => getDetailedCoinData(coinId),
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coin-sparkline", "bitcoin"],
-      queryFn: () => getCoinSparkline("bitcoin"),
+      queryKey: ["coin-sparkline", coinId],
+      queryFn: () => getCoinSparkline(coinId),
     }),
   ]);
 }

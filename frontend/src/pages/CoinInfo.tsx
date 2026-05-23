@@ -16,12 +16,16 @@ import { useLocation } from "react-router-dom";
 import { QueryClient } from "@tanstack/react-query";
 
 // ===== NAVBAR PREFETCH =====
-export function prefetchCoinInfo(queryClient: QueryClient) {
+export function prefetchCoinInfo(
+  queryClient: QueryClient,
+  coinId: string = "bitcoin",
+  coinName: string = "Bitcoin",
+) {
   return Promise.all([
-    prefetchCoinInfoCard(queryClient),
-    prefetchMarketChartsCard(queryClient),
-    prefetchNewsFeed(queryClient),
-    prefetchRedditFeed(queryClient),
+    prefetchCoinInfoCard(queryClient, coinId),
+    prefetchMarketChartsCard(queryClient, coinId),
+    prefetchNewsFeed(queryClient, coinName),
+    prefetchRedditFeed(queryClient, coinName),
   ]);
 }
 

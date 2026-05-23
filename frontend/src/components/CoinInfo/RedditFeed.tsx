@@ -5,11 +5,14 @@ import RedditPost from "./RedditPost";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 
 // ===== NAVBAR PREFETCH =====
-export function prefetchRedditFeed(queryClient: QueryClient) {
+export function prefetchRedditFeed(
+  queryClient: QueryClient,
+  coinName: string = "Bitcoin",
+) {
   return Promise.all([
     queryClient.prefetchInfiniteQuery({
-      queryKey: ["reddit-posts", "Bitcoin"],
-      queryFn: ({ pageParam }) => getRedditPosts("Bitcoin", pageParam),
+      queryKey: ["reddit-posts", coinName],
+      queryFn: ({ pageParam }) => getRedditPosts(coinName, pageParam),
       getNextPageParam: (lastPage: any) => {
         return lastPage.length > 0 ? lastPage.at(-1)!.fullname : undefined;
       },

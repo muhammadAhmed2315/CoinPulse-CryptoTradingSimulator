@@ -5,11 +5,14 @@ import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import NewsItem from "./NewsItem";
 
 // ===== NAVBAR PREFETCH =====
-export function prefetchNewsFeed(queryClient: QueryClient) {
+export function prefetchNewsFeed(
+  queryClient: QueryClient,
+  coinName: string = "Bitcoin",
+) {
   return Promise.all([
     queryClient.prefetchInfiniteQuery({
-      queryKey: ["news-articles", "Bitcoin"],
-      queryFn: ({ pageParam }) => getNewsArticles("Bitcoin", pageParam),
+      queryKey: ["news-articles", coinName],
+      queryFn: ({ pageParam }) => getNewsArticles(coinName, pageParam),
       getNextPageParam: (lastPage) => lastPage.nextPage,
       initialPageParam: "",
     }),

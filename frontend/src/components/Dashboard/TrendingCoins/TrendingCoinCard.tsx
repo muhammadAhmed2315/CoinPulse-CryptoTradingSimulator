@@ -15,6 +15,8 @@ import CustomTooltip from "@/components/CustomTooltip";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
+import { prefetchCoinInfo } from "@/pages/CoinInfo";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ===== TYPES =====
 type TrendingCoinCardProps = {
@@ -49,10 +51,19 @@ export default function TrendingCoinCard({
   const priceChange = data ? data.price_change_percentage_24h.usd : undefined;
   const borderBeamColor = isError ? "#ff0000" : "#444";
 
+  // ===== REACT QUERY HOOKS =====
+  const queryClient = useQueryClient();
+
   return (
     <Card
       className="relative cursor-pointer p-3 gap-0 w-60 overflow-hidden"
-      onMouseEnter={() => setHovered(true)}
+      onFocus={() => {
+        if (data) prefetchCoinInfo(queryClient, data.coin_id, data.name);
+      }}
+      onMouseEnter={() => {
+        setHovered(true);
+        if (data) prefetchCoinInfo(queryClient, data.coin_id, data.name);
+      }}
       onMouseLeave={() => setHovered(false)}
       onClick={() =>
         navigate(`/coin_info`, {

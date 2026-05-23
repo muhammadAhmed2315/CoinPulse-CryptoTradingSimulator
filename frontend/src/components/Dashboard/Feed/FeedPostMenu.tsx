@@ -8,8 +8,26 @@ import {
   TabsTrigger,
 } from "@/components/animate-ui/components/animate/tabs";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchFeedPosts(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchInfiniteQuery({
+      queryKey: ["globalFeedPosts"],
+      queryFn: ({ pageParam }) => fetchPosts("GLOBAL", pageParam),
+      getNextPageParam: (lastPage: any) => lastPage.nextPage ?? undefined,
+      initialPageParam: 0,
+    }),
+    queryClient.prefetchInfiniteQuery({
+      queryKey: ["privateFeedPosts"],
+      queryFn: ({ pageParam }) => fetchPosts("PRIVATE", pageParam),
+      getNextPageParam: (lastPage: any) => lastPage.nextPage ?? undefined,
+      initialPageParam: 0,
+    }),
+  ]);
+}
 
 // ===== API FUNCTIONS =====
 async function fetchPosts(type: string, page: number = 0) {

@@ -2,11 +2,25 @@ import CustomSkeleton from "@/components/CustomSkeleton";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { numToMoney } from "@/utils";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import PlayUSD from "@/assets/play-usd.svg";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchPortfolioOverview(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["total-portfolio-value"],
+      queryFn: fetchTotalPortfolioValue,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["wallet-assets"],
+      queryFn: fetchWalletAssets,
+    }),
+  ]);
+}
 
 // ===== TYPES =====
 type WalletAsset = {

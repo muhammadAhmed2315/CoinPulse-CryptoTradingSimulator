@@ -31,6 +31,10 @@ import { prefetchCoinInfoCard } from "./CoinInfo/CoinInfoCard";
 import { prefetchMarketChartsCard } from "./CoinInfo/MarketChartsCard";
 import { prefetchNewsFeed } from "./CoinInfo/NewsFeed";
 import { prefetchRedditFeed } from "./CoinInfo/RedditFeed";
+import { prefetchDashboard } from "@/pages/Dashboard";
+import { prefetchOpenPositions } from "./Dashboard/PortfolioPanel/OpenPositions";
+import { prefetchFeedPosts } from "./Dashboard/Feed/FeedPostMenu";
+import { prefetchPortfolioOverview } from "./Dashboard/PortfolioPanel/PortfolioOverview";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -103,7 +107,21 @@ export default function NavBar() {
         <NavigationMenuList className="gap-1">
           <NavigationMenuItem>
             <NavigationMenuLink asChild className="cursor-pointer">
-              <NavLink to="/dashboard">
+              <NavLink
+                to="/dashboard"
+                onFocus={() => {
+                  prefetchDashboard(queryClient);
+                  prefetchFeedPosts(queryClient);
+                  prefetchPortfolioOverview(queryClient);
+                  prefetchOpenPositions(queryClient);
+                }}
+                onMouseEnter={() => {
+                  prefetchDashboard(queryClient);
+                  prefetchFeedPosts(queryClient);
+                  prefetchPortfolioOverview(queryClient);
+                  prefetchOpenPositions(queryClient);
+                }}
+              >
                 {({ isActive }) => (
                   <div
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${

@@ -1,7 +1,17 @@
 import FeedPostMenu from "@/components/Dashboard/Feed/FeedPostMenu";
 import PortfolioPanel from "@/components/Dashboard/PortfolioPanel/PortfolioPanel";
 import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchDashboard(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["trendingCoins"],
+      queryFn: getTrendingCoins,
+    }),
+  ]);
+}
 
 // ===== API FUNCTIONS =====
 async function getTrendingCoins() {

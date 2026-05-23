@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 
 import { Card } from "@/components/ui/card";
 import {
@@ -12,6 +12,16 @@ import { numToMoney } from "@/utils";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { Separator } from "@/components/ui/separator";
 import OpenOrderRow from "./OpenOrderRow";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchOpenPositions(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["open-trades"],
+      queryFn: getOpenTrades,
+    }),
+  ]);
+}
 
 // ===== API FUNCTIONS =====
 async function getOpenTrades() {

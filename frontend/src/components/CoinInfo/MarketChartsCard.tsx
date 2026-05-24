@@ -15,6 +15,7 @@ import { useState } from "react";
 import CustomAreaChart from "../CustomAreaChart";
 import { numToMoney } from "@/utils";
 import { useInView } from "react-intersection-observer";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchMarketChartsCard(
@@ -83,7 +84,7 @@ type MarketChartsCardProps = {
 
 // ===== API FUNCTIONS =====
 async function getOhlcChart(coin_id: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_OHLC_data/${coin_id}`,
     {
       method: "get",
@@ -97,7 +98,7 @@ async function getOhlcChart(coin_id: string) {
 }
 
 async function getCoinCharts(coin_id: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_historical_data/${coin_id}`,
     {
       method: "get",

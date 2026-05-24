@@ -28,10 +28,11 @@ import { prefetchTopCoins } from "@/pages/TopCoins";
 import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { prefetchDashboard } from "@/pages/Dashboard";
 import { prefetchMyTrades } from "@/pages/MyTrades";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     "http://localhost:5000/get_wallet_total_current_value",
     {
       method: "GET",
@@ -99,7 +100,10 @@ export default function NavBar() {
       <NavigationMenu>
         <NavigationMenuList className="gap-1">
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer">
+            <NavigationMenuLink
+              asChild
+              className="cursor-pointer p-0 bg-transparent hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:outline-0"
+            >
               <NavLink
                 to="/dashboard"
                 onFocus={() => {
@@ -111,7 +115,7 @@ export default function NavBar() {
               >
                 {({ isActive }) => (
                   <div
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                    className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
                         ? "text-zinc-900 bg-zinc-100"
                         : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
@@ -126,7 +130,10 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer">
+            <NavigationMenuLink
+              asChild
+              className="cursor-pointer p-0 bg-transparent hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:outline-0"
+            >
               <NavLink
                 to="/my_trades"
                 onFocus={() => {
@@ -138,7 +145,7 @@ export default function NavBar() {
               >
                 {({ isActive }) => (
                   <div
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                    className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
                         ? "text-zinc-900 bg-zinc-100"
                         : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
@@ -153,7 +160,10 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer">
+            <NavigationMenuLink
+              asChild
+              className="cursor-pointer p-0 bg-transparent hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:outline-0"
+            >
               <NavLink
                 to="/top_coins"
                 onFocus={() => {
@@ -165,7 +175,7 @@ export default function NavBar() {
               >
                 {({ isActive }) => (
                   <div
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                    className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
                         ? "text-zinc-900 bg-zinc-100"
                         : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
@@ -183,7 +193,10 @@ export default function NavBar() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className="cursor-pointer">
+            <NavigationMenuLink
+              asChild
+              className="cursor-pointer p-0 bg-transparent hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:outline-0"
+            >
               <NavLink
                 to="/coin_info"
                 onFocus={() => {
@@ -195,7 +208,7 @@ export default function NavBar() {
               >
                 {({ isActive }) => (
                   <div
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
+                    className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
                         ? "text-zinc-900 bg-zinc-100"
                         : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"

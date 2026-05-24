@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useInvalidateTradeQueries } from "@/hooks/use-invalidate-trade-queries";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== TYPES =====
 type CancelOrderBtnProps = {
@@ -17,7 +18,7 @@ type CancelOrderBtnProps = {
 
 // ===== API FUNCTIONS =====
 async function cancelOpenOrder(transaction_id: string) {
-  const response = await fetch("http://localhost:5000/cancel_open_trade", {
+  const response = await fetchWithRefresh("http://localhost:5000/cancel_open_trade", {
     method: "post",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ transaction_id: transaction_id }),

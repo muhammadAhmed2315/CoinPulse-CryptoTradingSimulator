@@ -2,13 +2,20 @@ import logging
 import os
 import threading
 import uuid
+from datetime import timedelta
 
 from flask import Flask
 from flask_cors import CORS
 from flask_mail import Mail
 from flask_migrate import Migrate
 
-from constants import MAIL_PASSWORD, MAIL_USERNAME
+from constants import (
+    JWT_ACCESS_TOKEN_EXPIRES_HOURS,
+    JWT_REFRESH_TOKEN_EXPIRES_DAYS,
+    JWT_SECRET_KEY,
+    MAIL_PASSWORD,
+    MAIL_USERNAME,
+)
 from extensions import db, jwt, login_manager
 from models import User
 
@@ -56,10 +63,17 @@ def create_app():
     mail_server = Mail(app)
 
     # Configure JWT manager
+    app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     app.config["JWT_COOKIE_HTTPONLY"] = True
     app.config["JWT_COOKIE_SAMESITE"] = "Lax"
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
+        hours=JWT_ACCESS_TOKEN_EXPIRES_HOURS
+    )
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(
+        days=JWT_REFRESH_TOKEN_EXPIRES_DAYS
+    )
 
     # Initialize JWTManager with the app
     jwt.init_app(app)

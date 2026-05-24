@@ -3,6 +3,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
 import RedditPost from "./RedditPost";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchRedditFeed(
@@ -41,7 +42,7 @@ export type RedditPost = {
 
 // ===== API FUNCTIONS =====
 async function getRedditPosts(coinName: string, after: string) {
-  const response = await fetch("http://localhost:5000/get_reddit_posts", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_reddit_posts", {
     method: "post",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: coinName, after: after }),

@@ -7,6 +7,7 @@ import { useCallback, useRef, useState } from "react";
 import PlayUSD from "@/assets/play-usd.svg";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchPortfolioOverview(queryClient: QueryClient) {
@@ -43,7 +44,7 @@ function formatCoinAmount(n: number) {
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     "http://localhost:5000/get_wallet_total_current_value",
     {
       method: "GET",
@@ -57,7 +58,7 @@ async function fetchTotalPortfolioValue() {
 }
 
 async function fetchWalletAssets(): Promise<WalletAsset[]> {
-  const response = await fetch("http://localhost:5000/get_wallet_assets", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_wallet_assets", {
     method: "GET",
     credentials: "include",
   });

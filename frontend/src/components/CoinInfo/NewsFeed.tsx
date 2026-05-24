@@ -3,6 +3,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import NewsItem from "./NewsItem";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchNewsFeed(
@@ -38,7 +39,7 @@ export type NewsArticle = {
 
 // ===== API FUNCTIONS =====
 async function getNewsArticles(coinName: string, nextPage: string) {
-  const response = await fetch("http://localhost:5000/get_news_articles", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_news_articles", {
     method: "post",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: coinName, nextPage: nextPage }),

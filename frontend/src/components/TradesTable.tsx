@@ -22,6 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AgGridReact } from "ag-grid-react";
 import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
 import CancelOrderBtn from "./CancelOrderBtn";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchTradesTable(queryClient: QueryClient) {
@@ -40,7 +41,7 @@ export function prefetchTradesTable(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function fetchTradesHistory(page: number, filter: string) {
-  const response = await fetch("http://localhost:5000/get_trades_info", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_trades_info", {
     method: "post",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ page, filter }),
@@ -55,7 +56,7 @@ async function fetchTradesHistory(page: number, filter: string) {
 }
 
 async function fetchTradeFilterCounts() {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     "http://localhost:5000/get_trade_filter_counts",
     {
       method: "get",

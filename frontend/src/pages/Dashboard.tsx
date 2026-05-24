@@ -6,6 +6,7 @@ import { prefetchPortfolioOverview } from "@/components/Dashboard/PortfolioPanel
 import PortfolioPanel from "@/components/Dashboard/PortfolioPanel/PortfolioPanel";
 import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchDashboard(queryClient: QueryClient) {
@@ -22,7 +23,7 @@ export function prefetchDashboard(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function getTrendingCoins() {
-  const response = await fetch("http://localhost:5000/get_trending_coins", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_trending_coins", {
     method: "GET",
     credentials: "include",
   });

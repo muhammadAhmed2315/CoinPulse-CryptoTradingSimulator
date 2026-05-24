@@ -12,6 +12,7 @@ import { numToMoney } from "@/utils";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { Separator } from "@/components/ui/separator";
 import OpenOrderRow from "./OpenOrderRow";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchOpenPositions(queryClient: QueryClient) {
@@ -25,7 +26,7 @@ export function prefetchOpenPositions(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function getOpenTrades() {
-  const response = await fetch("http://localhost:5000/get_open_trades", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_open_trades", {
     method: "get",
     credentials: "include",
   });

@@ -7,6 +7,7 @@ import { useDebounce } from "use-debounce";
 import CustomSkeleton from "../CustomSkeleton";
 import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchCoinInfoCard(
@@ -33,7 +34,7 @@ type CoinInfoCardProps = {
 
 // ===== API FUNCTIONS =====
 async function getDetailedCoinData(coin_id: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_data/${coin_id}`,
     {
       method: "GET",
@@ -47,7 +48,7 @@ async function getDetailedCoinData(coin_id: string) {
 }
 
 async function getCoinSparkline(coin_id: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_sparkline/${coin_id}`,
     {
       method: "GET",

@@ -10,6 +10,7 @@ import { loadAllCoinsList, type Coin } from "@/loadAllCoinsList";
 import NewTradeCardRight from "./NewTradeCardRight";
 import CoinSearchBar from "../CoinSearchBar";
 import BitcoinLogo from "../../assets/logos/bitcoin.png";
+import { fetchWithRefresh } from "@/lib/api";
 
 // ===== TYPES =====
 export type OrderSide = "BUY" | "SELL";
@@ -25,7 +26,7 @@ export type BalancePercentage = 0.1 | 0.25 | 0.5 | 0.75 | 1 | undefined;
  * @throws {Error} Parsed JSON error body if the request fails.
  */
 async function getCoinInfo(coinId: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_data/${coinId}`,
     {
       method: "GET",
@@ -44,7 +45,7 @@ async function getCoinInfo(coinId: string) {
  * @throws {Error} Parsed JSON error body if the request fails.
  */
 async function getCoinSparkline(coinId: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_sparkline/${coinId}`,
     {
       method: "GET",
@@ -62,7 +63,7 @@ async function getCoinSparkline(coinId: string) {
  * @throws {Error} Parsed JSON error body if the request fails.
  */
 async function getUserBalance() {
-  const response = await fetch("http://localhost:5000/get_user_balance", {
+  const response = await fetchWithRefresh("http://localhost:5000/get_user_balance", {
     method: "GET",
     credentials: "include",
   });
@@ -77,7 +78,7 @@ async function getUserBalance() {
  * @throws {Error} Parsed JSON error body if the request fails.
  */
 async function getCoinBalance(coinId: string) {
-  const response = await fetch(
+  const response = await fetchWithRefresh(
     `http://localhost:5000/get_coin_balance/${coinId}`,
     {
       method: "GET",

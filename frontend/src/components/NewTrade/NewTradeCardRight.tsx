@@ -20,6 +20,7 @@ import { useMutation, type UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { Coin } from "@/loadAllCoinsList";
 import { useInvalidateTradeQueries } from "@/hooks/use-invalidate-trade-queries";
+import { fetchWithRefresh } from "@/lib/api";
 
 /**
  * Places an order with the backend based on the provided configuration.
@@ -45,7 +46,7 @@ async function placeOrder(
     comment: comment,
   };
 
-  const response = await fetch("http://localhost:5000/process_order", {
+  const response = await fetchWithRefresh("http://localhost:5000/process_order", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

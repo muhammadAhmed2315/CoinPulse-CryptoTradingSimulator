@@ -19,6 +19,7 @@ import CustomSkeleton from "../CustomSkeleton";
 import { useMutation, type UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { Coin } from "@/loadAllCoinsList";
+import { useInvalidateTradeQueries } from "@/hooks/use-invalidate-trade-queries";
 
 /**
  * Places an order with the backend based on the provided configuration.
@@ -107,6 +108,8 @@ export default function NewTradeCardRight({
     coinAmount === "";
 
   // ===== REACT QUERY HOOKS =====
+  const invalidateTradeQueries = useInvalidateTradeQueries();
+
   const placeOrderMutation = useMutation({
     mutationFn: () =>
       placeOrder(
@@ -115,13 +118,13 @@ export default function NewTradeCardRight({
         parseFloat(coinAmount),
         currCoin.id,
         orderType === "MARKET"
-          ? coinDataQuery.data[0].current_price
+          ? coinDataQuery.data.current_price
           : parseFloat(orderPrice),
         shareOnTimeline,
         timelineMsg,
       ),
 
-    onSuccess: () => {
+    onSuccess: async () => {
       setSuccessTimer(2);
       setOrderSide("BUY");
       setOrderType("MARKET");
@@ -130,6 +133,8 @@ export default function NewTradeCardRight({
       setOrderPrice("");
       setBalancePercentage(undefined);
       setTimelineMsg("");
+
+      await invalidateTradeQueries();
     },
 
     onError: () => {
@@ -160,7 +165,7 @@ export default function NewTradeCardRight({
     } else if (/^\d*\.?\d{0,2}$/.test(val)) {
       setUsdAmount(val);
       setCoinAmount(
-        (parseFloat(val) / coinDataQuery.data[0].current_price).toFixed(8),
+        (parseFloat(val) / coinDataQuery.data.current_price).toFixed(8),
       );
 
       const res = [0.1, 0.25, 0.5, 0.75, 1].filter(
@@ -181,7 +186,7 @@ export default function NewTradeCardRight({
       setCoinAmount("");
       setUsdAmount("");
     } else if (/^\d*\.?\d{0,8}$/.test(val)) {
-      const usdValue = parseFloat(val) * coinDataQuery.data[0].current_price;
+      const usdValue = parseFloat(val) * coinDataQuery.data.current_price;
       setCoinAmount(val);
       setUsdAmount(String(usdValue.toFixed(2)));
 
@@ -212,7 +217,7 @@ export default function NewTradeCardRight({
       const usdValue = num! * userBalanceQuery.data;
       setUsdAmount(String(usdValue.toFixed(2)));
       setCoinAmount(
-        String((usdValue / coinDataQuery.data[0].current_price).toFixed(8)),
+        String((usdValue / coinDataQuery.data.current_price).toFixed(8)),
       );
     }
   }

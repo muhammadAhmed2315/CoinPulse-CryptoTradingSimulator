@@ -103,27 +103,27 @@ export default function NewTradeCard() {
 
   // ===== REACT QUERY HOOKS =====
   const allCoinsQuery = useQuery({
-    queryKey: ["all-coins-list"],
+    queryKey: ["allCoinsList"],
     queryFn: loadAllCoinsList,
   });
 
   const coinDataQuery = useQuery({
-    queryKey: ["coin-info", currCoin.id],
+    queryKey: ["coinInfo", currCoin.id],
     queryFn: () => getCoinInfo(currCoin.id),
   });
 
   const sparklineQuery = useQuery({
-    queryKey: ["coin-sparkline", currCoin.id],
+    queryKey: ["coinSparkline", currCoin.id],
     queryFn: () => getCoinSparkline(currCoin.id),
   });
 
   const userBalanceQuery = useQuery({
-    queryKey: ["user-balance"],
+    queryKey: ["userBalance"],
     queryFn: () => getUserBalance(),
   });
 
   const coinBalanceQuery = useQuery({
-    queryKey: ["coin-balance", currCoin.id],
+    queryKey: ["coinBalance", currCoin.id],
     queryFn: () => getCoinBalance(currCoin.id),
   });
 

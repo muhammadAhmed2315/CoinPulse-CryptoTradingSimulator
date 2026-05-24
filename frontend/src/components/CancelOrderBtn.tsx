@@ -5,6 +5,7 @@ import {
   type RefetchOptions,
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useInvalidateTradeQueries } from "@/hooks/use-invalidate-trade-queries";
 
 // ===== TYPES =====
 type CancelOrderBtnProps = {
@@ -37,9 +38,13 @@ export default function CancelOrderBtn({
   const [errorTimer, setErrorTimer] = useState(-1);
 
   // ===== REACT QUERY HOOKS =====
+  const invalidateTradeQueries = useInvalidateTradeQueries();
   const cancelOpenTradeMutation = useMutation({
     mutationFn: (transaction_id: string) => cancelOpenOrder(transaction_id),
-    onSuccess: () => setSuccessTimer(3),
+    onSuccess: async () => {
+      setSuccessTimer(3);
+      await invalidateTradeQueries();
+    },
     onError: () => setErrorTimer(3),
   });
 

@@ -12,11 +12,11 @@ import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 export function prefetchPortfolioOverview(queryClient: QueryClient) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["total-portfolio-value"],
+      queryKey: ["totalPortfolioValue"],
       queryFn: fetchTotalPortfolioValue,
     }),
     queryClient.prefetchQuery({
-      queryKey: ["wallet-assets"],
+      queryKey: ["walletAssets"],
       queryFn: fetchWalletAssets,
     }),
   ]);
@@ -70,12 +70,12 @@ async function fetchWalletAssets(): Promise<WalletAsset[]> {
 export default function PortfolioOverview() {
   // ===== REACT QUERY HOOKS =====
   const totalPortfolioValueQuery = useQuery({
-    queryKey: ["total-portfolio-value"],
+    queryKey: ["totalPortfolioValue"],
     queryFn: fetchTotalPortfolioValue,
   });
 
   const walletAssetsQuery = useQuery({
-    queryKey: ["wallet-assets"],
+    queryKey: ["walletAssets"],
     queryFn: fetchWalletAssets,
   });
 

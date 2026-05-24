@@ -11,7 +11,7 @@ import ProfileAvatar from "./ProfileAvatar";
 import TradePill from "./TradePill";
 import LikeButton from "./LikeButton";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 
 // ===== API FUNCTIONS =====
@@ -56,7 +56,6 @@ export default function FeedPost({
   transaction_type,
   username,
 }: FeedPostProps) {
-  // ===== STATE VARIABLES =====
   const [currentlyLiked, setCurrentlyLiked] = useState(curr_user_liked);
   const [currLikes, setCurrLikes] = useState(likes);
 
@@ -64,6 +63,8 @@ export default function FeedPost({
   const [ref, inView] = useInView();
 
   // ===== REACT QUERY HOOKS =====
+  const queryClient = useQueryClient();
+
   const likeButtonQuery = useMutation({
     mutationFn: (isIncrement: boolean) => updateLikes(id, isIncrement),
 
@@ -82,6 +83,13 @@ export default function FeedPost({
         setCurrentlyLiked(context.prevLiked);
         setCurrLikes(context.prevLikes);
       }
+    },
+
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["globalFeedPosts"] }),
+        queryClient.invalidateQueries({ queryKey: ["privateFeedPosts"] }),
+      ]);
     },
   });
 

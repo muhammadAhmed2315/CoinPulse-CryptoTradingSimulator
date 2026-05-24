@@ -11,7 +11,7 @@ export function prefetchNewsFeed(
 ) {
   return Promise.all([
     queryClient.prefetchInfiniteQuery({
-      queryKey: ["news-articles", coinName],
+      queryKey: ["newsArticles", coinName],
       queryFn: ({ pageParam }) => getNewsArticles(coinName, pageParam),
       getNextPageParam: (lastPage) => lastPage.nextPage,
       initialPageParam: "",
@@ -53,7 +53,7 @@ async function getNewsArticles(coinName: string, nextPage: string) {
 export default function NewsFeed({ coinName }: NewsFeedProps) {
   // ===== REACT QUERY HOOKS =====
   const newsArticlesQuery = useInfiniteQuery({
-    queryKey: ["news-articles", coinName],
+    queryKey: ["newsArticles", coinName],
     queryFn: ({ pageParam }) => getNewsArticles(coinName, pageParam),
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: "",

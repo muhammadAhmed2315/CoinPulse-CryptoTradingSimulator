@@ -24,8 +24,6 @@ import { loadAllCoinsList } from "@/loadAllCoinsList";
 import CustomSkeleton from "./CustomSkeleton";
 import { numToMoney } from "@/utils";
 import ProfileAvatar from "./Dashboard/Feed/ProfileAvatar";
-import { prefetchTradesTable } from "./TradesTable";
-import { prefetchPortfolioAnalytics } from "./PortfolioAnalytics";
 import { prefetchTopCoins } from "@/pages/TopCoins";
 import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { prefetchDashboard } from "@/pages/Dashboard";
@@ -55,13 +53,13 @@ export default function NavBar() {
   // ===== REACT QUERY HOOKS =====
   const prefetchAllCoinsList = async () => {
     await queryClient.prefetchQuery({
-      queryKey: ["all-coins-list"],
+      queryKey: ["allCoinsList"],
       queryFn: loadAllCoinsList,
     });
   };
 
   const portfolioTotalValueQuery = useQuery({
-    queryKey: ["total-portfolio-value"],
+    queryKey: ["totalPortfolioValue"],
     queryFn: fetchTotalPortfolioValue,
   });
 
@@ -72,7 +70,7 @@ export default function NavBar() {
       }),
 
     onSuccess: () => {
-      queryClient.setQueryData(["auth", "me"], null);
+      queryClient.clear();
       navigate("/login");
     },
   });

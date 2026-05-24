@@ -11,7 +11,7 @@ export function prefetchRedditFeed(
 ) {
   return Promise.all([
     queryClient.prefetchInfiniteQuery({
-      queryKey: ["reddit-posts", coinName],
+      queryKey: ["redditPosts", coinName],
       queryFn: ({ pageParam }) => getRedditPosts(coinName, pageParam),
       getNextPageParam: (lastPage: any) => {
         return lastPage.length > 0 ? lastPage.at(-1)!.fullname : undefined;
@@ -56,7 +56,7 @@ async function getRedditPosts(coinName: string, after: string) {
 export default function RedditFeed({ coinName }: RedditFeedProps) {
   // ===== REACT QUERY HOOKS =====
   const redditPostsQuery = useInfiniteQuery({
-    queryKey: ["reddit-posts", coinName],
+    queryKey: ["redditPosts", coinName],
     queryFn: ({ pageParam }) => getRedditPosts(coinName, pageParam),
     getNextPageParam: (lastPage) => {
       return lastPage.length > 0 ? lastPage.at(-1)!.fullname : undefined;

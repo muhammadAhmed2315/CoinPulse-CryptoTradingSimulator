@@ -27,12 +27,12 @@ import CancelOrderBtn from "./CancelOrderBtn";
 export function prefetchTradesTable(queryClient: QueryClient) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["trade-history", 1, "all"],
+      queryKey: ["tradeHistory", 1, "all"],
       queryFn: () => fetchTradesHistory(1, "all"),
       staleTime: 30_000,
     }),
     queryClient.prefetchQuery({
-      queryKey: ["trade-filter-counts"],
+      queryKey: ["tradeFilterCounts"],
       queryFn: fetchTradeFilterCounts,
     }),
   ]);
@@ -242,12 +242,12 @@ export default function TradesTable() {
 
   // ===== REACT QUERY HOOKS =====
   const tradeHistoryQuery = useQuery({
-    queryKey: ["trade-history", page, filter],
+    queryKey: ["tradeHistory", page, filter],
     queryFn: () => fetchTradesHistory(page, filter),
   });
 
   const tradeFilterCountsQuery = useQuery({
-    queryKey: ["trade-filter-counts"],
+    queryKey: ["tradeFilterCounts"],
     queryFn: fetchTradeFilterCounts,
   });
 

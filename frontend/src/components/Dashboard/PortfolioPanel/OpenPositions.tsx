@@ -17,7 +17,7 @@ import OpenOrderRow from "./OpenOrderRow";
 export function prefetchOpenPositions(queryClient: QueryClient) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["open-trades"],
+      queryKey: ["openTrades"],
       queryFn: getOpenTrades,
     }),
   ]);
@@ -58,7 +58,7 @@ function sumOrderValues(trades: any) {
 export default function OpenPositions() {
   // ===== REACT QUERY HOOKS =====
   const openTradesQuery = useQuery({
-    queryKey: ["open-trades"],
+    queryKey: ["openTrades"],
     queryFn: getOpenTrades,
   });
 

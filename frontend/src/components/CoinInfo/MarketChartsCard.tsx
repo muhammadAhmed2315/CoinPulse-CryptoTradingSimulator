@@ -23,11 +23,11 @@ export function prefetchMarketChartsCard(
 ) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["ohlc-chart", coinId],
+      queryKey: ["ohlcChart", coinId],
       queryFn: () => getOhlcChart(coinId),
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coin-charts", coinId],
+      queryKey: ["coinCharts", coinId],
       queryFn: () => getCoinCharts(coinId),
     }),
   ]);
@@ -139,12 +139,12 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
 
   // ===== REACT QUERY HOOKS =====
   const ohlcChartQuery = useQuery({
-    queryKey: ["ohlc-chart", currCoin.id],
+    queryKey: ["ohlcChart", currCoin.id],
     queryFn: () => getOhlcChart(currCoin.id),
   });
 
   const coinChartsQuery = useQuery({
-    queryKey: ["coin-charts", currCoin.id],
+    queryKey: ["coinCharts", currCoin.id],
     queryFn: () => getCoinCharts(currCoin.id),
   });
 

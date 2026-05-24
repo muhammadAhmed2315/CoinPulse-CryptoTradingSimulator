@@ -15,11 +15,11 @@ export function prefetchCoinInfoCard(
 ) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["detailed-coin-data", coinId],
+      queryKey: ["detailedCoinData", coinId],
       queryFn: () => getDetailedCoinData(coinId),
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coin-sparkline", coinId],
+      queryKey: ["coinSparkline", coinId],
       queryFn: () => getCoinSparkline(coinId),
     }),
   ]);
@@ -70,17 +70,17 @@ export default function CoinInfoCard({
 
   // ===== REACT QUERY HOOKS =====
   const allCoinsQuery = useQuery({
-    queryKey: ["all-coins-list"],
+    queryKey: ["allCoinsList"],
     queryFn: loadAllCoinsList,
   });
 
   const detailedCoinDataQuery = useQuery({
-    queryKey: ["detailed-coin-data", currCoin.id],
+    queryKey: ["detailedCoinData", currCoin.id],
     queryFn: () => getDetailedCoinData(currCoin.id),
   });
 
   const coinSparklineQuery = useQuery({
-    queryKey: ["coin-sparkline", currCoin.id],
+    queryKey: ["coinSparkline", currCoin.id],
     queryFn: () => getCoinSparkline(currCoin.id),
   });
 

@@ -15,7 +15,7 @@ import PortfolioChartPanel from "./PortfolioChartPanel";
 export function prefetchPortfolioAnalytics(queryClient: QueryClient) {
   return Promise.all([
     queryClient.prefetchQuery({
-      queryKey: ["portfolio-history"],
+      queryKey: ["portfolioHistory"],
       queryFn: fetchPortfolioHistory,
       staleTime: 30_000,
     }),
@@ -48,7 +48,7 @@ export default function PortfolioAnalytics() {
 
   // ===== REACT QUERY HOOKS =====
   const portfolioHistoryQuery = useQuery({
-    queryKey: ["portfolio-history"],
+    queryKey: ["portfolioHistory"],
     queryFn: fetchPortfolioHistory,
   });
 

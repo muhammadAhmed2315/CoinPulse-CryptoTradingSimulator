@@ -57,7 +57,7 @@ export default function CoinSearchBar({
       <Field className="max-w-sm">
         <InputGroup>
           <InputGroupInput
-            placeholder="Search by name or $ticker..."
+            placeholder="Search by name or $TICKER..."
             value={query}
             onChange={handleSearchInput}
           />

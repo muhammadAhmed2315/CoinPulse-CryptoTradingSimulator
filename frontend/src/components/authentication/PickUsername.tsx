@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import AtSymbolIcon from "@/assets/icons/at-symbol.svg";
 import { Separator } from "../ui/separator";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
@@ -23,13 +23,15 @@ export default function PickUsername() {
   const navigate = useNavigate();
 
   // ===== REACT QUERY HOOKS =====
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data: { username: string }) =>
       axios.post("http://localhost:5000/pick_username", data, {
         withCredentials: true,
       }),
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       navigate("/dashboard");
     },
   });

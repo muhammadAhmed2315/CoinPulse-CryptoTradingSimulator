@@ -23,6 +23,7 @@ import { AgGridReact } from "ag-grid-react";
 import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
 import CancelOrderBtn from "./CancelOrderBtn";
 import { fetchWithRefresh } from "@/lib/api";
+import CustomSkeleton from "./CustomSkeleton";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchTradesTable(queryClient: QueryClient) {
@@ -41,12 +42,15 @@ export function prefetchTradesTable(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function fetchTradesHistory(page: number, filter: string) {
-  const response = await fetchWithRefresh("http://localhost:5000/get_trades_info", {
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ page, filter }),
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_trades_info",
+    {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ page, filter }),
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) {
     throw await response.json();
@@ -348,20 +352,50 @@ export default function TradesTable() {
     [&_.ag-header]:border-b [&_.ag-header]:border-[#f0f0f0]
   `;
 
-  const grid = (
-    <div className={`${gridClassName} px-6`}>
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={columnDefs}
-        defaultColDef={{
-          cellStyle: { display: "flex", alignItems: "center" },
-        }}
-        pagination={false}
-        suppressCellFocus
-        domLayout="autoHeight"
-      />
+  const skeletonGrid = (
+    <div className="px-6">
+      <div className="border border-[#f0f0f0] rounded-md overflow-hidden">
+        {/* fake header to match AG Grid header height */}
+        <div className="h-9.5 border-b border-[#f0f0f0]" />
+        {Array.from({ length: 10 }, (_, i) => (
+          <div
+            key={i}
+            className="h-15 flex items-center gap-4 px-4.5 border-b border-[#f0f0f0] last:border-b-0"
+          >
+            <CustomSkeleton className="h-4 w-6" />
+            <CustomSkeleton className="h-4 w-20 rounded-lg" />
+            <CustomSkeleton className="h-4 w-14 rounded-lg" />
+            <CustomSkeleton className="h-4 w-12 rounded-lg" />
+            <CustomSkeleton className="h-4 w-12" />
+            <CustomSkeleton className="h-4 w-24" />
+            <CustomSkeleton className="h-4 w-16" />
+            <CustomSkeleton className="h-4 w-16" />
+            <CustomSkeleton className="h-4 w-28" />
+            <CustomSkeleton className="h-4 w-8" />
+            <CustomSkeleton className="h-4 flex-1" />
+          </div>
+        ))}
+      </div>
     </div>
   );
+
+  const grid =
+    tradeHistoryQuery.isLoading ? (
+      skeletonGrid
+    ) : (
+      <div className={`${gridClassName} px-6`}>
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={{
+            cellStyle: { display: "flex", alignItems: "center" },
+          }}
+          pagination={false}
+          suppressCellFocus
+          domLayout="autoHeight"
+        />
+      </div>
+    );
 
   const triggerBase =
     "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer text-[#11111199] data-[state=active]:text-[#111] hover:text-[#111] capitalize";
@@ -380,9 +414,13 @@ export default function TradesTable() {
               My Trades
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111]">
-                {filterCounts?.[filter] ?? 0}
-              </span>
+              {tradeFilterCountsQuery.isLoading ? (
+                <CustomSkeleton className="h-8 w-14 translate-y-1.5" />
+              ) : (
+                <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111]">
+                  {filterCounts?.[filter] ?? 0}
+                </span>
+              )}
               <span className="text-sm text-[#71717a]">records</span>
             </div>
           </div>
@@ -397,10 +435,12 @@ export default function TradesTable() {
               onHoverEnd={() => setHoveredTab(undefined)}
             >
               All
-              {filterCounts !== undefined && (
+              {filterCounts !== undefined ? (
                 <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4]">
                   {filterCounts.all}
                 </span>
+              ) : (
+                <CustomSkeleton className="h-3.5 w-4 rounded-md" />
               )}
             </TabsTrigger>
             {/* ===== STATUS FILTERS ===== */}
@@ -420,10 +460,12 @@ export default function TradesTable() {
               >
                 <img className="w-1.5 h-1.5" src={imgUrl} />
                 {key === "open" ? "active" : key}
-                {filterCounts !== undefined && (
+                {filterCounts !== undefined ? (
                   <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4] normal-case">
                     {filterCounts[key]}
                   </span>
+                ) : (
+                  <CustomSkeleton className="h-3.5 w-4 rounded-md" />
                 )}
               </TabsTrigger>
             ))}
@@ -452,9 +494,13 @@ export default function TradesTable() {
         {/* ===== PAGINATION ===== */}
         <div className="flex items-center justify-between px-6 py-3.5">
           {/* ===== PAGE INDICATOR ===== */}
-          <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
-            Page {page} of {maxPages}
-          </p>
+          {tradeHistoryQuery.isLoading ? (
+            <CustomSkeleton className="h-3 w-24" />
+          ) : (
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
+              Page {page} of {maxPages}
+            </p>
+          )}
           {/* ===== PREV / NEXT BUTTONS ===== */}
           <div className="inline-flex items-center gap-1.5">
             <p

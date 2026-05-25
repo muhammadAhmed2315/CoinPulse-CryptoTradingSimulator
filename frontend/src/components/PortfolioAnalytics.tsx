@@ -11,6 +11,33 @@ import { useState } from "react";
 import { numToMoney } from "@/utils";
 import PortfolioChartPanel from "./PortfolioChartPanel";
 import { fetchWithRefresh } from "@/lib/api";
+import CustomSkeleton from "./CustomSkeleton";
+import { Separator } from "./ui/separator";
+
+// ===== SKELETON =====
+function ChartPanelSkeleton() {
+  return (
+    <>
+      <div className="px-6">
+        <CustomSkeleton className="h-98 w-full mt-3 mb-3" />
+      </div>
+      <Separator className="bg-[#f0f0f0]" />
+      <div className="grid grid-cols-4 w-full">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div
+            key={i}
+            className={`flex flex-col gap-2 px-6 py-4 pb-6 ${
+              i > 0 ? "border-l border-[#f0f0f0]" : ""
+            }`}
+          >
+            <CustomSkeleton className="h-3.5 w-10" />
+            <CustomSkeleton className="h-7 w-24" />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchPortfolioAnalytics(queryClient: QueryClient) {
@@ -25,10 +52,13 @@ export function prefetchPortfolioAnalytics(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function fetchPortfolioHistory() {
-  const response = await fetchWithRefresh("http://localhost:5000/get_wallet_history", {
-    method: "get",
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_wallet_history",
+    {
+      method: "get",
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -74,6 +104,9 @@ export default function PortfolioAnalytics() {
                 Portfolio Analytics
               </p>
               {/* ===== CURRENT VALUE ===== */}
+              {portfolioHistoryQuery.isLoading && (
+                <CustomSkeleton className="h-9 w-48" />
+              )}
               {portfolioHistoryQuery.data && (
                 <p className="text-3xl font-bold tracking-tight">
                   ${numToMoney(portfolioHistoryQuery.data[activeTab].at(-1)[1])}
@@ -114,33 +147,45 @@ export default function PortfolioAnalytics() {
           {/* ===== CHART + OHLC STATS ===== */}
           <TabsContents className="w-full">
             <TabsContent value="totalValue">
-              {portfolioHistoryQuery.data &&
-                (activeTab === "totalValue" || hoveredTab === "totalValue") && (
-                  <PortfolioChartPanel
-                    data={portfolioHistoryQuery.data.totalValue}
-                    animation={totalValueOpened < 2}
-                  />
-                )}
+              {(activeTab === "totalValue" || hoveredTab === "totalValue") &&
+                (portfolioHistoryQuery.isLoading ? (
+                  <ChartPanelSkeleton />
+                ) : (
+                  portfolioHistoryQuery.data && (
+                    <PortfolioChartPanel
+                      data={portfolioHistoryQuery.data.totalValue}
+                      animation={totalValueOpened < 2}
+                    />
+                  )
+                ))}
             </TabsContent>
 
             <TabsContent value="assets">
-              {portfolioHistoryQuery.data &&
-                (activeTab === "assets" || hoveredTab === "assets") && (
-                  <PortfolioChartPanel
-                    data={portfolioHistoryQuery.data.assets}
-                    animation={assetsOpened < 2}
-                  />
-                )}
+              {(activeTab === "assets" || hoveredTab === "assets") &&
+                (portfolioHistoryQuery.isLoading ? (
+                  <ChartPanelSkeleton />
+                ) : (
+                  portfolioHistoryQuery.data && (
+                    <PortfolioChartPanel
+                      data={portfolioHistoryQuery.data.assets}
+                      animation={assetsOpened < 2}
+                    />
+                  )
+                ))}
             </TabsContent>
 
             <TabsContent value="balance">
-              {portfolioHistoryQuery.data &&
-                (activeTab === "balance" || hoveredTab === "balance") && (
-                  <PortfolioChartPanel
-                    data={portfolioHistoryQuery.data.balance}
-                    animation={balanceOpened < 2}
-                  />
-                )}
+              {(activeTab === "balance" || hoveredTab === "balance") &&
+                (portfolioHistoryQuery.isLoading ? (
+                  <ChartPanelSkeleton />
+                ) : (
+                  portfolioHistoryQuery.data && (
+                    <PortfolioChartPanel
+                      data={portfolioHistoryQuery.data.balance}
+                      animation={balanceOpened < 2}
+                    />
+                  )
+                ))}
             </TabsContent>
           </TabsContents>
         </Card>

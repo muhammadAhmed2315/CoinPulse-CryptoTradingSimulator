@@ -109,7 +109,7 @@ export default function CoinInfoCard({
 
         <div className="w-[50%]">
           {allCoinsQuery.isLoading ? (
-            <>Loading...</>
+            <CustomSkeleton className="h-9 w-full rounded-md" />
           ) : (
             <CoinSearchBar
               coins={allCoinsQuery.data!}
@@ -169,7 +169,19 @@ export default function CoinInfoCard({
             </div>
           </div>
         ) : (
-          <CustomSkeleton />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <CustomSkeleton className="size-11 rounded-full shrink-0" />
+              <div className="flex flex-col gap-1.5 min-w-0">
+                <CustomSkeleton className="h-5 w-32" />
+                <CustomSkeleton className="h-3 w-12" />
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2 text-right shrink-0">
+              <CustomSkeleton className="h-6 w-28" />
+              <CustomSkeleton className="h-3.5 w-16" />
+            </div>
+          </div>
         )}
       </div>
 
@@ -200,7 +212,13 @@ export default function CoinInfoCard({
             <SparklineGraph data={coinSparkline} width={600} />
           </>
         ) : (
-          <CustomSkeleton />
+          <>
+            <div className="flex items-center justify-between mb-1.5">
+              <CustomSkeleton className="h-3 w-12" />
+              <CustomSkeleton className="h-3 w-14" />
+            </div>
+            <CustomSkeleton className="h-20 w-full rounded-md" />
+          </>
         )}
       </div>
 
@@ -269,7 +287,20 @@ export default function CoinInfoCard({
             </div>
           </>
         ) : (
-          <CustomSkeleton />
+          <>
+            <div className="px-6 pt-3.5 pb-2.5 bg-zinc-50 border-y border-[#f0f0f0]">
+              <CustomSkeleton className="h-4 w-24" />
+            </div>
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0] last:border-b-0"
+              >
+                <CustomSkeleton className="h-3 w-24" />
+                <CustomSkeleton className="h-3.5 w-20" />
+              </div>
+            ))}
+          </>
         )}
       </div>
 
@@ -331,7 +362,22 @@ export default function CoinInfoCard({
           </div>
         </div>
       ) : (
-        <CustomSkeleton />
+        <div className="px-6 pt-4.5 pb-8 border-t border-[#f0f0f0]">
+          <div className="flex w-full justify-between gap-3 mb-3.5">
+            <div className="flex flex-col gap-1.25">
+              <CustomSkeleton className="h-3 w-20" />
+              <CustomSkeleton className="h-4 w-16" />
+              <CustomSkeleton className="h-3 w-12" />
+            </div>
+            <div className="flex flex-col gap-1.25 items-end">
+              <CustomSkeleton className="h-3 w-20" />
+              <CustomSkeleton className="h-4 w-16" />
+              <CustomSkeleton className="h-3 w-12" />
+            </div>
+          </div>
+
+          <CustomSkeleton className="h-1.5 w-full rounded-full mt-8.5 mb-2" />
+        </div>
       )}
     </Card>
   );

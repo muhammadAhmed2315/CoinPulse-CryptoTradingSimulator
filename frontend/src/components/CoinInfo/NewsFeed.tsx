@@ -4,6 +4,25 @@ import { Spinner } from "../ui/spinner";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import NewsItem from "./NewsItem";
 import { fetchWithRefresh } from "@/lib/api";
+import CustomSkeleton from "../CustomSkeleton";
+
+const SKELETON_ITEMS = Array.from({ length: 5 }, (_, i) => i);
+
+function NewsItemSkeleton() {
+  return (
+    <div className="border-b border-[#f0f0f0] last:border-b-0">
+      <div className="flex gap-3.5 px-6 py-4.5">
+        <CustomSkeleton className="size-21 shrink-0 rounded-[10px]" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <CustomSkeleton className="h-3 w-40" />
+          <CustomSkeleton className="h-9 w-full rounded-md" />
+          <CustomSkeleton className="h-7 w-full rounded-md" />
+          <CustomSkeleton className="h-3 w-24 mt-0.5" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchNewsFeed(
@@ -39,12 +58,15 @@ export type NewsArticle = {
 
 // ===== API FUNCTIONS =====
 async function getNewsArticles(coinName: string, nextPage: string) {
-  const response = await fetchWithRefresh("http://localhost:5000/get_news_articles", {
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: coinName, nextPage: nextPage }),
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_news_articles",
+    {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: coinName, nextPage: nextPage }),
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -79,35 +101,47 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
           </p>
         </div>
         {/* ===== RESULTS COUNT ===== */}
-        <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
-          {numPosts} RESULTS
-        </p>
+        {newsArticlesQuery.isLoading ? (
+          <CustomSkeleton className="h-5 w-20 rounded-md" />
+        ) : (
+          <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
+            {numPosts} RESULTS
+          </p>
+        )}
       </div>
 
       {/* ===== ARTICLES LIST ===== */}
-      <InfiniteScroll
-        dataLength={newsArticlesQuery.data?.pages.length || 0}
-        next={newsArticlesQuery.fetchNextPage}
-        hasMore={!!newsArticlesQuery.hasNextPage}
-        loader={<span></span>}
-        endMessage={
-          <p style={{ textAlign: "center" }}>
-            <b>You're all caught up.</b>
-          </p>
-        }
-        className="flex flex-col pb-8"
-      >
-        {newsArticlesQuery.data?.pages.map((page) => {
-          return page.results.map((artcl) => {
-            return <NewsItem key={artcl.article_id} post={artcl} />;
-          });
-        })}
-        {newsArticlesQuery.isFetching && (
-          <div className="pt-4 w-full flex justify-center">
-            <Spinner className="size-10" />
-          </div>
-        )}
-      </InfiniteScroll>
+      {newsArticlesQuery.isLoading ? (
+        <div className="flex flex-col pb-8">
+          {SKELETON_ITEMS.map((i) => (
+            <NewsItemSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <InfiniteScroll
+          dataLength={newsArticlesQuery.data?.pages.length || 0}
+          next={newsArticlesQuery.fetchNextPage}
+          hasMore={!!newsArticlesQuery.hasNextPage}
+          loader={<span></span>}
+          endMessage={
+            <p style={{ textAlign: "center" }}>
+              <b>You're all caught up.</b>
+            </p>
+          }
+          className="flex flex-col pb-8"
+        >
+          {newsArticlesQuery.data?.pages.map((page) => {
+            return page.results.map((artcl: any) => {
+              return <NewsItem key={artcl.article_id} post={artcl} />;
+            });
+          })}
+          {newsArticlesQuery.isFetchingNextPage && (
+            <div className="pt-4 w-full flex justify-center">
+              <Spinner className="size-10" />
+            </div>
+          )}
+        </InfiniteScroll>
+      )}
     </Card>
   );
 }

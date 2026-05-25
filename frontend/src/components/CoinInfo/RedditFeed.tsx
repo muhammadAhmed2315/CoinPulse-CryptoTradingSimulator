@@ -4,6 +4,24 @@ import { Spinner } from "../ui/spinner";
 import RedditPost from "./RedditPost";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { fetchWithRefresh } from "@/lib/api";
+import CustomSkeleton from "../CustomSkeleton";
+
+const SKELETON_ITEMS = Array.from({ length: 6 }, (_, i) => i);
+
+function RedditPostSkeleton() {
+  return (
+    <div className="border-b border-[#f0f0f0] last:border-b-0">
+      <div className="flex gap-3.5 px-6 py-4.5">
+        <CustomSkeleton className="size-21 shrink-0 rounded-[10px]" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <CustomSkeleton className="h-3 w-40" />
+          <CustomSkeleton className="h-9 w-full rounded-md" />
+          <CustomSkeleton className="h-3 w-32 mt-0.5" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchRedditFeed(
@@ -42,12 +60,15 @@ export type RedditPost = {
 
 // ===== API FUNCTIONS =====
 async function getRedditPosts(coinName: string, after: string) {
-  const response = await fetchWithRefresh("http://localhost:5000/get_reddit_posts", {
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: coinName, after: after }),
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_reddit_posts",
+    {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: coinName, after: after }),
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -84,33 +105,45 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
           </p>
         </div>
         {/* ===== RESULTS COUNT ===== */}
-        <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
-          {numPosts} RESULTS
-        </p>
+        {redditPostsQuery.isLoading ? (
+          <CustomSkeleton className="h-5 w-20 rounded-md" />
+        ) : (
+          <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
+            {numPosts} RESULTS
+          </p>
+        )}
       </div>
 
       {/* ===== POSTS LIST ===== */}
-      <InfiniteScroll
-        dataLength={redditPostsQuery.data?.pages.length || 0}
-        next={redditPostsQuery.fetchNextPage}
-        hasMore={!!redditPostsQuery.hasNextPage}
-        loader={<span></span>}
-        endMessage={
-          <p style={{ textAlign: "center" }}>
-            <b>You're all caught up.</b>
-          </p>
-        }
-        className="flex flex-col pb-8"
-      >
-        {redditPostsQuery.data?.pages.map((page) =>
-          page.map((pg) => <RedditPost key={pg.fullname} post={pg} />),
-        )}
-        {redditPostsQuery.isFetching && (
-          <div className="pt-4 w-full flex justify-center">
-            <Spinner className="size-10" />
-          </div>
-        )}
-      </InfiniteScroll>
+      {redditPostsQuery.isLoading ? (
+        <div className="flex flex-col pb-8">
+          {SKELETON_ITEMS.map((i) => (
+            <RedditPostSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <InfiniteScroll
+          dataLength={redditPostsQuery.data?.pages.length || 0}
+          next={redditPostsQuery.fetchNextPage}
+          hasMore={!!redditPostsQuery.hasNextPage}
+          loader={<span></span>}
+          endMessage={
+            <p style={{ textAlign: "center" }}>
+              <b>You're all caught up.</b>
+            </p>
+          }
+          className="flex flex-col pb-8"
+        >
+          {redditPostsQuery.data?.pages.map((page) =>
+            page.map((pg: any) => <RedditPost key={pg.fullname} post={pg} />),
+          )}
+          {redditPostsQuery.isFetchingNextPage && (
+            <div className="pt-4 w-full flex justify-center">
+              <Spinner className="size-10" />
+            </div>
+          )}
+        </InfiniteScroll>
+      )}
     </Card>
   );
 }

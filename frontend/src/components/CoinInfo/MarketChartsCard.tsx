@@ -16,6 +16,12 @@ import CustomAreaChart from "../CustomAreaChart";
 import { numToMoney } from "@/utils";
 import { useInView } from "react-intersection-observer";
 import { fetchWithRefresh } from "@/lib/api";
+import CustomSkeleton from "../CustomSkeleton";
+
+// ===== CHART SKELETON =====
+function ChartSkeleton() {
+  return <CustomSkeleton className="h-[557.75px] w-full" />;
+}
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchMarketChartsCard(
@@ -227,7 +233,8 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="h-full flex flex-col gap-6"
             ref={ohlcRef}
           >
-            {ohlcChartQuery.data && (ohlcInView || hoveredTab === "ohlc") ? (
+            {ohlcChartQuery.data &&
+            (ohlcInView || hoveredTab === "ohlc") ? (
               <div>
                 <StockChart
                   options={{
@@ -310,7 +317,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                 </StockChart>
               </div>
             ) : (
-              <>Loading...</>
+              <ChartSkeleton />
             )}
           </TabsContent>
 
@@ -320,7 +327,8 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={priceRef}
           >
-            {coinChartsQuery.data && (priceInView || hoveredTab === "price") ? (
+            {coinChartsQuery.data &&
+            (priceInView || hoveredTab === "price") ? (
               <div>
                 <CustomAreaChart
                   animation={priceOpened < 2}
@@ -330,7 +338,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                 />
               </div>
             ) : (
-              <>Loading...</>
+              <ChartSkeleton />
             )}
           </TabsContent>
 
@@ -351,7 +359,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                 />
               </div>
             ) : (
-              <>Loading...</>
+              <ChartSkeleton />
             )}
           </TabsContent>
 
@@ -435,7 +443,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                 </StockChart>
               </div>
             ) : (
-              <>Loading...</>
+              <ChartSkeleton />
             )}
           </TabsContent>
         </TabsContents>

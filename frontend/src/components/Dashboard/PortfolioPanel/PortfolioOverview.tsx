@@ -58,10 +58,13 @@ async function fetchTotalPortfolioValue() {
 }
 
 async function fetchWalletAssets(): Promise<WalletAsset[]> {
-  const response = await fetchWithRefresh("http://localhost:5000/get_wallet_assets", {
-    method: "GET",
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_wallet_assets",
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -98,7 +101,7 @@ export default function PortfolioOverview() {
         {/* ===== PORTFOLIO VALUE ===== */}
         <p className="text-xs text-gray-500 font-mono">PORTFOLIO VALUE</p>
         {totalPortfolioValueQuery.isLoading && (
-          <CustomSkeleton className="h-8 w-90" />
+          <CustomSkeleton className="h-10 w-full mt-2 mb-4" />
         )}
         {totalPortfolioValueQuery.data && (
           <h1 className="text-2xl font-bold mb-2">
@@ -106,17 +109,19 @@ export default function PortfolioOverview() {
           </h1>
         )}
         {/* ===== BREAKDOWN BAR ===== */}
-        <HoldingsBreakdownBar
-          holdings={
-            walletAssetsQuery.data?.map((coin) => {
-              return {
-                id: coin.id,
-                totalValue: coin.totalValue,
-                ticker: coin.ticker,
-              };
-            }) ?? []
-          }
-        />
+        {!walletAssetsQuery.isLoading && (
+          <HoldingsBreakdownBar
+            holdings={
+              walletAssetsQuery.data?.map((coin) => {
+                return {
+                  id: coin.id,
+                  totalValue: coin.totalValue,
+                  ticker: coin.ticker,
+                };
+              }) ?? []
+            }
+          />
+        )}
       </div>
       <Separator />
 
@@ -133,6 +138,19 @@ export default function PortfolioOverview() {
             onScroll={handleScroll}
             className="max-h-140 overflow-y-auto no-scrollbar"
           >
+            {walletAssetsQuery.isLoading &&
+              Array.from({ length: 6 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center py-2.5 border-b border-[#f0f0f0]"
+                >
+                  <div className="flex gap-3 items-center">
+                    <CustomSkeleton className="size-8 rounded-full" />
+                    <CustomSkeleton className="h-4 w-24" />
+                  </div>
+                  <CustomSkeleton className="h-4 w-20" />
+                </div>
+              ))}
             {walletAssetsQuery.data &&
               walletAssetsQuery.data.map((c) => (
                 <div

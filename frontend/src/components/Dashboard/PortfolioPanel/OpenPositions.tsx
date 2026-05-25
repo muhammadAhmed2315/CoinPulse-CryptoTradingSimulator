@@ -26,10 +26,13 @@ export function prefetchOpenPositions(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function getOpenTrades() {
-  const response = await fetchWithRefresh("http://localhost:5000/get_open_trades", {
-    method: "get",
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_open_trades",
+    {
+      method: "get",
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -64,33 +67,52 @@ export default function OpenPositions() {
   });
 
   // ===== DERIVED STATE =====
-  const reservedValue = openTradesQuery.data
-    ? openTradesQuery.data.reduce(
-        (acc: number, order) => acc + order.current_price * order.quantity,
-        0,
-      )
-    : 0;
+  const reservedValue =
+    openTradesQuery.data
+      ? (openTradesQuery.data).reduce(
+          (acc: number, order) => acc + order.current_price * order.quantity,
+          0,
+        )
+      : 0;
 
-  const openOrdersByType = openTradesQuery.data
-    ? {
-        "limit buy": filterOrdersByType(openTradesQuery.data, "limit", "buy"),
-        "limit sell": filterOrdersByType(openTradesQuery.data, "limit", "sell"),
-        "stop buy": filterOrdersByType(openTradesQuery.data, "stop", "buy"),
-        "stop sell": filterOrdersByType(openTradesQuery.data, "stop", "sell"),
-      }
-    : {};
+  const openOrdersByType =
+    openTradesQuery.data
+      ? {
+          "limit buy": filterOrdersByType(
+            openTradesQuery.data,
+            "limit",
+            "buy",
+          ),
+          "limit sell": filterOrdersByType(
+            openTradesQuery.data,
+            "limit",
+            "sell",
+          ),
+          "stop buy": filterOrdersByType(
+            openTradesQuery.data,
+            "stop",
+            "buy",
+          ),
+          "stop sell": filterOrdersByType(
+            openTradesQuery.data,
+            "stop",
+            "sell",
+          ),
+        }
+      : {};
 
-  const openOrdersSummary = openTradesQuery.data
-    ? Object.keys(openOrdersByType).map((key) => ({
-        id: key,
-        ticker: key,
-        totalValue: sumOrderValues(
-          openOrdersByType[key as keyof typeof openOrdersByType],
-        ),
-        orderType: key.split(" ")[0],
-        transactionType: key.split(" ")[1],
-      }))
-    : [];
+  const openOrdersSummary =
+    openTradesQuery.data
+      ? Object.keys(openOrdersByType).map((key) => ({
+          id: key,
+          ticker: key,
+          totalValue: sumOrderValues(
+            openOrdersByType[key as keyof typeof openOrdersByType],
+          ),
+          orderType: key.split(" ")[0],
+          transactionType: key.split(" ")[1],
+        }))
+      : [];
 
   const openOrdersSummarySorted = openOrdersSummary.sort(
     (a, b) => b.totalValue - a.totalValue,
@@ -102,7 +124,9 @@ export default function OpenPositions() {
       <div className="p-5 pb-0">
         {/* ===== RESERVED VALUE ===== */}
         <p className="text-xs text-gray-500 font-mono">RESERVED VALUE</p>
-        {openTradesQuery.isLoading && <CustomSkeleton className="h-8 w-90" />}
+        {openTradesQuery.isLoading && (
+          <CustomSkeleton className="h-10 w-full mt-2 mb-4" />
+        )}
         {openTradesQuery.data && (
           <h1 className="text-2xl font-bold mb-2">
             ${numToMoney(reservedValue)}
@@ -110,27 +134,43 @@ export default function OpenPositions() {
         )}
 
         {/* ===== BREAKDOWN BAR ===== */}
-        {openOrdersSummarySorted.reduce(
-          (acc, order) => acc + order.totalValue,
-          0,
-        ) !== 0 && (
-          <div className="pb-2">
-            <HoldingsBreakdownBar
-              holdings={openOrdersSummarySorted.map((order) => {
-                return {
-                  id: order.id,
-                  totalValue: order.totalValue,
-                  ticker: order.ticker,
-                };
-              })}
-            />
-          </div>
-        )}
+        {openTradesQuery.data &&
+          openOrdersSummarySorted.reduce(
+            (acc, order) => acc + order.totalValue,
+            0,
+          ) !== 0 && (
+            <div className="pb-2">
+              <HoldingsBreakdownBar
+                holdings={openOrdersSummarySorted.map((order) => {
+                  return {
+                    id: order.id,
+                    totalValue: order.totalValue,
+                    ticker: order.ticker,
+                  };
+                })}
+              />
+            </div>
+          )}
       </div>
 
       <Separator />
 
       <div className="p-5 pt-0">
+        {/* ===== LOADING STATE ===== */}
+        {openTradesQuery.isLoading &&
+          Array.from({ length: 4 }, (_, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-2 py-4 border-b last:border-b-0"
+            >
+              <CustomSkeleton className="size-4 shrink-0 rounded-sm translate-y-0.5" />
+              <div className="flex justify-between items-center w-full">
+                <CustomSkeleton className="h-4 w-32" />
+                <CustomSkeleton className="h-3.5 w-16" />
+              </div>
+            </div>
+          ))}
+
         <Accordion>
           {openOrdersSummary.map((orders) => {
             return (

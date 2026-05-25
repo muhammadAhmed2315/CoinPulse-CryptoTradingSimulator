@@ -10,7 +10,7 @@ import formatCompactValue, { numToMoney } from "@/utils";
 import RedWarningIcon from "@/assets/icons/warning-red.svg";
 import CurrencyBenchmarkList from "./CurrencyBenchmarkList";
 import { BorderBeam } from "@/components/ui/border-beam";
-import { Spinner } from "@/components/ui/spinner";
+import CustomSkeleton from "@/components/CustomSkeleton";
 import CustomTooltip from "@/components/CustomTooltip";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import { Separator } from "@/components/ui/separator";
@@ -100,9 +100,39 @@ export default function TrendingCoinCard({
       )}
       {isLoading ? (
         /* ===== LOADING STATE ===== */
-        <div className="flex h-full items-center justify-center">
-          <Spinner className="size-8" />
-        </div>
+        <>
+          {/* ===== HEADER ===== */}
+          <CardHeader className="flex px-2 justify-between items-center mb-3">
+            <div className="flex items-center">
+              <CustomSkeleton className="size-8 rounded-full mr-2.5" />
+              <CustomSkeleton className="h-4 w-24" />
+            </div>
+            <CustomSkeleton className="h-4 w-8 rounded-md" />
+          </CardHeader>
+
+          {/* ===== BODY ===== */}
+          <CardContent className="px-2">
+            <CustomSkeleton className="h-3 w-10 mb-2" />
+            <div className="flex justify-between items-center gap-2 mb-3">
+              <CustomSkeleton className="h-6 w-28" />
+              <CustomSkeleton className="h-5 w-14 rounded-md" />
+            </div>
+            <CustomSkeleton className="h-16 w-full rounded-md" />
+          </CardContent>
+
+          <Separator className="mt-3 mb-3" />
+
+          {/* ===== FOOTER ===== */}
+          <CardFooter className="h-8 px-2">
+            <div className="flex-2">
+              <CustomSkeleton className="h-4 w-16" />
+            </div>
+            <Separator orientation="vertical" className="mr-3" />
+            <div className="flex-2">
+              <CustomSkeleton className="h-4 w-16" />
+            </div>
+          </CardFooter>
+        </>
       ) : isError ? (
         /* ===== ERROR STATE ===== */
         <div className="flex flex-col items-center justify-center py-5 px-3 gap-2.5 text-center">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import FeedPost from "./FeedPost";
+import FeedPostSkeleton from "./FeedPostSkeleton";
 import {
   Tabs,
   TabsContent,
@@ -11,6 +12,9 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithRefresh } from "@/lib/api";
+
+// ===== CONSTANTS =====
+const SKELETON_POSTS = Array.from({ length: 3 }, (_, i) => i);
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchFeedPosts(queryClient: QueryClient) {
@@ -32,12 +36,15 @@ export function prefetchFeedPosts(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function fetchPosts(type: string, page: number = 0) {
-  const response = await fetchWithRefresh("http://localhost:5000/get_feedposts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type, page }),
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_feedposts",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, page }),
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -92,51 +99,63 @@ export default function FeedPostMenu() {
         <TabsContents>
           {/* ===== GLOBAL FEED ===== */}
           <TabsContent value="GLOBAL">
-            <InfiniteScroll
-              dataLength={globalFeedQuery.data?.pages.length || 0}
-              next={globalFeedQuery.fetchNextPage}
-              hasMore={!!globalFeedQuery.hasNextPage}
-              loader={<span></span>}
-              endMessage={
-                <p style={{ textAlign: "center" }}>
-                  <b>You're all caught up.</b>
-                </p>
-              }
-              className="pb-8"
-            >
-              {globalFeedQuery.data?.pages.flatMap((pg) =>
-                pg.data.map((post) => <FeedPost key={post.id} {...post} />),
-              )}
-              {globalFeedQuery.isFetching && (
-                <div className="w-full flex justify-center">
-                  <Spinner className="size-10" />
-                </div>
-              )}
-            </InfiniteScroll>
+            {globalFeedQuery.isLoading ? (
+              SKELETON_POSTS.map((i) => <FeedPostSkeleton key={i} />)
+            ) : (
+              <InfiniteScroll
+                dataLength={globalFeedQuery.data?.pages.length || 0}
+                next={globalFeedQuery.fetchNextPage}
+                hasMore={!!globalFeedQuery.hasNextPage}
+                loader={<span></span>}
+                endMessage={
+                  <p style={{ textAlign: "center" }}>
+                    <b>You're all caught up.</b>
+                  </p>
+                }
+                className="pb-8"
+              >
+                {globalFeedQuery.data?.pages.flatMap((pg) =>
+                  pg.data.map((post: any) => (
+                    <FeedPost key={post.id} {...post} />
+                  )),
+                )}
+                {globalFeedQuery.isFetchingNextPage && (
+                  <div className="w-full flex justify-center">
+                    <Spinner className="size-10" />
+                  </div>
+                )}
+              </InfiniteScroll>
+            )}
           </TabsContent>
           {/* ===== PRIVATE FEED ===== */}
           <TabsContent value="PRIVATE">
-            <InfiniteScroll
-              dataLength={privateFeedQuery.data?.pages.length || 0}
-              next={privateFeedQuery.fetchNextPage}
-              hasMore={!!privateFeedQuery.hasNextPage}
-              loader={<span></span>}
-              endMessage={
-                <p style={{ textAlign: "center" }}>
-                  <b>You're all caught up.</b>
-                </p>
-              }
-              className="pb-8"
-            >
-              {privateFeedQuery.data?.pages.flatMap((pg) =>
-                pg.data.map((post) => <FeedPost key={post.id} {...post} />),
-              )}
-              {privateFeedQuery.isFetching && (
-                <div className="w-full flex justify-center">
-                  <Spinner className="size-10" />
-                </div>
-              )}
-            </InfiniteScroll>
+            {privateFeedQuery.isLoading ? (
+              SKELETON_POSTS.map((i) => <FeedPostSkeleton key={i} />)
+            ) : (
+              <InfiniteScroll
+                dataLength={privateFeedQuery.data?.pages.length || 0}
+                next={privateFeedQuery.fetchNextPage}
+                hasMore={!!privateFeedQuery.hasNextPage}
+                loader={<span></span>}
+                endMessage={
+                  <p style={{ textAlign: "center" }}>
+                    <b>You're all caught up.</b>
+                  </p>
+                }
+                className="pb-8"
+              >
+                {privateFeedQuery.data?.pages.flatMap((pg) =>
+                  pg.data.map((post: any) => (
+                    <FeedPost key={post.id} {...post} />
+                  )),
+                )}
+                {privateFeedQuery.isFetchingNextPage && (
+                  <div className="w-full flex justify-center">
+                    <Spinner className="size-10" />
+                  </div>
+                )}
+              </InfiniteScroll>
+            )}
           </TabsContent>
         </TabsContents>
       </Tabs>

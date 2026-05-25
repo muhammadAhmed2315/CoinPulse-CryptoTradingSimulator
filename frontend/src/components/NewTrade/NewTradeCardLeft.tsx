@@ -1,6 +1,5 @@
 import formatCompactValue, { numToMoney } from "@/utils";
 import PriceChangeBox from "../PriceChangeBox";
-import { Spinner } from "../ui/spinner";
 import SparklineGraph from "../SparklineGraph";
 import { Separator } from "../ui/separator";
 import CustomSkeleton from "../CustomSkeleton";
@@ -41,16 +40,22 @@ export default function NewTradeCardLeft({
       </div>
 
       {/* ===== PRICE ===== */}
-      <p className="text-xs font-mono text-gray-400">PRICE</p>
+      <p className="text-xs font-mono text-gray-400 mb-1">PRICE</p>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-3xl font-bold ">
-          $
-          {coinDataQuery.data
-            ? numToMoney(coinDataQuery.data.current_price)
-            : "Undefined"}
-        </p>
+        {coinDataQuery.isLoading ? (
+          <CustomSkeleton className="h-9 w-44 rounded-md" />
+        ) : (
+          <p className="text-3xl font-bold ">
+            $
+            {coinDataQuery.data
+              ? numToMoney(coinDataQuery.data.current_price)
+              : "Undefined"}
+          </p>
+        )}
         <div className="w-fit ">
-          {!coinDataQuery.data ? (
+          {coinDataQuery.isLoading ? (
+            <CustomSkeleton className="h-6 w-24 rounded-md" />
+          ) : !coinDataQuery.data ? (
             "Undefined"
           ) : (
             <PriceChangeBox
@@ -64,7 +69,7 @@ export default function NewTradeCardLeft({
       {/* ===== SPARKLINE GRAPH ===== */}
       <div className="flex items-center justify-center h-16 w-80 mb-4">
         {sparklineQuery.isLoading ? (
-          <Spinner className="size-7" />
+          <CustomSkeleton className="h-16 w-80 rounded-md" />
         ) : (
           <SparklineGraph data={sparklineQuery.data} width={320} />
         )}
@@ -74,37 +79,53 @@ export default function NewTradeCardLeft({
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-sm bg-white border border-gray-200 p-2">
           <p className="text-xs font-semibold">24H HIGH</p>
-          <p className="font-bold">
-            $
-            {coinDataQuery.data
-              ? numToMoney(coinDataQuery.data.high_24h)
-              : "Undefined"}
-          </p>
+          {coinDataQuery.isLoading ? (
+            <CustomSkeleton className="h-5 w-20 mt-1 rounded-md" />
+          ) : (
+            <p className="font-bold">
+              $
+              {coinDataQuery.data
+                ? numToMoney(coinDataQuery.data.high_24h)
+                : "Undefined"}
+            </p>
+          )}
         </div>
         <div className="rounded-sm bg-white border border-gray-200 p-2">
           <p className="text-xs font-semibold">24H LOW</p>
-          <p className="font-bold">
-            $
-            {coinDataQuery.data
-              ? numToMoney(coinDataQuery.data.low_24h)
-              : "Undefined"}
-          </p>
+          {coinDataQuery.isLoading ? (
+            <CustomSkeleton className="h-5 w-20 mt-1 rounded-md" />
+          ) : (
+            <p className="font-bold">
+              $
+              {coinDataQuery.data
+                ? numToMoney(coinDataQuery.data.low_24h)
+                : "Undefined"}
+            </p>
+          )}
         </div>
         <div className="rounded-sm bg-white border border-gray-200 p-2">
           <p className="text-xs font-semibold">MARKET CAP</p>
-          <p className="font-bold">
-            {coinDataQuery.data
-              ? formatCompactValue(coinDataQuery.data.market_cap)
-              : "Undefined"}
-          </p>
+          {coinDataQuery.isLoading ? (
+            <CustomSkeleton className="h-5 w-16 mt-1 rounded-md" />
+          ) : (
+            <p className="font-bold">
+              {coinDataQuery.data
+                ? formatCompactValue(coinDataQuery.data.market_cap)
+                : "Undefined"}
+            </p>
+          )}
         </div>
         <div className="rounded-sm bg-white border border-gray-200 p-2">
           <p className="text-xs font-semibold">VOLUME</p>
-          <p className="font-bold">
-            {coinDataQuery.data
-              ? formatCompactValue(coinDataQuery.data.total_volume)
-              : "Undefined"}
-          </p>
+          {coinDataQuery.isLoading ? (
+            <CustomSkeleton className="h-5 w-16 mt-1 rounded-md" />
+          ) : (
+            <p className="font-bold">
+              {coinDataQuery.data
+                ? formatCompactValue(coinDataQuery.data.total_volume)
+                : "Undefined"}
+            </p>
+          )}
         </div>
       </div>
 

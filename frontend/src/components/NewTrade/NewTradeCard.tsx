@@ -9,6 +9,7 @@ import type { NewTradeCardRightProps } from "./NewTradeCardRight";
 import { loadAllCoinsList, type Coin } from "@/loadAllCoinsList";
 import NewTradeCardRight from "./NewTradeCardRight";
 import CoinSearchBar from "../CoinSearchBar";
+import CustomSkeleton from "../CustomSkeleton";
 import BitcoinLogo from "../../assets/logos/bitcoin.png";
 import { fetchWithRefresh } from "@/lib/api";
 
@@ -151,7 +152,7 @@ export default function NewTradeCard() {
         {/* ===== COIN SEARCH BAR ===== */}
         <div className="mb-4">
           {allCoinsQuery.isLoading ? (
-            <>Loading...</>
+            <CustomSkeleton className="h-9 w-full max-w-sm rounded-md" />
           ) : (
             <CoinSearchBar
               coins={allCoinsQuery.data!}

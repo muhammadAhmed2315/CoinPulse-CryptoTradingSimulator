@@ -242,7 +242,7 @@ class RedditScraper:
                     score=post["ups"],
                     comment_count=post["num_comments"],
                     id=post["id"],
-                    url=post["url"],
+                    url="https://www.reddit.com" + post["permalink"],
                     fullname=post["name"],
                     timestamp=post["created_utc"],
                 )

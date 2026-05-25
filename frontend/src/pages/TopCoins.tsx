@@ -6,11 +6,11 @@ import { AgGridReact, type CustomCellRendererProps } from "ag-grid-react";
 import type { ColDef, RowClickedEvent } from "ag-grid-community";
 
 import CoinSortDropdown from "@/components/CoinSortDropdown";
+import CustomSkeleton from "@/components/CustomSkeleton";
 import { Card } from "@/components/ui/card";
 
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import SparklineGraph from "@/components/SparklineGraph";
-import { Spinner } from "@/components/ui/spinner";
 import formatCompactValue, { numToMoney } from "@/utils";
 import type { GridApi, GridReadyEvent } from "ag-grid-community";
 import { useNavigate } from "react-router";
@@ -135,6 +135,20 @@ const sortLabels = {
   volume_asc: "volume (ascending)",
   volume_desc: "volume (descending)",
 };
+
+// ===== SKELETON COLUMN SPECS (mirror colDefs widths) =====
+const SKELETON_COLS: { cls: string; head: string }[] = [
+  { cls: "w-17.5 flex-none", head: "w-4" },
+  { cls: "flex-[1.4] min-w-40", head: "w-12" },
+  { cls: "flex-1 min-w-30", head: "w-24" },
+  { cls: "flex-[0.9] min-w-27.5", head: "w-20" },
+  { cls: "flex-1 min-w-35", head: "w-32" },
+  { cls: "flex-[0.9] min-w-27.5", head: "w-22" },
+  { cls: "flex-1 min-w-30", head: "w-24" },
+  { cls: "flex-[0.9] min-w-27.5", head: "w-22" },
+  { cls: "w-85 flex-none", head: "w-28" },
+];
+const SKELETON_ROWS = Array.from({ length: 10 }, (_, i) => i);
 
 export default function TopCoins() {
   // ===== STATE VARIABLES =====
@@ -286,7 +300,96 @@ export default function TopCoins() {
         <CoinSortDropdown sortBy={apiSort} setSortBy={setApiSort} />
       </div>
       {/* ===== LOADING / ERROR STATES ===== */}
-      {isLoading && <Spinner />}
+      {isLoading && (
+        <>
+          {/* ===== TABLE SKELETON ===== */}
+          <div className="p-4 pt-0 flex-1 min-h-0 flex flex-col">
+            <div
+              className={`
+                flex-1 flex flex-col border border-[#f0f0f0]
+              `}
+            >
+              {/* ===== COLUMN HEADER ROW ===== */}
+              <div
+                className={`
+                  flex items-center h-9.5 shrink-0
+                  border-b border-[#f0f0f0]
+                `}
+              >
+                {SKELETON_COLS.map((c, i) => (
+                  <div key={i} className={`px-4.5 ${c.cls}`}>
+                    <CustomSkeleton className={`h-3 ${c.head}`} />
+                  </div>
+                ))}
+              </div>
+              {/* ===== DATA ROWS ===== */}
+              <div className="flex-1 flex flex-col">
+                {SKELETON_ROWS.map((i) => (
+                  <div
+                    key={i}
+                    className={`
+                      flex items-center flex-1 border-b border-[#f0f0f0]
+                      last:border-b-0
+                    `}
+                  >
+                    {/* image */}
+                    <div className="px-4.5 w-17.5 flex-none">
+                      <CustomSkeleton className="size-8 rounded-full" />
+                    </div>
+                    {/* identity (name + symbol) */}
+                    <div className="px-4.5 flex-[1.4] min-w-40">
+                      <div className="flex flex-col gap-1.5">
+                        <CustomSkeleton className="h-3.5 w-20" />
+                        <CustomSkeleton className="h-3 w-10" />
+                      </div>
+                    </div>
+                    {/* current_price */}
+                    <div className="px-4.5 flex-1 min-w-30">
+                      <CustomSkeleton className="h-3.5 w-20" />
+                    </div>
+                    {/* market_cap */}
+                    <div className="px-4.5 flex-[0.9] min-w-27.5">
+                      <CustomSkeleton className="h-3.5 w-16" />
+                    </div>
+                    {/* price_change_24h */}
+                    <div className="px-4.5 flex-1 min-w-35">
+                      <CustomSkeleton className="h-3.5 w-20" />
+                    </div>
+                    {/* total_volume */}
+                    <div className="px-4.5 flex-[0.9] min-w-27.5">
+                      <CustomSkeleton className="h-3.5 w-16" />
+                    </div>
+                    {/* ath */}
+                    <div className="px-4.5 flex-1 min-w-30">
+                      <CustomSkeleton className="h-3.5 w-20" />
+                    </div>
+                    {/* atl */}
+                    <div className="px-4.5 flex-[0.9] min-w-27.5">
+                      <CustomSkeleton className="h-3.5 w-16" />
+                    </div>
+                    {/* sparkline */}
+                    <div className="px-4.5 w-85 flex-none">
+                      <CustomSkeleton className="h-10 w-full rounded-md" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ===== DIVIDER ===== */}
+          <div className="h-px bg-[#f0f0f0] w-full" />
+
+          {/* ===== PAGINATION SKELETON ===== */}
+          <div className="flex items-center justify-between px-6 py-3">
+            <CustomSkeleton className="h-3 w-24" />
+            <div className="inline-flex items-center gap-1.5">
+              <CustomSkeleton className="h-7 w-14 rounded-md" />
+              <CustomSkeleton className="h-7 w-14 rounded-md" />
+            </div>
+          </div>
+        </>
+      )}
       {isError && <div>{(error as Error).message}</div>}
       {data && (
         <>

@@ -15,6 +15,7 @@ import HomeIcon from "@/assets/icons/home.svg";
 import InfoIcon from "@/assets/icons/info.svg";
 import BarChartIcon from "@/assets/icons/bar-chart.svg";
 import LineChartAscendingIcon from "@/assets/icons/line-chart-ascending.svg";
+import ErrorFallback from "./ErrorFallback";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -79,22 +80,39 @@ export default function NavBar() {
   return (
     <div className="sticky top-0 z-10 bg-white flex justify-between items-center py-5 px-10 border-b border-[#f0f0f0]">
       {/* ===== PORTFOLIO VALUE ===== */}
-      {portfolioTotalValueQuery.isLoading && (
-        <CustomSkeleton className="h-8 w-60" />
-      )}
-      {portfolioTotalValueQuery.data && (
-        <div
-          className="flex flex-col gap-1.5 cursor-pointer"
-          onClick={() => navigate("/my_trades")}
-        >
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
-            Portfolio Value
-          </span>
-          <p className="font-mono text-[22px] font-semibold tracking-[-0.02em] leading-none">
-            ${numToMoney(portfolioTotalValueQuery.data)}
-          </p>
-        </div>
-      )}
+      {(() => {
+        const isError = portfolioTotalValueQuery.isError;
+        if (portfolioTotalValueQuery.isLoading) {
+          return <CustomSkeleton className="h-8 w-60" />;
+        }
+        if (isError) {
+          return (
+            <ErrorFallback
+              horizontal
+              size="md"
+              title="Data unavailable"
+              description="Portfolio value could not be loaded."
+              className="w-auto h-auto"
+            />
+          );
+        }
+        if (portfolioTotalValueQuery.data) {
+          return (
+            <div
+              className="flex flex-col gap-1.5 cursor-pointer"
+              onClick={() => navigate("/my_trades")}
+            >
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+                Portfolio Value
+              </span>
+              <p className="font-mono text-[22px] font-semibold tracking-[-0.02em] leading-none">
+                ${numToMoney(portfolioTotalValueQuery.data)}
+              </p>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {/* ===== NAVIGATION LINKS ===== */}
       <NavigationMenu>

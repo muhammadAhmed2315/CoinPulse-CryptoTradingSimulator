@@ -12,6 +12,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithRefresh } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import ErrorFallback from "@/components/ErrorFallback";
 
 // ===== CONSTANTS =====
 const SKELETON_POSTS = Array.from({ length: 3 }, (_, i) => i);
@@ -73,6 +75,16 @@ export default function FeedPostMenu() {
     initialPageParam: 0,
   });
 
+  // ===== ERROR STATE =====
+  const errorState = (
+    <Card className="p-6 mb-6 gap-4 min-h-205 flex items-center justify-center">
+      <ErrorFallback
+        title="Feed unavailable"
+        description="Posts could not be loaded."
+      />
+    </Card>
+  );
+
   return (
     <div>
       <Tabs
@@ -101,6 +113,8 @@ export default function FeedPostMenu() {
           <TabsContent value="GLOBAL">
             {globalFeedQuery.isLoading ? (
               SKELETON_POSTS.map((i) => <FeedPostSkeleton key={i} />)
+            ) : globalFeedQuery.isError ? (
+              errorState
             ) : (
               <InfiniteScroll
                 dataLength={globalFeedQuery.data?.pages.length || 0}
@@ -131,6 +145,8 @@ export default function FeedPostMenu() {
           <TabsContent value="PRIVATE">
             {privateFeedQuery.isLoading ? (
               SKELETON_POSTS.map((i) => <FeedPostSkeleton key={i} />)
+            ) : privateFeedQuery.isError ? (
+              errorState
             ) : (
               <InfiniteScroll
                 dataLength={privateFeedQuery.data?.pages.length || 0}

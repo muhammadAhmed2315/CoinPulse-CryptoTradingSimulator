@@ -13,6 +13,7 @@ import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { Separator } from "@/components/ui/separator";
 import OpenOrderRow from "./OpenOrderRow";
 import { fetchWithRefresh } from "@/lib/api";
+import ErrorFallback from "@/components/ErrorFallback";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchOpenPositions(queryClient: QueryClient) {
@@ -67,56 +68,48 @@ export default function OpenPositions() {
   });
 
   // ===== DERIVED STATE =====
-  const reservedValue =
-    openTradesQuery.data
-      ? (openTradesQuery.data).reduce(
-          (acc: number, order) => acc + order.current_price * order.quantity,
-          0,
-        )
-      : 0;
+  const reservedValue = openTradesQuery.data
+    ? openTradesQuery.data.reduce(
+        (acc: number, order) => acc + order.current_price * order.quantity,
+        0,
+      )
+    : 0;
 
-  const openOrdersByType =
-    openTradesQuery.data
-      ? {
-          "limit buy": filterOrdersByType(
-            openTradesQuery.data,
-            "limit",
-            "buy",
-          ),
-          "limit sell": filterOrdersByType(
-            openTradesQuery.data,
-            "limit",
-            "sell",
-          ),
-          "stop buy": filterOrdersByType(
-            openTradesQuery.data,
-            "stop",
-            "buy",
-          ),
-          "stop sell": filterOrdersByType(
-            openTradesQuery.data,
-            "stop",
-            "sell",
-          ),
-        }
-      : {};
+  const openOrdersByType = openTradesQuery.data
+    ? {
+        "limit buy": filterOrdersByType(openTradesQuery.data, "limit", "buy"),
+        "limit sell": filterOrdersByType(openTradesQuery.data, "limit", "sell"),
+        "stop buy": filterOrdersByType(openTradesQuery.data, "stop", "buy"),
+        "stop sell": filterOrdersByType(openTradesQuery.data, "stop", "sell"),
+      }
+    : {};
 
-  const openOrdersSummary =
-    openTradesQuery.data
-      ? Object.keys(openOrdersByType).map((key) => ({
-          id: key,
-          ticker: key,
-          totalValue: sumOrderValues(
-            openOrdersByType[key as keyof typeof openOrdersByType],
-          ),
-          orderType: key.split(" ")[0],
-          transactionType: key.split(" ")[1],
-        }))
-      : [];
+  const openOrdersSummary = openTradesQuery.data
+    ? Object.keys(openOrdersByType).map((key) => ({
+        id: key,
+        ticker: key,
+        totalValue: sumOrderValues(
+          openOrdersByType[key as keyof typeof openOrdersByType],
+        ),
+        orderType: key.split(" ")[0],
+        transactionType: key.split(" ")[1],
+      }))
+    : [];
 
   const openOrdersSummarySorted = openOrdersSummary.sort(
     (a, b) => b.totalValue - a.totalValue,
   );
+
+  if (openTradesQuery.isError) {
+    return (
+      <Card className="gap-0 p-0 min-h-120 flex items-center justify-center">
+        <ErrorFallback
+          title="Open positions unavailable"
+          description="Open orders could not be loaded."
+        />
+      </Card>
+    );
+  }
 
   return (
     <Card className="gap-0 p-0">

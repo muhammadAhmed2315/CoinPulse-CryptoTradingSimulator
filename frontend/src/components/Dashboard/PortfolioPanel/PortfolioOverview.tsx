@@ -8,6 +8,7 @@ import PlayUSD from "@/assets/play-usd.svg";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { fetchWithRefresh } from "@/lib/api";
+import ErrorFallback from "@/components/ErrorFallback";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchPortfolioOverview(queryClient: QueryClient) {
@@ -93,6 +94,22 @@ export default function PortfolioOverview() {
     if (!el) return;
     setIsAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 10);
   }, []);
+
+  // ===== DERIVED STATE =====
+  const isError =
+    totalPortfolioValueQuery.isError ||
+    walletAssetsQuery.isError;
+
+  if (isError) {
+    return (
+      <Card className="p-0 gap-2 min-h-120 flex items-center justify-center">
+        <ErrorFallback
+          title="Portfolio unavailable"
+          description="Portfolio data could not be loaded."
+        />
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-0 gap-2">

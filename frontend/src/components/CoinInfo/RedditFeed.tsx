@@ -5,6 +5,7 @@ import RedditPost from "./RedditPost";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
+import ErrorFallback from "../ErrorFallback";
 
 const SKELETON_ITEMS = Array.from({ length: 6 }, (_, i) => i);
 
@@ -107,7 +108,7 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
         {/* ===== RESULTS COUNT ===== */}
         {redditPostsQuery.isLoading ? (
           <CustomSkeleton className="h-5 w-20 rounded-md" />
-        ) : (
+        ) : redditPostsQuery.isError ? null : (
           <p className="rounded-md bg-[#ececef] px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-[#71717a] uppercase">
             {numPosts} RESULTS
           </p>
@@ -120,6 +121,19 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
           {SKELETON_ITEMS.map((i) => (
             <RedditPostSkeleton key={i} />
           ))}
+        </div>
+      ) : redditPostsQuery.isError ? (
+        <div className="relative">
+          <div className="flex flex-col pb-8 invisible" aria-hidden>
+            {SKELETON_ITEMS.map((i) => (
+              <RedditPostSkeleton key={i} />
+            ))}
+          </div>
+          <ErrorFallback
+            title="Data unavailable"
+            description="Reddit posts could not be loaded."
+            className="absolute inset-0"
+          />
         </div>
       ) : (
         <InfiniteScroll

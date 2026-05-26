@@ -17,6 +17,7 @@ import { numToMoney } from "@/utils";
 import { useInView } from "react-intersection-observer";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
+import ErrorFallback from "../ErrorFallback";
 
 // ===== CHART SKELETON =====
 function ChartSkeleton() {
@@ -233,8 +234,13 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="h-full flex flex-col gap-6"
             ref={ohlcRef}
           >
-            {ohlcChartQuery.data &&
-            (ohlcInView || hoveredTab === "ohlc") ? (
+            {ohlcChartQuery.isError ? (
+              <ErrorFallback
+                title="Data unavailable"
+                description="OHLC chart could not be loaded."
+                className="h-[557.75px]"
+              />
+            ) : ohlcChartQuery.data && (ohlcInView || hoveredTab === "ohlc") ? (
               <div>
                 <StockChart
                   options={{
@@ -327,8 +333,14 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={priceRef}
           >
-            {coinChartsQuery.data &&
-            (priceInView || hoveredTab === "price") ? (
+            {coinChartsQuery.isError ? (
+              <ErrorFallback
+                title="Data unavailable"
+                description="Price chart could not be loaded."
+                className="h-[557.75px]"
+              />
+            ) : coinChartsQuery.data &&
+              (priceInView || hoveredTab === "price") ? (
               <div>
                 <CustomAreaChart
                   animation={priceOpened < 2}
@@ -348,8 +360,14 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={marketCapRef}
           >
-            {coinChartsQuery.data &&
-            (marketCapInView || hoveredTab === "marketCap") ? (
+            {coinChartsQuery.isError ? (
+              <ErrorFallback
+                title="Data unavailable"
+                description="Market cap chart could not be loaded."
+                className="h-[557.75px]"
+              />
+            ) : coinChartsQuery.data &&
+              (marketCapInView || hoveredTab === "marketCap") ? (
               <div>
                 <CustomAreaChart
                   animation={marketCapOpened < 2}
@@ -369,8 +387,14 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             className="flex flex-col gap-6"
             ref={volumeRef}
           >
-            {coinChartsQuery.data &&
-            (volumeInView || hoveredTab === "volume") ? (
+            {coinChartsQuery.isError ? (
+              <ErrorFallback
+                title="Data unavailable"
+                description="Volume chart could not be loaded."
+                className="h-[557.75px]"
+              />
+            ) : coinChartsQuery.data &&
+              (volumeInView || hoveredTab === "volume") ? (
               <div>
                 <StockChart
                   options={{

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 
 import formatCompactValue, { numToMoney } from "@/utils";
-import RedWarningIcon from "@/assets/icons/warning-red.svg";
+import ErrorFallback from "@/components/ErrorFallback";
 import CurrencyBenchmarkList from "./CurrencyBenchmarkList";
 import { BorderBeam } from "@/components/ui/border-beam";
 import CustomSkeleton from "@/components/CustomSkeleton";
@@ -56,7 +56,9 @@ export default function TrendingCoinCard({
 
   return (
     <Card
-      className="relative cursor-pointer p-3 gap-0 w-60 overflow-hidden"
+      className={`relative p-3 gap-0 w-60 min-h-60.5 overflow-hidden ${
+        isError ? "cursor-default" : "cursor-pointer"
+      }`}
       onFocus={() => {
         if (data) prefetchCoinInfo(queryClient, data.coin_id, data.name);
       }}
@@ -65,17 +67,20 @@ export default function TrendingCoinCard({
         if (data) prefetchCoinInfo(queryClient, data.coin_id, data.name);
       }}
       onMouseLeave={() => setHovered(false)}
-      onClick={() =>
-        navigate(`/coin_info`, {
-          state: {
-            coin: {
-              id: data?.coin_id,
-              name: data?.name,
-              ticker: data?.symbol,
-              imgUrl: data?.thumb,
-            },
-          },
-        })
+      onClick={
+        isError
+          ? undefined
+          : () =>
+              navigate(`/coin_info`, {
+                state: {
+                  coin: {
+                    id: data?.coin_id,
+                    name: data?.name,
+                    ticker: data?.symbol,
+                    imgUrl: data?.thumb,
+                  },
+                },
+              })
       }
     >
       {/* ===== BORDER BEAM ===== */}
@@ -135,17 +140,12 @@ export default function TrendingCoinCard({
         </>
       ) : isError ? (
         /* ===== ERROR STATE ===== */
-        <div className="flex flex-col items-center justify-center py-5 px-3 gap-2.5 text-center">
-          <img src={RedWarningIcon} />
-          <div>
-            <p className="text-sm font-medium text-gray-800 mb-1">
-              Data unavailable
-            </p>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Coin data could not be loaded.
-            </p>
-          </div>
-        </div>
+        <ErrorFallback
+          size="md"
+          title="Data unavailable"
+          description="Coin data could not be loaded."
+          className="flex-1"
+        />
       ) : (
         <>
           {/* ===== HEADER ===== */}

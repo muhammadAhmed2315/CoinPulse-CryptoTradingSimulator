@@ -24,6 +24,7 @@ import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
 import CancelOrderBtn from "./CancelOrderBtn";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "./CustomSkeleton";
+import ErrorFallback from "./ErrorFallback";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchTradesTable(queryClient: QueryClient) {
@@ -257,11 +258,20 @@ export default function TradesTable() {
   });
 
   // ===== DERIVED STATE =====
-  const maxPages = tradeHistoryQuery.data?.maxPages;
-  const filterCounts = tradeFilterCountsQuery.data;
+  const tradeHistoryIsError =
+    tradeHistoryQuery.isError;
+  const tradeFilterCountsIsError =
+    tradeFilterCountsQuery.isError;
+  const tradeHistoryData = tradeHistoryIsError
+    ? undefined
+    : tradeHistoryQuery.data;
+  const maxPages = tradeHistoryData?.maxPages;
+  const filterCounts = tradeFilterCountsIsError
+    ? undefined
+    : tradeFilterCountsQuery.data;
 
   // ===== AGGRID DATA =====
-  const rowData = tradeHistoryQuery.data?.data;
+  const rowData = tradeHistoryData?.data;
   const columnDefs: ColDef[] = [
     {
       headerName: "#",
@@ -379,23 +389,38 @@ export default function TradesTable() {
     </div>
   );
 
-  const grid =
-    tradeHistoryQuery.isLoading ? (
-      skeletonGrid
-    ) : (
-      <div className={`${gridClassName} px-6`}>
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={columnDefs}
-          defaultColDef={{
-            cellStyle: { display: "flex", alignItems: "center" },
-          }}
-          pagination={false}
-          suppressCellFocus
-          domLayout="autoHeight"
+  const errorGrid = (
+    <div className="px-6">
+      <div className="border border-[#f0f0f0] rounded-md overflow-hidden">
+        {/* fake header to match AG Grid header height */}
+        <div className="h-9.5 border-b border-[#f0f0f0]" />
+        <ErrorFallback
+          title="Data unavailable"
+          description="Trade history could not be loaded."
+          className="h-150"
         />
       </div>
-    );
+    </div>
+  );
+
+  const grid = tradeHistoryQuery.isLoading ? (
+    skeletonGrid
+  ) : tradeHistoryIsError ? (
+    errorGrid
+  ) : (
+    <div className={`${gridClassName} px-6`}>
+      <AgGridReact
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={{
+          cellStyle: { display: "flex", alignItems: "center" },
+        }}
+        pagination={false}
+        suppressCellFocus
+        domLayout="autoHeight"
+      />
+    </div>
+  );
 
   const triggerBase =
     "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer text-[#11111199] data-[state=active]:text-[#111] hover:text-[#111] capitalize";
@@ -416,6 +441,10 @@ export default function TradesTable() {
             <div className="flex items-baseline gap-2">
               {tradeFilterCountsQuery.isLoading ? (
                 <CustomSkeleton className="h-8 w-14 translate-y-1.5" />
+              ) : tradeFilterCountsIsError ? (
+                <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#a0a0a0]">
+                  —
+                </span>
               ) : (
                 <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111]">
                   {filterCounts?.[filter] ?? 0}
@@ -438,6 +467,10 @@ export default function TradesTable() {
               {filterCounts !== undefined ? (
                 <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4]">
                   {filterCounts.all}
+                </span>
+              ) : tradeFilterCountsIsError ? (
+                <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#a0a0a0] text-[10px] font-mono font-semibold leading-[1.4]">
+                  —
                 </span>
               ) : (
                 <CustomSkeleton className="h-3.5 w-4 rounded-md" />
@@ -463,6 +496,10 @@ export default function TradesTable() {
                 {filterCounts !== undefined ? (
                   <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4] normal-case">
                     {filterCounts[key]}
+                  </span>
+                ) : tradeFilterCountsIsError ? (
+                  <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#a0a0a0] text-[10px] font-mono font-semibold leading-[1.4] normal-case">
+                    —
                   </span>
                 ) : (
                   <CustomSkeleton className="h-3.5 w-4 rounded-md" />
@@ -496,6 +533,10 @@ export default function TradesTable() {
           {/* ===== PAGE INDICATOR ===== */}
           {tradeHistoryQuery.isLoading ? (
             <CustomSkeleton className="h-3 w-24" />
+          ) : tradeHistoryIsError ? (
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#a0a0a0]">
+              Page — of —
+            </p>
           ) : (
             <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
               Page {page} of {maxPages}
@@ -504,14 +545,14 @@ export default function TradesTable() {
           {/* ===== PREV / NEXT BUTTONS ===== */}
           <div className="inline-flex items-center gap-1.5">
             <p
-              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === 1 ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
-              onClick={handlePrevBtnClick}
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === 1 || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+              onClick={tradeHistoryIsError ? undefined : handlePrevBtnClick}
             >
               Prev
             </p>
             <p
-              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === maxPages ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
-              onClick={handleNextBtnClick}
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === maxPages || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+              onClick={tradeHistoryIsError ? undefined : handleNextBtnClick}
             >
               Next
             </p>

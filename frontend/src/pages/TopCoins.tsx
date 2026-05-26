@@ -8,6 +8,7 @@ import type { ColDef, RowClickedEvent } from "ag-grid-community";
 import CoinSortDropdown from "@/components/CoinSortDropdown";
 import CustomSkeleton from "@/components/CustomSkeleton";
 import { Card } from "@/components/ui/card";
+import ErrorFallback from "@/components/ErrorFallback";
 
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import SparklineGraph from "@/components/SparklineGraph";
@@ -158,10 +159,15 @@ export default function TopCoins() {
   const navigate = useNavigate();
 
   // ===== REACT QUERY HOOKS =====
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError: isQueryError,
+  } = useQuery({
     queryKey: ["coins", apiSort],
     queryFn: () => fetchTopCoins(apiSort),
   });
+  const isError = isQueryError;
 
   // ===== AGGRID DATA =====
   const colDefs = useMemo<ColDef[]>(
@@ -390,8 +396,14 @@ export default function TopCoins() {
           </div>
         </>
       )}
-      {isError && <div>{(error as Error).message}</div>}
-      {data && (
+      {isError && !isLoading && (
+        <ErrorFallback
+          title="Data unavailable"
+          description="Top coins could not be loaded."
+          className="flex-1 min-h-0 gap-3 px-6"
+        />
+      )}
+      {data && !isError && (
         <>
           {/* ===== AGGRID TABLE ===== */}
           <div

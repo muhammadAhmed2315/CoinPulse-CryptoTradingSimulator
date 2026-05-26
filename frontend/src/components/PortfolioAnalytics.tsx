@@ -13,6 +13,7 @@ import PortfolioChartPanel from "./PortfolioChartPanel";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "./CustomSkeleton";
 import { Separator } from "./ui/separator";
+import ErrorFallback from "./ErrorFallback";
 
 // ===== SKELETON =====
 function ChartPanelSkeleton() {
@@ -36,6 +37,19 @@ function ChartPanelSkeleton() {
         ))}
       </div>
     </>
+  );
+}
+
+// ===== ERROR STATE =====
+function ChartPanelError() {
+  return (
+    <div className="px-6 pb-6">
+      <ErrorFallback
+        title="Data unavailable"
+        description="Portfolio history could not be loaded."
+        className="h-125 w-full mt-3 border border-[#f0f0f0] rounded-md"
+      />
+    </div>
   );
 }
 
@@ -83,6 +97,10 @@ export default function PortfolioAnalytics() {
     queryFn: fetchPortfolioHistory,
   });
 
+  // ===== DERIVED STATE =====
+  const isError = portfolioHistoryQuery.isError;
+  const data = isError ? undefined : portfolioHistoryQuery.data;
+
   return (
     <div>
       <Tabs
@@ -107,9 +125,14 @@ export default function PortfolioAnalytics() {
               {portfolioHistoryQuery.isLoading && (
                 <CustomSkeleton className="h-9 w-48" />
               )}
-              {portfolioHistoryQuery.data && (
+              {isError && (
+                <p className="text-3xl font-bold tracking-tight text-[#a0a0a0]">
+                  —
+                </p>
+              )}
+              {data && (
                 <p className="text-3xl font-bold tracking-tight">
-                  ${numToMoney(portfolioHistoryQuery.data[activeTab].at(-1)[1])}
+                  ${numToMoney(data[activeTab].at(-1)[1])}
                 </p>
               )}
             </CardTitle>
@@ -150,10 +173,12 @@ export default function PortfolioAnalytics() {
               {(activeTab === "totalValue" || hoveredTab === "totalValue") &&
                 (portfolioHistoryQuery.isLoading ? (
                   <ChartPanelSkeleton />
+                ) : isError ? (
+                  <ChartPanelError />
                 ) : (
-                  portfolioHistoryQuery.data && (
+                  data && (
                     <PortfolioChartPanel
-                      data={portfolioHistoryQuery.data.totalValue}
+                      data={data.totalValue}
                       animation={totalValueOpened < 2}
                     />
                   )
@@ -164,10 +189,12 @@ export default function PortfolioAnalytics() {
               {(activeTab === "assets" || hoveredTab === "assets") &&
                 (portfolioHistoryQuery.isLoading ? (
                   <ChartPanelSkeleton />
+                ) : isError ? (
+                  <ChartPanelError />
                 ) : (
-                  portfolioHistoryQuery.data && (
+                  data && (
                     <PortfolioChartPanel
-                      data={portfolioHistoryQuery.data.assets}
+                      data={data.assets}
                       animation={assetsOpened < 2}
                     />
                   )
@@ -178,10 +205,12 @@ export default function PortfolioAnalytics() {
               {(activeTab === "balance" || hoveredTab === "balance") &&
                 (portfolioHistoryQuery.isLoading ? (
                   <ChartPanelSkeleton />
+                ) : isError ? (
+                  <ChartPanelError />
                 ) : (
-                  portfolioHistoryQuery.data && (
+                  data && (
                     <PortfolioChartPanel
-                      data={portfolioHistoryQuery.data.balance}
+                      data={data.balance}
                       animation={balanceOpened < 2}
                     />
                   )

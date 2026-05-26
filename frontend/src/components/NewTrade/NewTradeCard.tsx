@@ -12,6 +12,7 @@ import CoinSearchBar from "../CoinSearchBar";
 import CustomSkeleton from "../CustomSkeleton";
 import BitcoinLogo from "../../assets/logos/bitcoin.png";
 import { fetchWithRefresh } from "@/lib/api";
+import ErrorFallback from "../ErrorFallback";
 
 // ===== TYPES =====
 export type OrderSide = "BUY" | "SELL";
@@ -64,10 +65,13 @@ async function getCoinSparkline(coinId: string) {
  * @throws {Error} Parsed JSON error body if the request fails.
  */
 async function getUserBalance() {
-  const response = await fetchWithRefresh("http://localhost:5000/get_user_balance", {
-    method: "GET",
-    credentials: "include",
-  });
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/get_user_balance",
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -153,6 +157,13 @@ export default function NewTradeCard() {
         <div className="mb-4">
           {allCoinsQuery.isLoading ? (
             <CustomSkeleton className="h-9 w-full max-w-sm rounded-md" />
+          ) : allCoinsQuery.isError ? (
+            <ErrorFallback
+              horizontal
+              description="Coin search unavailable"
+              size="sm"
+              className="h-9 w-full max-w-sm px-3 gap-2 rounded-md border border-[#ececef] bg-zinc-50 justify-start"
+            />
           ) : (
             <CoinSearchBar
               coins={allCoinsQuery.data!}

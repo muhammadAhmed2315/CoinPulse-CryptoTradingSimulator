@@ -7,6 +7,7 @@ import CustomTooltip from "../CustomTooltip";
 import type { UseQueryResult } from "@tanstack/react-query";
 import PlayUSD from "@/assets/play-usd.svg";
 import type { Coin } from "@/loadAllCoinsList";
+import ErrorFallback from "../ErrorFallback";
 
 // ===== TYPES =====
 export type NewTradeCardLeftProps = {
@@ -28,6 +29,22 @@ export default function NewTradeCardLeft({
   coinBalanceQuery,
   currCoin,
 }: NewTradeCardLeftProps) {
+  const hasError =
+    coinDataQuery.isError ||
+    sparklineQuery.isError ||
+    userBalanceQuery.isError ||
+    coinBalanceQuery.isError;
+
+  if (hasError) {
+    return (
+      <ErrorFallback
+        title="Data unavailable"
+        description="Trade information could not be loaded."
+        className="min-h-120 gap-3 px-4"
+      />
+    );
+  }
+
   return (
     <div>
       {/* ===== CURRENT COIN ===== */}
@@ -46,17 +63,12 @@ export default function NewTradeCardLeft({
           <CustomSkeleton className="h-9 w-44 rounded-md" />
         ) : (
           <p className="text-3xl font-bold ">
-            $
-            {coinDataQuery.data
-              ? numToMoney(coinDataQuery.data.current_price)
-              : "Undefined"}
+            ${numToMoney(coinDataQuery.data.current_price)}
           </p>
         )}
         <div className="w-fit ">
           {coinDataQuery.isLoading ? (
             <CustomSkeleton className="h-6 w-24 rounded-md" />
-          ) : !coinDataQuery.data ? (
-            "Undefined"
           ) : (
             <PriceChangeBox
               priceChange={coinDataQuery.data.price_change_percentage_24h}
@@ -83,10 +95,7 @@ export default function NewTradeCardLeft({
             <CustomSkeleton className="h-5 w-20 mt-1 rounded-md" />
           ) : (
             <p className="font-bold">
-              $
-              {coinDataQuery.data
-                ? numToMoney(coinDataQuery.data.high_24h)
-                : "Undefined"}
+              ${numToMoney(coinDataQuery.data.high_24h)}
             </p>
           )}
         </div>
@@ -96,10 +105,7 @@ export default function NewTradeCardLeft({
             <CustomSkeleton className="h-5 w-20 mt-1 rounded-md" />
           ) : (
             <p className="font-bold">
-              $
-              {coinDataQuery.data
-                ? numToMoney(coinDataQuery.data.low_24h)
-                : "Undefined"}
+              ${numToMoney(coinDataQuery.data.low_24h)}
             </p>
           )}
         </div>
@@ -109,9 +115,7 @@ export default function NewTradeCardLeft({
             <CustomSkeleton className="h-5 w-16 mt-1 rounded-md" />
           ) : (
             <p className="font-bold">
-              {coinDataQuery.data
-                ? formatCompactValue(coinDataQuery.data.market_cap)
-                : "Undefined"}
+              {formatCompactValue(coinDataQuery.data.market_cap)}
             </p>
           )}
         </div>
@@ -121,9 +125,7 @@ export default function NewTradeCardLeft({
             <CustomSkeleton className="h-5 w-16 mt-1 rounded-md" />
           ) : (
             <p className="font-bold">
-              {coinDataQuery.data
-                ? formatCompactValue(coinDataQuery.data.total_volume)
-                : "Undefined"}
+              {formatCompactValue(coinDataQuery.data.total_volume)}
             </p>
           )}
         </div>

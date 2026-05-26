@@ -99,7 +99,13 @@ export default function NewTradeCardRight({
     orderPrice !== "" &&
     parseFloat(orderPrice) === 0;
 
+  const queryError =
+    coinDataQuery.isError ||
+    userBalanceQuery.isError ||
+    coinBalanceQuery.isError;
+
   const placeOrderBtnDisabled =
+    queryError ||
     parseFloat(usdAmount) >= userBalanceQuery.data ||
     (orderType !== "MARKET" && orderPrice === "") ||
     parseFloat(orderPrice) === 0 ||
@@ -158,6 +164,7 @@ export default function NewTradeCardRight({
 
   // ===== EVENT HANDLERS =====
   function handleUsdAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!coinDataQuery.data || !userBalanceQuery.data) return;
     const val = e.target.value;
     setBalancePercentage(undefined);
     if (val === "") {
@@ -181,6 +188,7 @@ export default function NewTradeCardRight({
   }
 
   function handleCoinAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!coinDataQuery.data || !userBalanceQuery.data) return;
     const val = e.target.value;
     setBalancePercentage(undefined);
     if (val === "") {
@@ -207,6 +215,7 @@ export default function NewTradeCardRight({
   }
 
   function handleBalancePercentageBtnClick(num: BalancePercentage) {
+    if (!coinDataQuery.data || !userBalanceQuery.data) return;
     const currBalancePercentage = balancePercentage;
 
     if (currBalancePercentage === num) {
@@ -452,6 +461,8 @@ export default function NewTradeCardRight({
           <>Order successfully placed!</>
         ) : errorTimer > 0 ? (
           <>{(placeOrderMutation.error as any)?.error}</>
+        ) : queryError ? (
+          <>Order data unavailable</>
         ) : (
           <>
             PLACE {orderType} {orderSide} ORDER

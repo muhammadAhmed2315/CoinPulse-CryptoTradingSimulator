@@ -10,13 +10,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import NewTradeCard from "./NewTradeCard";
+import NewTradeCard, { prefetchNewTradeCard } from "./NewTradeCard";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ===== TYPES =====
 type NewTradeButtonProps = {
-  /** Used to prefetch a list of all the coins in the format Coin[]  */
-  prefetchFn: () => Promise<void>;
   initialCoin?: {
     name: string;
     ticker: string;
@@ -27,17 +26,21 @@ type NewTradeButtonProps = {
 /**
  * Component showing a "New Trade" button, opens a "New Trade" card when clicked.
  */
-export default function NewTradeButton({
-  prefetchFn,
-  initialCoin,
-}: NewTradeButtonProps) {
+export default function NewTradeButton({ initialCoin }: NewTradeButtonProps) {
+  const queryClient = useQueryClient();
+
   return (
     <Dialog>
       {/* ===== TRIGGER BUTTON ===== */}
       <DialogTrigger asChild>
         <RippleButton
           className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] bg-primary hover:bg-primary/90 text-primary-foreground border-0 px-5 py-3 rounded-md"
-          onMouseEnter={prefetchFn}
+          onFocus={() => {
+            prefetchNewTradeCard(queryClient, initialCoin?.id);
+          }}
+          onMouseEnter={() => {
+            prefetchNewTradeCard(queryClient, initialCoin?.id);
+          }}
         >
           {initialCoin
             ? `Trade ${initialCoin.ticker.toUpperCase()}`

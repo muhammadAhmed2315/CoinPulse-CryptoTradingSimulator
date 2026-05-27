@@ -21,7 +21,6 @@ import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
 import NewTradeButton from "./NewTrade/NewTradeButton";
-import { loadAllCoinsList } from "@/loadAllCoinsList";
 import CustomSkeleton from "./CustomSkeleton";
 import { numToMoney } from "@/utils";
 import ProfileAvatar from "./Dashboard/Feed/ProfileAvatar";
@@ -54,13 +53,6 @@ export default function NavBar() {
   const { user } = useAuth();
 
   // ===== REACT QUERY HOOKS =====
-  const prefetchAllCoinsList = async () => {
-    await queryClient.prefetchQuery({
-      queryKey: ["allCoinsList"],
-      queryFn: loadAllCoinsList,
-    });
-  };
-
   const portfolioTotalValueQuery = useQuery({
     queryKey: ["totalPortfolioValue"],
     queryFn: fetchTotalPortfolioValue,
@@ -275,7 +267,7 @@ export default function NavBar() {
         </DropdownMenu>
 
         {/* ===== NEW TRADE BUTTON ===== */}
-        <NewTradeButton prefetchFn={prefetchAllCoinsList} />
+        <NewTradeButton />
       </div>
     </div>
   );

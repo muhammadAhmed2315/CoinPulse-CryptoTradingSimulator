@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import NewTradeCardLeft, {
   type NewTradeCardLeftProps,
@@ -13,6 +13,35 @@ import CustomSkeleton from "../CustomSkeleton";
 import BitcoinLogo from "../../assets/logos/bitcoin.png";
 import { fetchWithRefresh } from "@/lib/api";
 import ErrorFallback from "../ErrorFallback";
+
+// ===== NAVBAR PREFETCH =====
+export function prefetchNewTradeCard(
+  queryClient: QueryClient,
+  coinId: string = "bitcoin",
+) {
+  return Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["allCoinsList"],
+      queryFn: loadAllCoinsList,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["coinInfo", coinId],
+      queryFn: () => getCoinInfo(coinId),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["coinSparkline", coinId],
+      queryFn: () => getCoinSparkline(coinId),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["userBalance"],
+      queryFn: () => getUserBalance(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["coinBalance", coinId],
+      queryFn: () => getCoinBalance(coinId),
+    }),
+  ]);
+}
 
 // ===== TYPES =====
 export type OrderSide = "BUY" | "SELL";
@@ -29,7 +58,6 @@ type NewTradeCardProps = {
 };
 
 // ===== API FUNCTIONS =====
-
 /**
  * Fetches detailed information about a coin from the backend. E.g., price, 24h high +
  * low, percentage change, etc.

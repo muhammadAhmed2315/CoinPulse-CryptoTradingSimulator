@@ -134,7 +134,7 @@ export default function LikeButton({
           "font-[Space_Grotesk,system-ui,sans-serif] cursor-pointer",
           liked
             ? "text-red-500 hover:bg-red-50 hover:text-red-500"
-            : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-500",
+            : "text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground",
         ].join(" ")}
       >
         {/* Pulse ring */}

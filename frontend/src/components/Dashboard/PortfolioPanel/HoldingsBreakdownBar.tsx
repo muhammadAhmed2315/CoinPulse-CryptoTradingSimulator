@@ -1,8 +1,10 @@
 import CustomSkeleton from "@/components/CustomSkeleton";
 import { useState } from "react";
+import { useTheme } from "@/context/theme-context";
 
 // ===== CONSTANTS =====
-const COLORS = [
+// Light mode: dark-to-light grayscale (reads on a light card).
+const LIGHT_COLORS = [
   "#000000",
   "#1a1a1a",
   "#333333",
@@ -14,9 +16,23 @@ const COLORS = [
   "#cccccc",
 ];
 
+// Dark mode: light-to-dark grayscale (reads on a dark card).
+const DARK_COLORS = [
+  "#fafafa",
+  "#e0e0e0",
+  "#c7c7c7",
+  "#adadad",
+  "#949494",
+  "#7a7a7a",
+  "#616161",
+  "#474747",
+  "#383838",
+];
+
 // ===== HELPER FUNCTIONS =====
 function convertHoldingsToPercentages(
   holdings: { id: string; ticker: string; totalValue: number }[],
+  COLORS: string[],
 ) {
   const totalHoldingsValue = holdings.reduce((acc, coin) => {
     return acc + coin.totalValue;
@@ -58,9 +74,13 @@ export default function HoldingsBreakdownBar({
 }: HoldingsBreakdownBarProps) {
   // ===== STATE VARIABLES =====
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { resolvedTheme } = useTheme();
 
   // ===== DERIVED STATE =====
-  const holdingsWithPercentages = convertHoldingsToPercentages(holdings);
+  const holdingsWithPercentages = convertHoldingsToPercentages(
+    holdings,
+    resolvedTheme === "dark" ? DARK_COLORS : LIGHT_COLORS,
+  );
 
   if (holdings.length === 0) return <CustomSkeleton className="h-10 w-full" />;
 

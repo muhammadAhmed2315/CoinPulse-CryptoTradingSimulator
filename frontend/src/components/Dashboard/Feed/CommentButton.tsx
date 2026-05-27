@@ -39,8 +39,8 @@ export default function CommentButton({
         "text-[13px] font-medium font-sans",
         "transition-all duration-200",
         active
-          ? "text-zinc-900"
-          : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-500",
+          ? "text-foreground"
+          : "text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground",
       ].join(" ")}
     >
       <ChatSVG />

@@ -159,7 +159,7 @@ export default function TrendingCoinCard({
                     content={`${data!.name} (${data!.symbol})`}
                     triggerStyle="text-sm font-bold tracking-[-0.01em] leading-none"
                   />
-                  <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-zinc-500 font-medium leading-none">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium leading-none">
                     {data!.symbol}
                   </p>
                 </div>
@@ -170,13 +170,13 @@ export default function TrendingCoinCard({
             <CustomTooltip
               trigger={`#${data!.market_cap_rank}`}
               content={`Market Cap Rank: #${data!.market_cap_rank}`}
-              triggerStyle="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 bg-zinc-50 border border-[#ececef] px-1.5 py-[3px] rounded-md"
+              triggerStyle="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground bg-muted border border-border px-1.5 py-[3px] rounded-md"
             />
           </CardHeader>
 
           {/* ===== BODY ===== */}
           <CardContent className="px-2">
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none mb-1.5">
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground leading-none mb-1.5">
               Price
             </p>
 
@@ -200,7 +200,7 @@ export default function TrendingCoinCard({
           {/* ===== FOOTER ===== */}
           <CardFooter className="h-8 px-2">
             <div className="flex-2 flex flex-col gap-1">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground leading-none">
                 Mkt Cap
               </p>
               <b className="font-mono text-sm tracking-[-0.01em] leading-none">
@@ -209,7 +209,7 @@ export default function TrendingCoinCard({
             </div>
             <Separator orientation="vertical" className="mr-3" />
             <div className="flex-2 flex flex-col gap-1">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground leading-none">
                 Volume
               </p>
               <b className="font-mono text-sm tracking-[-0.01em] leading-none">

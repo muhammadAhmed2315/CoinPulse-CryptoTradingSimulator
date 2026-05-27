@@ -23,7 +23,7 @@ export default function TradePill({ side, type }: TradePillProps) {
         }`}
       >
         <span
-          className="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"
+          className="w-1.5 h-1.5 rounded-full bg-background/50 shrink-0"
           style={{ animation: "pillPulse 2s ease-in-out infinite" }}
         />
         {type} {side}

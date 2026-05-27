@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTheme } from "@/context/theme-context";
 
 type FlickerGridProps = {
   /** Size of each dot in px. Default: 3 */
@@ -30,10 +31,12 @@ export default function BannerFlickerGrid({
   gridGap = 4,
   flickerChance = 0.3,
   maxOpacity = 0.4,
-  color = "0,0,0",
+  color,
 }: FlickerGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+  const dotColor = color ?? (resolvedTheme === "dark" ? "255,255,255" : "0,0,0");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -96,7 +99,7 @@ export default function BannerFlickerGrid({
 
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
-          ctx!.fillStyle = `rgba(${color},${squares[i * rows + j]})`;
+          ctx!.fillStyle = `rgba(${dotColor},${squares[i * rows + j]})`;
           ctx!.fillRect(
             (offsetX + i * (squareSize + gridGap)) * dpr,
             (offsetY + j * (squareSize + gridGap)) * dpr,
@@ -120,7 +123,7 @@ export default function BannerFlickerGrid({
       cancelAnimationFrame(animId);
       ro.disconnect();
     };
-  }, [squareSize, gridGap, flickerChance, maxOpacity, color]);
+  }, [squareSize, gridGap, flickerChance, maxOpacity, dotColor]);
 
   return (
     <div

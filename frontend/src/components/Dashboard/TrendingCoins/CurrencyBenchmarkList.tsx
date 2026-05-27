@@ -20,7 +20,7 @@ export default function CurrencyBenchmarkList({
   return (
     <div className="px-2">
       {/* ===== HEADER ===== */}
-      <p className="text-xs text-center text-gray-500 font-mono">
+      <p className="text-xs text-center text-muted-foreground font-mono">
         24H VS OTHER CURRENCIES
       </p>
       {/* ===== BTC ROW ===== */}

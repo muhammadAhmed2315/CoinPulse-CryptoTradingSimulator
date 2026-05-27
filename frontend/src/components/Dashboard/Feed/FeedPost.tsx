@@ -102,7 +102,7 @@ export default function FeedPost({
           {inView && <ProfileAvatar letter={username} />}
           <div>
             <b>{username}</b>
-            <p className="text-[#b4b4b4] font-mono">
+            <p className="text-muted-foreground/70 font-mono">
               {formatRelativeOrAbsoluteDate(timestamp)}
             </p>
           </div>
@@ -110,13 +110,13 @@ export default function FeedPost({
       </CardHeader>
       <CardContent className="p-0">
         {/* ===== TRADE BANNER ===== */}
-        <div className="relative h-13 rounded-md bg-[#fafafa] mb-4">
+        <div className="relative h-13 rounded-md bg-muted mb-4">
           {inView && (
             <BannerFlickerGrid
               squareSize={3}
               gridGap={4}
               flickerChance={0.3}
-              maxOpacity={0.1}
+              maxOpacity={0.25}
             />
           )}
           <div className="relative z-1 flex items-center h-full px-4 justify-between">
@@ -133,7 +133,7 @@ export default function FeedPost({
                 {transaction_type?.toUpperCase() === "BUY" ? "+" : "-"}
                 {quantity?.toFixed(4)}
               </p>
-              <p className="text-[#71717a] font-medium capitalize">
+              <p className="text-muted-foreground font-medium capitalize">
                 {coin_id && coin_id} @ ${numToMoney(price_per_unit)}
               </p>
             </div>
@@ -145,9 +145,9 @@ export default function FeedPost({
           </div>
         </div>
         {/* ===== COMMENT ===== */}
-        {comment && <p className="text-lg text-[#3f3f46]">{comment}</p>}
+        {comment && <p className="text-lg text-foreground">{comment}</p>}
         {!comment && (
-          <p className="text-lg text-[#a0a0a0] italic">
+          <p className="text-lg text-muted-foreground/70 italic">
             This trade has no description.
           </p>
         )}

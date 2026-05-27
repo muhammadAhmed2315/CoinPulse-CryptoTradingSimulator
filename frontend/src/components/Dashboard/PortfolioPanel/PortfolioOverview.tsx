@@ -116,7 +116,7 @@ export default function PortfolioOverview() {
       {/* ===== HEADER ===== */}
       <div className="p-5 pb-2 gap-[-2px]">
         {/* ===== PORTFOLIO VALUE ===== */}
-        <p className="text-xs text-gray-500 font-mono">PORTFOLIO VALUE</p>
+        <p className="text-xs text-muted-foreground font-mono">PORTFOLIO VALUE</p>
         {totalPortfolioValueQuery.isLoading && (
           <CustomSkeleton className="h-10 w-full mt-2 mb-4" />
         )}
@@ -144,7 +144,7 @@ export default function PortfolioOverview() {
 
       {/* ===== HOLDINGS LIST ===== */}
       <div className="px-5 pt-2 pb-0 gap-[-2px]">
-        <div className="flex justify-between text-xs text-gray-500 pb-1">
+        <div className="flex justify-between text-xs text-muted-foreground pb-1">
           <p>HOLDINGS</p>
           <p>VALUE</p>
         </div>
@@ -159,7 +159,7 @@ export default function PortfolioOverview() {
               Array.from({ length: 6 }, (_, i) => (
                 <div
                   key={i}
-                  className="flex justify-between items-center py-2.5 border-b border-[#f0f0f0]"
+                  className="flex justify-between items-center py-2.5 border-b border-border"
                 >
                   <div className="flex gap-3 items-center">
                     <CustomSkeleton className="size-8 rounded-full" />
@@ -172,7 +172,7 @@ export default function PortfolioOverview() {
               walletAssetsQuery.data.map((c) => (
                 <div
                   key={c.id}
-                  className="flex justify-between py-2.5 border-b border-[#f0f0f0]"
+                  className="flex justify-between py-2.5 border-b border-border"
                 >
                   <div className="flex gap-3 items-center">
                     <img
@@ -181,7 +181,7 @@ export default function PortfolioOverview() {
                     />
                     <div className="flex flex-col">
                       <p className="text-sm font-semibold">{c.name}</p>
-                      <p className="text-xs text-gray-500 font-mono">
+                      <p className="text-xs text-muted-foreground font-mono">
                         {c.id === "playusd" ? "" : c.ticker}
                       </p>
                     </div>
@@ -197,7 +197,7 @@ export default function PortfolioOverview() {
                           priceChange={c.priceChange24h}
                           fontSize="xs"
                         />
-                        <p className="text-xs text-gray-500 font-mono uppercase">
+                        <p className="text-xs text-muted-foreground font-mono uppercase">
                           {formatCoinAmount(c.amount)} {c.ticker}
                         </p>
                       </div>
@@ -207,7 +207,7 @@ export default function PortfolioOverview() {
               ))}
           </div>
           <div
-            className={`pointer-events-none absolute bottom-0 left-0 right-0 h-20 bg-linear-to-b from-transparent to-white transition-opacity duration-200 ${isAtBottom ? "opacity-0" : "opacity-100"}`}
+            className={`pointer-events-none absolute bottom-0 left-0 right-0 h-20 bg-linear-to-b from-transparent to-card transition-opacity duration-200 ${isAtBottom ? "opacity-0" : "opacity-100"}`}
           />
         </div>
       </div>

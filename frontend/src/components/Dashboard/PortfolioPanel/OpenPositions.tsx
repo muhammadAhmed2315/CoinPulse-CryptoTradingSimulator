@@ -116,7 +116,7 @@ export default function OpenPositions() {
       {/* ===== HEADER ===== */}
       <div className="p-5 pb-0">
         {/* ===== RESERVED VALUE ===== */}
-        <p className="text-xs text-gray-500 font-mono">RESERVED VALUE</p>
+        <p className="text-xs text-muted-foreground font-mono">RESERVED VALUE</p>
         {openTradesQuery.isLoading && (
           <CustomSkeleton className="h-10 w-full mt-2 mb-4" />
         )}
@@ -174,7 +174,7 @@ export default function OpenPositions() {
                     <span className="cursor-pointer font-bold text-[15px] capitalize">
                       {orders.id} Orders
                     </span>
-                    <span className="font-mono text-[13px] text-[#71717a] pt-0.5">
+                    <span className="font-mono text-[13px] text-muted-foreground pt-0.5">
                       {openOrdersByType[orders.id].length} ORDERS
                     </span>
                   </div>
@@ -193,16 +193,16 @@ export default function OpenPositions() {
 
                   {/* ===== NO ORDERS ===== */}
                   {openOrdersByType[orders.id].length === 0 && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-[#f7f7f8] rounded-lg mb-1.5">
-                      <p className="font-mono text-base text-[#a0a0a0] w-7 h-7 flex items-center justify-center bg-white border border-[#ececef] rounded-full shrink-0">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg mb-1.5">
+                      <p className="font-mono text-base text-muted-foreground/70 w-7 h-7 flex items-center justify-center bg-background border border-border rounded-full shrink-0">
                         0
                       </p>
 
                       <div className="flex flex-col gap-0 min-w-0">
-                        <p className="text-base font-semibold text-[#3f3f46]">
+                        <p className="text-base font-semibold text-foreground">
                           No {orders.id} orders placed
                         </p>
-                        <p className="text-sm text-[#71717a]">
+                        <p className="text-sm text-muted-foreground">
                           {orders.id === "limit buy"
                             ? "No bids waiting below market."
                             : orders.id === "limit sell"

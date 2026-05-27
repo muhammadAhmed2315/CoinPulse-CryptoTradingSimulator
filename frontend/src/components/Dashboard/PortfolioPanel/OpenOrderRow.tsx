@@ -41,7 +41,7 @@ export default function OpenOrderRow({ order, refetch }: OpenOrderRowProps) {
                   Math.abs(order.current_price - order.price_per_unit),
                 )}
               </span>
-              <span className="font-mono text-[#71717a]">away</span>
+              <span className="font-mono text-muted-foreground">away</span>
             </div>
             <CancelOrderBtn transaction_id={order.id} refetch={refetch} />
           </div>
@@ -62,7 +62,7 @@ export default function OpenOrderRow({ order, refetch }: OpenOrderRowProps) {
           </div>
 
           <div className="pt-0.5">
-            <span className="uppercase font-mono text-[12px] text-[#71717a]">
+            <span className="uppercase font-mono text-[12px] text-muted-foreground">
               {numToMoney(order.quantity.toFixed(4))} {order.ticker}
             </span>
           </div>

@@ -246,24 +246,24 @@ export default function NewTradeCardRight({
   return (
     <div className="flex-2 p-4">
       {/* ===== HEADER ===== */}
-      <p className="text-xs font-mono mt-2 mb-1 text-gray-400">ORDER ENTRY</p>
+      <p className="text-xs font-mono mt-2 mb-1 text-muted-foreground/70">ORDER ENTRY</p>
       <p className="font-bold text-xl mb-4">
         {toTitleCase(orderSide)} {currCoin.ticker.toUpperCase()}
       </p>
 
       {/* ===== BUY/SELL TOGGLE ===== */}
-      <div className="relative flex w-full py-1.5 mb-4 cursor-pointer bg-[#f5f5f5] rounded-sm overflow-hidden">
+      <div className="relative flex w-full py-1.5 mb-4 cursor-pointer bg-muted rounded-sm overflow-hidden">
         <div
-          className={`absolute inset-y-0 w-1/2 rounded-sm transition-all duration-300 ease-in-out ${orderSide === "BUY" ? "left-0 bg-black" : "left-1/2 bg-orange-500"}`}
+          className={`absolute inset-y-0 w-1/2 rounded-sm transition-all duration-300 ease-in-out ${orderSide === "BUY" ? "left-0 bg-foreground" : "left-1/2 bg-orange-500"}`}
         />
         <div
-          className={`relative flex-1 text-center rounded-sm font-semibold z-10 transition-colors duration-300 ${orderSide === "BUY" ? "text-white" : "text-gray-500"}`}
+          className={`relative flex-1 text-center rounded-sm font-semibold z-10 transition-colors duration-300 ${orderSide === "BUY" ? "text-background" : "text-muted-foreground"}`}
           onClick={() => setOrderSide("BUY")}
         >
           Buy
         </div>
         <div
-          className={`relative flex-1 text-center rounded-sm font-semibold z-10 transition-colors duration-300 ${orderSide === "SELL" ? "text-white" : "text-gray-500"}`}
+          className={`relative flex-1 text-center rounded-sm font-semibold z-10 transition-colors duration-300 ${orderSide === "SELL" ? "text-white" : "text-muted-foreground"}`}
           onClick={() => setOrderSide("SELL")}
         >
           Sell
@@ -289,12 +289,12 @@ export default function NewTradeCardRight({
       </div>
 
       {/* ===== USD AMOUNT INPUT ===== */}
-      <p className="text-xs text-gray-400 mb-2 font-mono">TOTAL (USD)</p>
+      <p className="text-xs text-muted-foreground/70 mb-2 font-mono">TOTAL (USD)</p>
       <Field
         data-invalid={
           amountZero || parseFloat(usdAmount) > userBalanceQuery.data
         }
-        className="bg-[#fafafa] mb-1 gap-1"
+        className="bg-muted mb-1 gap-1"
       >
         <InputGroup className="h-10">
           <InputGroupInput
@@ -347,12 +347,12 @@ export default function NewTradeCardRight({
       {/* ===== LIMIT/STOP PRICE INPUT ===== */}
       {(orderType === "LIMIT" || orderType === "STOP") && (
         <>
-          <p className="text-xs mb-2 text-gray-400 font-mono">
+          <p className="text-xs mb-2 text-muted-foreground/70 font-mono">
             {orderType} PRICE (USD)
           </p>
           <Field
             data-invalid={orderPriceEmpty || orderPriceZero}
-            className="bg-[#fafafa] mb-1 gap-1"
+            className="bg-muted mb-1 gap-1"
           >
             <InputGroup className="h-10">
               <InputGroupInput
@@ -382,14 +382,14 @@ export default function NewTradeCardRight({
       )}
 
       {/* ===== COIN AMOUNT INPUT ===== */}
-      <p className="text-xs mb-2 text-gray-400 font-mono uppercase">
+      <p className="text-xs mb-2 text-muted-foreground/70 font-mono uppercase">
         AMOUNT ({currCoin.ticker})
       </p>
       <Field
         data-invalid={
           amountZero || parseFloat(coinAmount) > coinBalanceQuery.data
         }
-        className="bg-[#fafafa] gap-1"
+        className="bg-muted gap-1"
       >
         <InputGroup className="h-10">
           <InputGroupInput
@@ -420,7 +420,7 @@ export default function NewTradeCardRight({
 
       {/* ===== TIMELINE TOGGLE ===== */}
       <div className="flex justify-between mb-2">
-        <p className="text-sm text-gray-600">Share Trade on Timeline</p>
+        <p className="text-sm text-muted-foreground">Share Trade on Timeline</p>
         <Switch
           checked={shareOnTimeline}
           onCheckedChange={handleShareOnTimelineChange}
@@ -430,7 +430,7 @@ export default function NewTradeCardRight({
       {/* ===== TIMELINE MESSAGE ===== */}
       <Field data-invalid={invalidTimelineMsg} className="mb-4 gap-1">
         <Textarea
-          className="bg-[#fafafa] w-full h-25 resize-none"
+          className="bg-muted w-full h-25 resize-none"
           placeholder={
             shareOnTimeline
               ? "Let others know about your trade..."

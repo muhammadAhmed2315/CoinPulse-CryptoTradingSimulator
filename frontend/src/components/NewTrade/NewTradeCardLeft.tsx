@@ -48,7 +48,7 @@ export default function NewTradeCardLeft({
   return (
     <div>
       {/* ===== CURRENT COIN ===== */}
-      <div className="flex flex-row gap-2 bg-white px-2 py-1 border border-gray-200 rounded-sm mb-2">
+      <div className="flex flex-row gap-2 bg-background px-2 py-1 border border-border rounded-sm mb-2">
         <img src={currCoin.imgUrl} className="rounded-3xl size-12" />
         <div>
           <p className="font-bold text-xl">{currCoin.name}</p>
@@ -57,7 +57,7 @@ export default function NewTradeCardLeft({
       </div>
 
       {/* ===== PRICE ===== */}
-      <p className="text-xs font-mono text-gray-400 mb-1">PRICE</p>
+      <p className="text-xs font-mono text-muted-foreground/70 mb-1">PRICE</p>
       <div className="flex items-center justify-between mb-4">
         {coinDataQuery.isLoading ? (
           <CustomSkeleton className="h-9 w-44 rounded-md" />
@@ -89,7 +89,7 @@ export default function NewTradeCardLeft({
 
       {/* ===== STATS GRID ===== */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-sm bg-white border border-gray-200 p-2">
+        <div className="rounded-sm bg-background border border-border p-2">
           <p className="text-xs font-semibold">24H HIGH</p>
           {coinDataQuery.isLoading ? (
             <CustomSkeleton className="h-5 w-20 mt-1 rounded-md" />
@@ -99,7 +99,7 @@ export default function NewTradeCardLeft({
             </p>
           )}
         </div>
-        <div className="rounded-sm bg-white border border-gray-200 p-2">
+        <div className="rounded-sm bg-background border border-border p-2">
           <p className="text-xs font-semibold">24H LOW</p>
           {coinDataQuery.isLoading ? (
             <CustomSkeleton className="h-5 w-20 mt-1 rounded-md" />
@@ -109,7 +109,7 @@ export default function NewTradeCardLeft({
             </p>
           )}
         </div>
-        <div className="rounded-sm bg-white border border-gray-200 p-2">
+        <div className="rounded-sm bg-background border border-border p-2">
           <p className="text-xs font-semibold">MARKET CAP</p>
           {coinDataQuery.isLoading ? (
             <CustomSkeleton className="h-5 w-16 mt-1 rounded-md" />
@@ -119,7 +119,7 @@ export default function NewTradeCardLeft({
             </p>
           )}
         </div>
-        <div className="rounded-sm bg-white border border-gray-200 p-2">
+        <div className="rounded-sm bg-background border border-border p-2">
           <p className="text-xs font-semibold">VOLUME</p>
           {coinDataQuery.isLoading ? (
             <CustomSkeleton className="h-5 w-16 mt-1 rounded-md" />
@@ -136,7 +136,7 @@ export default function NewTradeCardLeft({
       {/* ===== USD BALANCE ===== */}
       <div className="flex justify-between items-center mb-2">
         <div>
-          <p className="text-xs text-gray-400 font-mono">USD BALANCE</p>
+          <p className="text-xs text-muted-foreground/70 font-mono">USD BALANCE</p>
           {userBalanceQuery.isLoading ? (
             <CustomSkeleton className="h-6 w-25" />
           ) : (
@@ -149,7 +149,7 @@ export default function NewTradeCardLeft({
       {/* ===== COIN BALANCE ===== */}
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-xs text-gray-400 font-mono uppercase">
+          <p className="text-xs text-muted-foreground/70 font-mono uppercase">
             {currCoin.ticker} BALANCE
           </p>
           {coinBalanceQuery.isLoading ? (

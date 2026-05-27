@@ -152,7 +152,7 @@ export default function NewTradeCard() {
   return (
     <>
       {/* ===== LEFT PANEL ===== */}
-      <div className="flex-1 z-20 bg-[#fafafa] border-r-gray-100 border-r rounded-l-md p-4">
+      <div className="flex-1 z-20 bg-muted border-r-border border-r rounded-l-md p-4">
         {/* ===== COIN SEARCH BAR ===== */}
         <div className="mb-4">
           {allCoinsQuery.isLoading ? (
@@ -162,7 +162,7 @@ export default function NewTradeCard() {
               horizontal
               description="Coin search unavailable"
               size="sm"
-              className="h-9 w-full max-w-sm px-3 gap-2 rounded-md border border-[#ececef] bg-zinc-50 justify-start"
+              className="h-9 w-full max-w-sm px-3 gap-2 rounded-md border border-border bg-muted justify-start"
             />
           ) : (
             <CoinSearchBar

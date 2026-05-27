@@ -80,7 +80,7 @@ export default function CancelOrderBtn({
       ) : (
         /* ===== CANCEL BUTTON ===== */
         <div
-          className="cursor-pointer size-5.5 border flex items-center justify-center border-[#ececef] rounded-[6px] hover:border-[#71717a]"
+          className="cursor-pointer size-5.5 border flex items-center justify-center border-border rounded-[6px] hover:border-muted-foreground"
           onClick={() => cancelOpenTradeMutation.mutate(transaction_id)}
         >
           <img className="size-4 " src={CrossIcon} />

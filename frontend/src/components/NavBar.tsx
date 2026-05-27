@@ -30,6 +30,7 @@ import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { prefetchDashboard } from "@/pages/Dashboard";
 import { prefetchMyTrades } from "@/pages/MyTrades";
 import { fetchWithRefresh } from "@/lib/api";
+import ThemeToggle from "./ThemeToggle";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -78,7 +79,7 @@ export default function NavBar() {
   });
 
   return (
-    <div className="sticky top-0 z-10 bg-white flex justify-between items-center py-5 px-10 border-b border-[#f0f0f0]">
+    <div className="sticky top-0 z-10 bg-background flex justify-between items-center py-5 px-10 border-b border-border">
       {/* ===== PORTFOLIO VALUE ===== */}
       {(() => {
         const isError = portfolioTotalValueQuery.isError;
@@ -102,7 +103,7 @@ export default function NavBar() {
               className="flex flex-col gap-1.5 cursor-pointer"
               onClick={() => navigate("/my_trades")}
             >
-              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground leading-none">
                 Portfolio Value
               </span>
               <p className="font-mono text-[22px] font-semibold tracking-[-0.02em] leading-none">
@@ -135,8 +136,8 @@ export default function NavBar() {
                   <div
                     className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
-                        ? "text-zinc-900 bg-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                        ? "text-foreground bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
                     <img src={HomeIcon} className="size-4 opacity-80" />
@@ -165,8 +166,8 @@ export default function NavBar() {
                   <div
                     className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
-                        ? "text-zinc-900 bg-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                        ? "text-foreground bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
                     <img src={BarChartIcon} className="size-4 opacity-80" />
@@ -195,8 +196,8 @@ export default function NavBar() {
                   <div
                     className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
-                        ? "text-zinc-900 bg-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                        ? "text-foreground bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
                     <img
@@ -228,8 +229,8 @@ export default function NavBar() {
                   <div
                     className={`flex items-center gap-1.5 px-5 py-4 rounded-md font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-none transition-colors ${
                       isActive
-                        ? "text-zinc-900 bg-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                        ? "text-foreground bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
                     <img src={InfoIcon} className="size-4 opacity-80" />
@@ -244,21 +245,24 @@ export default function NavBar() {
 
       {/* ===== USER MENU & NEW TRADE ===== */}
       <div className="flex gap-4 items-center justify-center">
+        {/* ===== THEME TOGGLE ===== */}
+        <ThemeToggle />
+
         {/* ===== USER + AVATAR GROUP ===== */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="cursor-pointer flex gap-2 items-center outline-none pl-1.5 pr-3 py-1 rounded-lg border border-[#f0f0f0] bg-white hover:bg-zinc-50 transition-colors">
+          <DropdownMenuTrigger className="cursor-pointer flex gap-2 items-center outline-none pl-1.5 pr-3 py-1 rounded-lg border border-border bg-background hover:bg-accent transition-colors">
             {user?.username ? (
               <ProfileAvatar letter={user.username} size={50} />
             ) : (
               <div></div>
             )}
-            <p className="text-base font-semibold tracking-[-0.01em] text-zinc-900 leading-none">
+            <p className="text-base font-semibold tracking-[-0.01em] text-foreground leading-none">
               {user?.username}
             </p>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            sideOffset={0}
+            sideOffset={8}
             className="z-100 w-(--radix-dropdown-menu-trigger-width) min-w-0 p-0"
           >
             <DropdownMenuItem

@@ -19,6 +19,7 @@ import EmailVerificationForm from "./components/authentication/EmailVerification
 import VerifyPasswordResetToken from "./components/authentication/VerifyPasswordResetToken";
 import PasswordResetLinkInvalid from "./components/authentication/PasswordResetLinkInvalid";
 import { AuthContextProvider, useAuth } from "./context/auth-context";
+import { ThemeContextProvider } from "./context/theme-context";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerified";
 import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
@@ -45,8 +46,9 @@ function NotFoundHandler() {
 
 function App() {
   return (
-    <AuthContextProvider>
-      <BrowserRouter>
+    <ThemeContextProvider>
+      <AuthContextProvider>
+        <BrowserRouter>
         <Routes>
           {/* ===== HOME REDIRECT ===== */}
           <Route path="/" element={<HomeRedirect />} />
@@ -109,8 +111,9 @@ function App() {
           {/* ===== CATCH-ALL ===== */}
           <Route path="*" element={<NotFoundHandler />} />
         </Routes>
-      </BrowserRouter>
-    </AuthContextProvider>
+        </BrowserRouter>
+      </AuthContextProvider>
+    </ThemeContextProvider>
   );
 }
 

@@ -22,7 +22,7 @@ export default function SparklineGraph({
         `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * height * 0.85 - height * 0.075}`,
     )
     .join(" ");
-  const color = positive ? "#16a34a" : "#dc2626";
+  const color = positive ? "#21c45d" : "#ef4444";
   const gradId = positive ? "sparkGrad_g" : "sparkGrad_r";
   const lastX = width;
   const lastY =
@@ -40,7 +40,7 @@ export default function SparklineGraph({
       {/* ===== GRADIENT DEFS ===== */}
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>

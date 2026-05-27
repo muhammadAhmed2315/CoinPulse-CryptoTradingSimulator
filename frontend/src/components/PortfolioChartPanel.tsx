@@ -46,7 +46,7 @@ function OHLCStat({ label, entry, withDivider }: OHLCStatProps) {
   return (
     <div
       className={`flex flex-col gap-1 px-6 py-4 pb-6 ${
-        withDivider ? "border-l border-[#f0f0f0]" : ""
+        withDivider ? "border-l border-border" : ""
       }`}
     >
       <span className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -79,7 +79,7 @@ export default function PortfolioChartPanel({
       </div>
 
       {/* ===== OHLC STATS ===== */}
-      <Separator className="bg-[#f0f0f0]" />
+      <Separator className="bg-muted" />
       <div className="grid grid-cols-4 w-full">
         <OHLCStat label="Open" entry={ohlc.open} />
         <OHLCStat label="High" entry={ohlc.high} withDivider />

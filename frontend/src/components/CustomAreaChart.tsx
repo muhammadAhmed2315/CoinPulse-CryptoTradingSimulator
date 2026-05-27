@@ -1,6 +1,9 @@
 import { StockChart } from "@highcharts/react/Stock";
 import { AreaSeries } from "@highcharts/react/series/Area";
 import { numToMoney } from "@/utils";
+import { useTheme } from "@/context/theme-context";
+import { buildChartPalette } from "@/lib/chart-theme";
+import { useMemo } from "react";
 
 // ===== TYPES =====
 type CustomAreaChartProps = {
@@ -16,29 +19,43 @@ export default function CustomAreaChart({
   colored = false,
   animation = true,
 }: CustomAreaChartProps) {
+  // ===== THEME =====
+  const { resolvedTheme } = useTheme();
+  const palette = useMemo(
+    () => buildChartPalette(resolvedTheme),
+    [resolvedTheme],
+  );
+
   // ===== DERIVED STATE =====
   const trendColor =
-    data.length > 1 && data.at(-1)![1] < data[0][1] ? "#ef4444" : "#21c45d";
-  const lineColor = colored ? trendColor : "#71717a";
+    data.length > 1 && data.at(-1)![1] < data[0][1] ? palette.down : palette.up;
+  const lineColor = colored ? trendColor : palette.neutralLine;
+  const neutralFillStops: [number, string][] =
+    resolvedTheme === "dark"
+      ? [
+          [0, "rgba(212, 212, 216, 0.18)"],
+          [1, "rgba(212, 212, 216, 0)"],
+        ]
+      : [
+          [0, "rgba(113, 113, 122, 0.28)"],
+          [1, "rgba(113, 113, 122, 0)"],
+        ];
   const fillStops: [number, string][] = colored
     ? [
         [
           0,
-          trendColor === "#21c45d"
+          trendColor === palette.up
             ? "rgba(33, 196, 93, 0.22)"
             : "rgba(239, 68, 68, 0.22)",
         ],
         [
           1,
-          trendColor === "#21c45d"
+          trendColor === palette.up
             ? "rgba(33, 196, 93, 0)"
             : "rgba(239, 68, 68, 0)",
         ],
       ]
-    : [
-        [0, "rgba(113, 113, 122, 0.28)"],
-        [1, "rgba(113, 113, 122, 0)"],
-      ];
+    : neutralFillStops;
   const chartData: [number, number][] = data.map(([timestamp, val]) => [
     timestamp > 10_000_000_000 ? timestamp : timestamp * 1000,
     val,
@@ -70,7 +87,7 @@ export default function CustomAreaChart({
             r: 6,
             padding: 6,
             style: {
-              color: "#71717a",
+              color: palette.muted,
               fontFamily: "IBM Plex Mono, monospace",
               fontSize: "10px",
               fontWeight: "600",
@@ -78,10 +95,13 @@ export default function CustomAreaChart({
               textTransform: "uppercase",
             },
             states: {
-              hover: { fill: "transparent", style: { color: "#111111" } },
+              hover: {
+                fill: "transparent",
+                style: { color: palette.hoverText },
+              },
               select: {
-                fill: "#f5f5f5",
-                style: { color: "#111111", fontWeight: "600" },
+                fill: palette.selectFill,
+                style: { color: palette.hoverText, fontWeight: "600" },
               },
             },
           },
@@ -99,12 +119,12 @@ export default function CustomAreaChart({
         legend: { enabled: false },
         xAxis: {
           type: "datetime",
-          lineColor: "#f0f0f0",
-          tickColor: "#f0f0f0",
-          crosshair: { color: "#111", width: 2, dashStyle: "Solid" },
+          lineColor: palette.border,
+          tickColor: palette.border,
+          crosshair: { color: palette.crosshair, width: 2, dashStyle: "Solid" },
           labels: {
             style: {
-              color: "#71717a",
+              color: palette.muted,
               fontFamily: "IBM Plex Mono, monospace",
               fontSize: "10px",
               letterSpacing: "0.04em",
@@ -112,10 +132,10 @@ export default function CustomAreaChart({
           },
         },
         yAxis: {
-          gridLineColor: "#f0f0f0",
+          gridLineColor: palette.grid,
           labels: {
             style: {
-              color: "#71717a",
+              color: palette.muted,
               fontFamily: "IBM Plex Mono, monospace",
               fontSize: "10px",
               letterSpacing: "0.04em",
@@ -127,13 +147,13 @@ export default function CustomAreaChart({
           split: false,
           shared: false,
           useHTML: true,
-          backgroundColor: "#111",
+          backgroundColor: palette.tooltipBg,
           borderColor: "transparent",
           borderRadius: 8,
           borderWidth: 0,
           shadow: false,
           style: {
-            color: "#fff",
+            color: palette.tooltipText,
             fontFamily: "IBM Plex Mono, monospace",
             fontSize: "11px",
           },

@@ -18,6 +18,9 @@ import { useInView } from "react-intersection-observer";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
 import ErrorFallback from "../ErrorFallback";
+import { useTheme } from "@/context/theme-context";
+import { buildChartPalette, type ChartPalette } from "@/lib/chart-theme";
+import { useMemo } from "react";
 
 // ===== CHART SKELETON =====
 function ChartSkeleton() {
@@ -42,43 +45,50 @@ export function prefetchMarketChartsCard(
 }
 
 // ===== SHARED RANGE SELECTOR CONFIG =====
-const rangeSelectorConfig: Highcharts.RangeSelectorOptions = {
-  enabled: true,
-  selected: 5,
-  inputEnabled: false,
-  labelStyle: { display: "none" },
-  buttonPosition: { align: "right" },
-  buttonSpacing: 2,
-  buttonTheme: {
-    fill: "transparent",
-    stroke: "none",
-    r: 6,
-    padding: 6,
-    style: {
-      color: "#71717a",
-      fontFamily: "IBM Plex Mono, monospace",
-      fontSize: "10px",
-      fontWeight: "600",
-      letterSpacing: "0.06em",
-      textTransform: "uppercase",
-    },
-    states: {
-      hover: { fill: "transparent", style: { color: "#111111" } },
-      select: {
-        fill: "#f5f5f5",
-        style: { color: "#111111", fontWeight: "600" },
+function buildRangeSelectorConfig(
+  palette: ChartPalette,
+): Highcharts.RangeSelectorOptions {
+  return {
+    enabled: true,
+    selected: 5,
+    inputEnabled: false,
+    labelStyle: { display: "none" },
+    buttonPosition: { align: "right" },
+    buttonSpacing: 2,
+    buttonTheme: {
+      fill: "transparent",
+      stroke: "none",
+      r: 6,
+      padding: 6,
+      style: {
+        color: palette.muted,
+        fontFamily: "IBM Plex Mono, monospace",
+        fontSize: "10px",
+        fontWeight: "600",
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+      },
+      states: {
+        hover: {
+          fill: "transparent",
+          style: { color: palette.hoverText },
+        },
+        select: {
+          fill: palette.selectFill,
+          style: { color: palette.hoverText, fontWeight: "600" },
+        },
       },
     },
-  },
-  buttons: [
-    { type: "month", count: 1, text: "1M" },
-    { type: "month", count: 3, text: "3M" },
-    { type: "month", count: 6, text: "6M" },
-    { type: "ytd", text: "YTD" },
-    { type: "year", count: 1, text: "1Y" },
-    { type: "all", text: "ALL" },
-  ] as Highcharts.RangeSelectorButtonsOptions[],
-};
+    buttons: [
+      { type: "month", count: 1, text: "1M" },
+      { type: "month", count: 3, text: "3M" },
+      { type: "month", count: 6, text: "6M" },
+      { type: "ytd", text: "YTD" },
+      { type: "year", count: 1, text: "1Y" },
+      { type: "all", text: "ALL" },
+    ] as Highcharts.RangeSelectorButtonsOptions[],
+  };
+}
 
 // ===== TYPES =====
 type MarketChartsCardProps = {
@@ -127,6 +137,17 @@ const tabTypeMapping = {
 };
 
 export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
+  // ===== THEME =====
+  const { resolvedTheme } = useTheme();
+  const palette = useMemo(
+    () => buildChartPalette(resolvedTheme),
+    [resolvedTheme],
+  );
+  const rangeSelectorConfig = useMemo(
+    () => buildRangeSelectorConfig(palette),
+    [palette],
+  );
+
   // ===== STATE VARIABLES =====
   const [activeTab, setActiveTab] = useState<
     "ohlc" | "price" | "marketCap" | "volume"
@@ -161,16 +182,16 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
     "cursor-pointer font-mono text-[11px] font-semibold uppercase tracking-[0.06em] px-[14px] py-[7px] rounded-[7px]";
 
   return (
-    <Card className="flex-7 p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+    <Card className="flex-7 p-0 gap-0 overflow-hidden rounded-[18px] border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       {/* ===== HEADER ===== */}
-      <div className="px-6 pt-5.5 pb-4.5 border-b border-[#f0f0f0]">
+      <div className="px-6 pt-5.5 pb-4.5 border-b border-border">
         <div className="flex flex-col gap-2">
           {/* ===== EYEBROW ===== */}
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] leading-none text-[#71717a]">
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] leading-none text-muted-foreground">
             Market Charts
           </span>
           {/* ===== TITLE ===== */}
-          <h2 className="m-0 text-[22px] font-bold leading-none tracking-[-0.015em] text-[#111111]">
+          <h2 className="m-0 text-[22px] font-bold leading-none tracking-[-0.015em] text-foreground">
             {currCoin.name} {tabTypeMapping[activeTab]}
           </h2>
         </div>
@@ -189,8 +210,8 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
         className="gap-0"
       >
         {/* ===== TABS LIST ===== */}
-        <div className="px-6 py-4 border-b border-[#f0f0f0]">
-          <TabsList className="h-auto bg-[#fafafa] border border-[#ececef] rounded-[10px] p-1">
+        <div className="px-6 py-4 border-b border-border">
+          <TabsList className="h-auto bg-muted border border-border rounded-[10px] p-1">
             <TabsTrigger
               value="ohlc"
               className={tabTriggerClass}
@@ -258,11 +279,11 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                     scrollbar: { enabled: false },
                     legend: { enabled: false },
                     xAxis: {
-                      lineColor: "#f0f0f0",
-                      tickColor: "#f0f0f0",
+                      lineColor: palette.border,
+                      tickColor: palette.border,
                       labels: {
                         style: {
-                          color: "#71717a",
+                          color: palette.muted,
                           fontFamily: "IBM Plex Mono, monospace",
                           fontSize: "10px",
                           letterSpacing: "0.04em",
@@ -270,10 +291,10 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       },
                     },
                     yAxis: {
-                      gridLineColor: "#f0f0f0",
+                      gridLineColor: palette.grid,
                       labels: {
                         style: {
-                          color: "#71717a",
+                          color: palette.muted,
                           fontFamily: "IBM Plex Mono, monospace",
                           fontSize: "10px",
                           letterSpacing: "0.04em",
@@ -282,12 +303,12 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       title: { text: undefined },
                     },
                     tooltip: {
-                      backgroundColor: "#111",
+                      backgroundColor: palette.tooltipBg,
                       borderWidth: 0,
                       borderRadius: 8,
                       shadow: false,
                       style: {
-                        color: "#fff",
+                        color: palette.tooltipText,
                         fontFamily: "IBM Plex Mono, monospace",
                         fontSize: "11px",
                       },
@@ -305,10 +326,10 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                     },
                     plotOptions: {
                       candlestick: {
-                        color: "#ef4444",
-                        upColor: "#21c45d",
-                        lineColor: "#ef4444",
-                        upLineColor: "#21c45d",
+                        color: palette.down,
+                        upColor: palette.up,
+                        lineColor: palette.down,
+                        upLineColor: palette.up,
                       },
                       series: {
                         animation: ohlcOpened < 2,
@@ -413,11 +434,11 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                     legend: { enabled: false },
                     xAxis: {
                       type: "datetime",
-                      lineColor: "#f0f0f0",
-                      tickColor: "#f0f0f0",
+                      lineColor: palette.border,
+                      tickColor: palette.border,
                       labels: {
                         style: {
-                          color: "#71717a",
+                          color: palette.muted,
                           fontFamily: "IBM Plex Mono, monospace",
                           fontSize: "10px",
                           letterSpacing: "0.04em",
@@ -425,10 +446,10 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       },
                     },
                     yAxis: {
-                      gridLineColor: "#f0f0f0",
+                      gridLineColor: palette.grid,
                       labels: {
                         style: {
-                          color: "#71717a",
+                          color: palette.muted,
                           fontFamily: "IBM Plex Mono, monospace",
                           fontSize: "10px",
                           letterSpacing: "0.04em",
@@ -437,19 +458,19 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       title: { text: undefined },
                     },
                     tooltip: {
-                      backgroundColor: "#111",
+                      backgroundColor: palette.tooltipBg,
                       borderWidth: 0,
                       borderRadius: 8,
                       shadow: false,
                       style: {
-                        color: "#fff",
+                        color: palette.tooltipText,
                         fontFamily: "IBM Plex Mono, monospace",
                         fontSize: "11px",
                       },
                     },
                     plotOptions: {
                       column: {
-                        color: "#a0a0a0",
+                        color: palette.muted,
                         borderWidth: 0,
                         pointPadding: 0.05,
                         groupPadding: 0.05,

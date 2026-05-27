@@ -24,22 +24,22 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: #ebebeb;
+  background: var(--muted);
 }
 .spinnerRing {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   border: 2.5px solid transparent;
-  border-top-color: #0a0a0a;
-  border-right-color: rgba(10, 10, 10, 0.12);
+  border-top-color: var(--foreground);
+  border-right-color: color-mix(in oklch, var(--foreground) 12%, transparent);
   animation: spin 0.85s linear infinite;
 }
 .spinnerDotInner {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #0a0a0a;
+  background: var(--foreground);
   margin: auto;
   position: absolute;
   inset: 0;

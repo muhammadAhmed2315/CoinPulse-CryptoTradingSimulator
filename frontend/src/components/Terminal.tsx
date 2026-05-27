@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTheme } from "@/context/theme-context";
 
 // ===== TYPES =====
 type TerminalTheme = "light" | "dark";
@@ -60,7 +61,7 @@ const palettes = {
 } as const;
 
 export default function Terminal({
-  theme = "dark",
+  theme,
   title = "router — coinpulse — 80×24",
   statusCode,
   sessionId,
@@ -68,7 +69,8 @@ export default function Terminal({
   className,
   children,
 }: TerminalProps) {
-  const p = palettes[theme];
+  const { resolvedTheme } = useTheme();
+  const p = palettes[theme ?? resolvedTheme];
 
   return (
     <div

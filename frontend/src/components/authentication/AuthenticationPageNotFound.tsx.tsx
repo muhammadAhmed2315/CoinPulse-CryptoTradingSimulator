@@ -42,8 +42,8 @@ export default function AuthenticationPageNotFound() {
           <div className="flex gap-3">
             <span className="text-[#a1a1aa] shrink-0">$</span>
             <span>
-              <span className="text-[#71717a]">router</span> resolve{" "}
-              <span className="text-[#111]">{location.pathname}</span>
+              <span className="text-muted-foreground">router</span> resolve{" "}
+              <span className="text-foreground">{location.pathname}</span>
             </span>
           </div>
 
@@ -52,29 +52,29 @@ export default function AuthenticationPageNotFound() {
           <div className="flex gap-3">
             <span className="text-[#059669] font-semibold shrink-0">→</span>
             <span>
-              <span className="text-[#71717a]">matched_route</span> ={" "}
+              <span className="text-muted-foreground">matched_route</span> ={" "}
               <span className="text-[#b91c1c] font-semibold">null</span>
             </span>
           </div>
           <div className="flex gap-3">
             <span className="text-[#059669] font-semibold shrink-0">→</span>
             <span>
-              <span className="text-[#71717a]">status_code</span> ={" "}
-              <span className="text-[#111] font-semibold">404</span>
+              <span className="text-muted-foreground">status_code</span> ={" "}
+              <span className="text-foreground font-semibold">404</span>
             </span>
           </div>
           <div className="flex gap-3">
             <span className="text-[#059669] font-semibold shrink-0">→</span>
             <span>
-              <span className="text-[#71717a]">method</span> ={" "}
-              <span className="text-[#111]">GET</span>
+              <span className="text-muted-foreground">method</span> ={" "}
+              <span className="text-foreground">GET</span>
             </span>
           </div>
           <div className="flex gap-3">
             <span className="text-[#059669] font-semibold shrink-0">→</span>
             <span>
-              <span className="text-[#71717a]">timestamp</span> ={" "}
-              <span className="text-[#111]" ref={timestampRef}>
+              <span className="text-muted-foreground">timestamp</span> ={" "}
+              <span className="text-foreground" ref={timestampRef}>
                 —
               </span>
             </span>
@@ -124,7 +124,7 @@ export default function AuthenticationPageNotFound() {
 
           <div className="flex gap-3">
             <span className="text-[#a1a1aa] shrink-0">$</span>
-            <span className="text-[#111]">
+            <span className="text-foreground">
               <span className="cursor-blink">▊</span>
             </span>
           </div>

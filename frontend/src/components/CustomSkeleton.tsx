@@ -6,5 +6,5 @@ type CustomSkeletonProps = {
 };
 
 export default function CustomSkeleton({ className }: CustomSkeletonProps) {
-  return <Skeleton className={`bg-gray-200 ${className}`} />;
+  return <Skeleton className={`bg-muted ${className}`} />;
 }

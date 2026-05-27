@@ -58,14 +58,14 @@ export default function ErrorFallback({
       <img src={RedWarningIcon} className={sizeStyles.icon} />
       <div>
         {title && (
-          <p className={cn("text-gray-800 leading-tight", sizeStyles.title)}>
+          <p className={cn("text-foreground leading-tight", sizeStyles.title)}>
             {title}
           </p>
         )}
         {description && (
           <p
             className={cn(
-              "text-gray-400 leading-relaxed",
+              "text-muted-foreground/70 leading-relaxed",
               sizeStyles.description,
             )}
           >

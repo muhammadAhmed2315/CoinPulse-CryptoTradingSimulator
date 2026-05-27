@@ -185,11 +185,11 @@ export default function CreateAccount() {
 
         {/* ===== OAUTH DIVIDER ===== */}
         <div className="flex w-full items-center">
-          <div className="flex-1 border-t border-gray-400" />
+          <div className="flex-1 border-t border-border" />
           <span className="mx-4 text-sm text-muted-foreground">
             or sign up with
           </span>
-          <div className="flex-1 border-t border-gray-400" />
+          <div className="flex-1 border-t border-border" />
         </div>
 
         {/* ===== OAUTH BUTTONS ===== */}

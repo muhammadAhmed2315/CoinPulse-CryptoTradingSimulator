@@ -58,9 +58,9 @@ export default function VerifyPasswordResetToken() {
       {/* ===== LOADING STATE ===== */}
       <div className="flex flex-col items-center">
         <LoadingSpinner />
-        <p className="text-xs mt-4 text-[#bbb]">PLEASE WAIT</p>
-        <b className="text-xl text-[#0a0a0a]">Verifying your email</b>
-        <p className="text-sm text-[#aaa]">
+        <p className="text-xs mt-4 text-muted-foreground">PLEASE WAIT</p>
+        <b className="text-xl text-foreground">Verifying your email</b>
+        <p className="text-sm text-muted-foreground/80">
           You'll be redirected automatically
         </p>
       </div>

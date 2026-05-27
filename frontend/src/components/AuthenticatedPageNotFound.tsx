@@ -53,7 +53,7 @@ export default function AuthenticatedPageNotFound() {
           ]}
         >
           <div className="flex gap-3">
-            <span className="text-[#71717a] shrink-0">$</span>
+            <span className="text-muted-foreground shrink-0">$</span>
             <span>
               <span className="text-[#a1a1aa]">router</span> resolve{" "}
               <span className="text-[#fafafa]">{location.pathname}</span>
@@ -108,7 +108,7 @@ export default function AuthenticatedPageNotFound() {
           <div className="h-2" />
 
           <div className="flex gap-3">
-            <span className="text-[#71717a] shrink-0">#</span>
+            <span className="text-muted-foreground shrink-0">#</span>
             <span className="text-[#52525b]">try one of the following:</span>
           </div>
           <div className="flex gap-3">
@@ -143,7 +143,7 @@ export default function AuthenticatedPageNotFound() {
           <div className="h-2" />
 
           <div className="flex gap-3">
-            <span className="text-[#71717a] shrink-0">$</span>
+            <span className="text-muted-foreground shrink-0">$</span>
             <span className="text-[#fafafa]">
               <span className="cursor-blink">▊</span>
             </span>

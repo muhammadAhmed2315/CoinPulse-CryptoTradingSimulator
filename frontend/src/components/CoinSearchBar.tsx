@@ -68,11 +68,11 @@ export default function CoinSearchBar({
       </Field>
 
       {/* ===== RESULTS DROPDOWN ===== */}
-      <div className="absolute top-full left-0 w-full z-10 bg-white overflow-hidden rounded-md">
+      <div className="absolute top-full left-0 w-full z-10 bg-background overflow-hidden rounded-md">
         {showDropdown &&
           matchingCoins.slice(0, 10).map((c) => (
             <div
-              className="flex justify-between rounded-md px-2 py-0.5 cursor-pointer hover:bg-gray-200 bg-white gap-2"
+              className="flex justify-between rounded-md px-2 py-0.5 cursor-pointer hover:bg-muted bg-background gap-2"
               onClick={() => handleDropdownItemClick(c)}
             >
               <div className="flex gap-1.5 min-w-0">

@@ -99,11 +99,11 @@ export default function CoinInfoCard({
     coinSparklineQuery.isError;
 
   return (
-    <Card className="flex-3 p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+    <Card className="flex-3 p-0 gap-0 overflow-hidden rounded-[18px] border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       {/* ===== HEADER ===== */}
-      <div className="flex items-end justify-between gap-4 px-6 pt-5.5 pb-4.5 border-b border-[#f0f0f0]">
+      <div className="flex items-end justify-between gap-4 px-6 pt-5.5 pb-4.5 border-b border-border">
         <div className="flex flex-col gap-2">
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-500 leading-none">
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground leading-none">
             Coin Lookup
           </span>
           <h2 className="text-[22px] font-bold tracking-[-0.015em] leading-none">
@@ -119,7 +119,7 @@ export default function CoinInfoCard({
               horizontal
               description="Coin search unavailable"
               size="sm"
-              className="h-9 px-3 gap-2 rounded-md border border-[#ececef] bg-zinc-50 justify-start"
+              className="h-9 px-3 gap-2 rounded-md border border-border bg-muted justify-start"
             />
           ) : (
             <CoinSearchBar
@@ -156,11 +156,11 @@ export default function CoinInfoCard({
                       <p className="text-xl font-bold tracking-[-0.01em] leading-none">
                         {coinData.name}
                       </p>
-                      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-zinc-500 bg-zinc-50 border border-[#ececef] px-1.5 py-[3px] rounded-md">
+                      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground bg-muted border border-border px-1.5 py-[3px] rounded-md">
                         #{coinData.market_cap_rank}
                       </span>
                     </div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-zinc-500 font-medium">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
                       {coinData.symbol}
                     </p>
                   </div>
@@ -184,7 +184,7 @@ export default function CoinInfoCard({
                       )}
                       %
                     </p>
-                    <span className="font-mono text-[11px] font-medium tracking-[0.04em] text-zinc-500">
+                    <span className="font-mono text-[11px] font-medium tracking-[0.04em] text-muted-foreground">
                       24H
                     </span>
                   </div>
@@ -208,11 +208,11 @@ export default function CoinInfoCard({
           </div>
 
           {/* ===== SPARKLINE GRAPH ===== */}
-          <div className="px-6 pt-2 pb-5 border-b border-[#f0f0f0]">
+          <div className="px-6 pt-2 pb-5 border-b border-border">
             {coinSparkline ? (
               <>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Last 7d
                   </span>
                   <span
@@ -248,14 +248,14 @@ export default function CoinInfoCard({
           <div>
             {coinData ? (
               <>
-                <div className="px-6 pt-3.5 pb-2.5 bg-zinc-50 border-y border-[#f0f0f0]">
+                <div className="px-6 pt-3.5 pb-2.5 bg-muted border-y border-border">
                   <span className="text-[13px] font-bold tracking-[-0.005em]">
                     Market Data
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-border">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Market Cap
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
@@ -263,8 +263,8 @@ export default function CoinInfoCard({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-border">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Volume (24h)
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
@@ -272,8 +272,8 @@ export default function CoinInfoCard({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-border">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Circulating Supply
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
@@ -281,8 +281,8 @@ export default function CoinInfoCard({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-border">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Total Supply
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
@@ -290,8 +290,8 @@ export default function CoinInfoCard({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                <div className="flex items-center justify-between gap-3 px-6 py-3 border-b border-border">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Max Supply
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
@@ -300,7 +300,7 @@ export default function CoinInfoCard({
                 </div>
 
                 <div className="flex items-center justify-between gap-3 px-6 py-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Fully Diluted Cap
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
@@ -310,13 +310,13 @@ export default function CoinInfoCard({
               </>
             ) : (
               <>
-                <div className="px-6 pt-3.5 pb-2.5 bg-zinc-50 border-y border-[#f0f0f0]">
+                <div className="px-6 pt-3.5 pb-2.5 bg-muted border-y border-border">
                   <CustomSkeleton className="h-4 w-24" />
                 </div>
                 {Array.from({ length: 6 }, (_, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between gap-3 px-6 py-3 border-b border-[#f0f0f0] last:border-b-0"
+                    className="flex items-center justify-between gap-3 px-6 py-3 border-b border-border last:border-b-0"
                   >
                     <CustomSkeleton className="h-3 w-24" />
                     <CustomSkeleton className="h-3.5 w-20" />
@@ -328,10 +328,10 @@ export default function CoinInfoCard({
 
           {/* ===== ATL/ATH BAR ===== */}
           {coinData ? (
-            <div className="px-6 pt-[18px] pb-8 border-t border-[#f0f0f0]">
+            <div className="px-6 pt-[18px] pb-8 border-t border-border">
               <div className="flex w-full justify-between gap-3 mb-3.5">
                 <div className="flex flex-col gap-[3px]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     All-Time Low
                   </span>
                   <span className="font-mono text-sm font-semibold leading-tight">
@@ -350,7 +350,7 @@ export default function CoinInfoCard({
                 </div>
 
                 <div className="flex flex-col gap-[3px] items-end text-right">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     All-Time High
                   </span>
                   <span className="font-mono text-sm font-semibold leading-tight">
@@ -369,22 +369,22 @@ export default function CoinInfoCard({
                 </div>
               </div>
 
-              <div className="flex relative items-center w-full h-1.5 rounded-full bg-linear-to-r from-red-50 via-zinc-50 to-emerald-50 mt-[18px] mb-2">
-                <div className="absolute inset-0 rounded-full bg-linear-to-r from-red-500 via-zinc-400 to-emerald-500 opacity-35"></div>
+              <div className="flex relative items-center w-full h-1.5 rounded-full bg-linear-to-r from-red-50 via-zinc-50 to-emerald-50 dark:from-red-500/25 dark:via-zinc-500/20 dark:to-emerald-500/25 mt-[18px] mb-2">
+                <div className="absolute inset-0 rounded-full bg-linear-to-r from-red-500 via-zinc-400 to-emerald-500 opacity-35 dark:from-red-500 dark:via-zinc-400 dark:to-emerald-400 dark:opacity-70"></div>
 
                 <div
                   className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
                   style={{ left: `${allTimePercentage}%` }}
                 >
-                  <div className="h-3.5 w-3.5 rounded-full bg-[#111111] border-[3px] border-white shadow-[0_0_0_1px_#ececef,0_1px_2px_rgba(0,0,0,0.12)]"></div>
-                  <span className="absolute top-[calc(100%+8px)] font-mono text-[10px] font-semibold tracking-[0.04em] text-white bg-[#111111] px-1.5 py-[3px] rounded-[5px] whitespace-nowrap before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-[#111111]">
+                  <div className="h-3.5 w-3.5 rounded-full bg-foreground border-[3px] border-card shadow-[0_0_0_1px_#ececef,0_1px_2px_rgba(0,0,0,0.12)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18),0_1px_2px_rgba(0,0,0,0.5)]"></div>
+                  <span className="absolute top-[calc(100%+8px)] font-mono text-[10px] font-semibold tracking-[0.04em] text-background bg-foreground px-1.5 py-[3px] rounded-[5px] whitespace-nowrap before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-foreground">
                     ${numToMoney(coinData.current_price.toFixed(2))}
                   </span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="px-6 pt-4.5 pb-8 border-t border-[#f0f0f0]">
+            <div className="px-6 pt-4.5 pb-8 border-t border-border">
               <div className="flex w-full justify-between gap-3 mb-3.5">
                 <div className="flex flex-col gap-1.25">
                   <CustomSkeleton className="h-3 w-20" />

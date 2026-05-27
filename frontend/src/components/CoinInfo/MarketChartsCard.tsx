@@ -8,7 +8,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { StockChart } from "@highcharts/react/Stock";
 import { CandlestickSeries } from "@highcharts/react/series/Candlestick";
-import { QueryClient, useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnSeries } from "@highcharts/react/series/Column";
 import type Highcharts from "highcharts";
 import { useState } from "react";
@@ -21,6 +21,8 @@ import ErrorFallback from "../ErrorFallback";
 import { useTheme } from "@/context/theme-context";
 import { buildChartPalette, type ChartPalette } from "@/lib/chart-theme";
 import { useMemo } from "react";
+import NewTradeButton from "../NewTrade/NewTradeButton";
+import { loadAllCoinsList } from "@/loadAllCoinsList";
 
 // ===== CHART SKELETON =====
 function ChartSkeleton() {
@@ -167,6 +169,15 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
   const [volumeRef, volumeInView] = useInView();
 
   // ===== REACT QUERY HOOKS =====
+  const queryClient = useQueryClient();
+
+  const prefetchAllCoinsList = async () => {
+    await queryClient.prefetchQuery({
+      queryKey: ["allCoinsList"],
+      queryFn: loadAllCoinsList,
+    });
+  };
+
   const ohlcChartQuery = useQuery({
     queryKey: ["ohlcChart", currCoin.id],
     queryFn: () => getOhlcChart(currCoin.id),
@@ -184,7 +195,7 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
   return (
     <Card className="flex-7 p-0 gap-0 overflow-hidden rounded-[18px] border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       {/* ===== HEADER ===== */}
-      <div className="px-6 pt-5.5 pb-4.5 border-b border-border">
+      <div className="px-6 pt-5.5 pb-4.5 border-b border-border flex justify-between">
         <div className="flex flex-col gap-2">
           {/* ===== EYEBROW ===== */}
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] leading-none text-muted-foreground">
@@ -195,6 +206,10 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
             {currCoin.name} {tabTypeMapping[activeTab]}
           </h2>
         </div>
+        <NewTradeButton
+          prefetchFn={prefetchAllCoinsList}
+          initialCoin={currCoin}
+        />
       </div>
 
       <Tabs

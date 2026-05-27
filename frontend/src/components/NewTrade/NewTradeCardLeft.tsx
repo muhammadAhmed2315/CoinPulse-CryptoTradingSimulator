@@ -49,7 +49,10 @@ export default function NewTradeCardLeft({
     <div>
       {/* ===== CURRENT COIN ===== */}
       <div className="flex flex-row gap-2 bg-background px-2 py-1 border border-border rounded-sm mb-2">
-        <img src={currCoin.imgUrl} className="rounded-3xl size-12" />
+        <img
+          src={currCoin.imgUrl ? currCoin.imgUrl : coinDataQuery.data?.image}
+          className="rounded-3xl size-12"
+        />
         <div>
           <p className="font-bold text-xl">{currCoin.name}</p>
           <p className="font-semibold uppercase">{currCoin.ticker}</p>
@@ -136,7 +139,9 @@ export default function NewTradeCardLeft({
       {/* ===== USD BALANCE ===== */}
       <div className="flex justify-between items-center mb-2">
         <div>
-          <p className="text-xs text-muted-foreground/70 font-mono">USD BALANCE</p>
+          <p className="text-xs text-muted-foreground/70 font-mono">
+            USD BALANCE
+          </p>
           {userBalanceQuery.isLoading ? (
             <CustomSkeleton className="h-6 w-25" />
           ) : (

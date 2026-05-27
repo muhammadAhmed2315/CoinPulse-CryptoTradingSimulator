@@ -2,7 +2,7 @@ export type Coin = {
   id: string;
   name: string;
   ticker: string;
-  imgUrl: string;
+  imgUrl?: string;
 };
 
 export async function loadAllCoinsList(): Promise<Coin[]> {

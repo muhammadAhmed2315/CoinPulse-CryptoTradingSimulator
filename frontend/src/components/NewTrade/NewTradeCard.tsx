@@ -20,6 +20,14 @@ export type OrderType = "MARKET" | "LIMIT" | "STOP";
 /** Fraction of the user's available balance to use for an order (e.g. 0.25 = 25%). Undefined when no percentage is selected. */
 export type BalancePercentage = 0.1 | 0.25 | 0.5 | 0.75 | 1 | undefined;
 
+type NewTradeCardProps = {
+  initialCoin?: {
+    name: string;
+    ticker: string;
+    id: string;
+  };
+};
+
 // ===== API FUNCTIONS =====
 
 /**
@@ -96,16 +104,20 @@ async function getCoinBalance(coinId: string) {
   return await response.json();
 }
 
-export default function NewTradeCard() {
+export default function NewTradeCard({ initialCoin }: NewTradeCardProps) {
   // ===== STATE VARIABLES =====
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query.toLowerCase(), 300);
-  const [currCoin, setCurrCoin] = useState<Coin>({
-    id: "bitcoin",
-    name: "Bitcoin",
-    ticker: "btc",
-    imgUrl: BitcoinLogo,
-  });
+  const [currCoin, setCurrCoin] = useState<Coin>(
+    initialCoin
+      ? initialCoin
+      : {
+          id: "bitcoin",
+          name: "Bitcoin",
+          ticker: "btc",
+          imgUrl: BitcoinLogo,
+        },
+  );
 
   // ===== REACT QUERY HOOKS =====
   const allCoinsQuery = useQuery({

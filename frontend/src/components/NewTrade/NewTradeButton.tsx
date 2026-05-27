@@ -17,12 +17,20 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 type NewTradeButtonProps = {
   /** Used to prefetch a list of all the coins in the format Coin[]  */
   prefetchFn: () => Promise<void>;
+  initialCoin?: {
+    name: string;
+    ticker: string;
+    id: string;
+  };
 };
 
 /**
  * Component showing a "New Trade" button, opens a "New Trade" card when clicked.
  */
-export default function NewTradeButton({ prefetchFn }: NewTradeButtonProps) {
+export default function NewTradeButton({
+  prefetchFn,
+  initialCoin,
+}: NewTradeButtonProps) {
   return (
     <Dialog>
       {/* ===== TRIGGER BUTTON ===== */}
@@ -31,7 +39,9 @@ export default function NewTradeButton({ prefetchFn }: NewTradeButtonProps) {
           className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] bg-primary hover:bg-primary/90 text-primary-foreground border-0 px-5 py-3 rounded-md"
           onMouseEnter={prefetchFn}
         >
-          New Trade
+          {initialCoin
+            ? `Trade ${initialCoin.ticker.toUpperCase()}`
+            : "NEW TRADE"}
           <RippleButtonRipples />
         </RippleButton>
       </DialogTrigger>
@@ -46,7 +56,7 @@ export default function NewTradeButton({ prefetchFn }: NewTradeButtonProps) {
             <DialogTitle>Place Order</DialogTitle>
           </DialogHeader>
         </VisuallyHidden.Root>
-        <NewTradeCard />
+        <NewTradeCard initialCoin={initialCoin} />
       </DialogContent>
     </Dialog>
   );

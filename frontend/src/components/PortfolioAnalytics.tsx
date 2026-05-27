@@ -22,13 +22,13 @@ function ChartPanelSkeleton() {
       <div className="px-6">
         <CustomSkeleton className="h-98 w-full mt-3 mb-3" />
       </div>
-      <Separator className="bg-[#f0f0f0]" />
+      <Separator className="bg-muted" />
       <div className="grid grid-cols-4 w-full">
         {Array.from({ length: 4 }, (_, i) => (
           <div
             key={i}
             className={`flex flex-col gap-2 px-6 py-4 pb-6 ${
-              i > 0 ? "border-l border-[#f0f0f0]" : ""
+              i > 0 ? "border-l border-border" : ""
             }`}
           >
             <CustomSkeleton className="h-3.5 w-10" />
@@ -47,7 +47,7 @@ function ChartPanelError() {
       <ErrorFallback
         title="Data unavailable"
         description="Portfolio history could not be loaded."
-        className="h-125 w-full mt-3 border border-[#f0f0f0] rounded-md"
+        className="h-125 w-full mt-3 border border-border rounded-md"
       />
     </div>
   );
@@ -126,7 +126,7 @@ export default function PortfolioAnalytics() {
                 <CustomSkeleton className="h-9 w-48" />
               )}
               {isError && (
-                <p className="text-3xl font-bold tracking-tight text-[#a0a0a0]">
+                <p className="text-3xl font-bold tracking-tight text-muted-foreground/70">
                   —
                 </p>
               )}

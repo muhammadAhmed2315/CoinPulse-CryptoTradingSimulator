@@ -72,13 +72,13 @@ async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
 function identityRenderer(props: CustomCellRendererProps) {
   return (
     <div className="flex flex-col leading-[1.2] gap-0.5">
-      <span className="text-[14px] font-semibold text-[#111]">
+      <span className="text-[14px] font-semibold text-foreground">
         {props.value.name}
       </span>
       <span
         className={`
           font-mono text-[11px] uppercase tracking-[0.04em]
-          text-[#71717a]
+          text-muted-foreground
         `}
       >
         {props.value.symbol}
@@ -93,7 +93,7 @@ function imageRenderer(props: CustomCellRendererProps) {
 
 function priceRenderer(props: CustomCellRendererProps) {
   return (
-    <span className="font-mono text-[13px] font-medium text-[#111] tabular-nums">
+    <span className="font-mono text-[13px] font-medium text-foreground tabular-nums">
       ${numToMoney(props.value)}
     </span>
   );
@@ -101,7 +101,7 @@ function priceRenderer(props: CustomCellRendererProps) {
 
 function bigNumRenderer(props: CustomCellRendererProps) {
   return (
-    <span className="font-mono text-[13px] font-medium text-[#111] tabular-nums">
+    <span className="font-mono text-[13px] font-medium text-foreground tabular-nums">
       ${formatCompactValue(props.value)}
     </span>
   );
@@ -110,7 +110,7 @@ function bigNumRenderer(props: CustomCellRendererProps) {
 function pctRenderer(props: CustomCellRendererProps) {
   const n = Number(props.value);
   const cls =
-    n > 0 ? "text-[#21c45d]" : n < 0 ? "text-[#ef4444]" : "text-[#71717a]";
+    n > 0 ? "text-[#21c45d]" : n < 0 ? "text-[#ef4444]" : "text-muted-foreground";
   const arrow = n > 0 ? "↑" : n < 0 ? "↓" : "";
   return (
     <span className={`font-mono text-[13px] font-semibold tabular-nums ${cls}`}>
@@ -273,8 +273,8 @@ export default function TopCoins() {
   return (
     <Card
       className={`
-        p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0]
-        shadow-[0_1px_2px_rgba(0,0,0,0.04)] bg-white flex flex-col
+        p-0 gap-0 overflow-hidden rounded-[18px] border-border
+        shadow-[0_1px_2px_rgba(0,0,0,0.04)] bg-background flex flex-col
         h-[calc(100vh-9.5rem)]
       `}
     >
@@ -285,7 +285,7 @@ export default function TopCoins() {
           <p
             className={`
               font-mono text-[12px] uppercase tracking-[0.01em]
-              text-[#71717a] m-0
+              text-muted-foreground m-0
             `}
           >
             Cryptocurrencies
@@ -293,12 +293,12 @@ export default function TopCoins() {
           <h1
             className={`
               text-[26px] font-bold tracking-[-0.02em] leading-none
-              text-[#111] mt-1.5 mb-0
+              text-foreground mt-1.5 mb-0
             `}
           >
             Top 100 coins by {sortLabels[apiSort]}
           </h1>
-          <p className="mt-1.5 mb-0 text-[13px] text-[#71717a]">
+          <p className="mt-1.5 mb-0 text-[13px] text-muted-foreground">
             See the 100 top performing cryptocurrencies.
           </p>
         </div>
@@ -312,14 +312,14 @@ export default function TopCoins() {
           <div className="p-4 pt-0 flex-1 min-h-0 flex flex-col">
             <div
               className={`
-                flex-1 flex flex-col border border-[#f0f0f0]
+                flex-1 flex flex-col border border-border
               `}
             >
               {/* ===== COLUMN HEADER ROW ===== */}
               <div
                 className={`
                   flex items-center h-9.5 shrink-0
-                  border-b border-[#f0f0f0]
+                  border-b border-border
                 `}
               >
                 {SKELETON_COLS.map((c, i) => (
@@ -334,7 +334,7 @@ export default function TopCoins() {
                   <div
                     key={i}
                     className={`
-                      flex items-center flex-1 border-b border-[#f0f0f0]
+                      flex items-center flex-1 border-b border-border
                       last:border-b-0
                     `}
                   >
@@ -384,7 +384,7 @@ export default function TopCoins() {
           </div>
 
           {/* ===== DIVIDER ===== */}
-          <div className="h-px bg-[#f0f0f0] w-full" />
+          <div className="h-px bg-muted w-full" />
 
           {/* ===== PAGINATION SKELETON ===== */}
           <div className="flex items-center justify-between px-6 py-3">
@@ -411,13 +411,13 @@ export default function TopCoins() {
               p-4 pt-0 ag-theme-alpine flex-1 min-h-0
               [--ag-font-family:'DM_Sans',sans-serif]
               [--ag-font-size:13px]
-              [--ag-foreground-color:#111]
+              [--ag-foreground-color:#111] dark:[--ag-foreground-color:#fafafa]
               [--ag-background-color:transparent]
               [--ag-header-background-color:transparent]
-              [--ag-header-foreground-color:#71717a]
-              [--ag-border-color:#f0f0f0]
-              [--ag-row-border-color:#f0f0f0]
-              [--ag-row-hover-color:#fafafa]
+              [--ag-header-foreground-color:#71717a] dark:[--ag-header-foreground-color:#a1a1aa]
+              [--ag-border-color:#f0f0f0] dark:[--ag-border-color:#27272a]
+              [--ag-row-border-color:#f0f0f0] dark:[--ag-row-border-color:#27272a]
+              [--ag-row-hover-color:#fafafa] dark:[--ag-row-hover-color:#1a1a1d]
               [--ag-selected-row-background-color:transparent]
               [--ag-cell-horizontal-padding:18px]
               [--ag-header-column-separator-display:none]
@@ -430,8 +430,8 @@ export default function TopCoins() {
               [&_.ag-header-cell-text]:tracking-[0.06em]
               [&_.ag-header-cell-text]:uppercase
               [&_.ag-root-wrapper]:border-0
-              [&_.ag-header]:border-b [&_.ag-header]:border-[#f0f0f0]
-              [&_.ag-paging-panel]:border-t [&_.ag-paging-panel]:border-[#f0f0f0]
+              [&_.ag-header]:border-b [&_.ag-header]:border-border
+              [&_.ag-paging-panel]:border-t [&_.ag-paging-panel]:border-border
               [&_.ag-paging-panel]:px-7
               [&_.ag-row]:cursor-pointer
             `}
@@ -450,7 +450,7 @@ export default function TopCoins() {
           </div>
 
           {/* ===== DIVIDER ===== */}
-          <div className="h-px bg-[#f0f0f0] w-full" />
+          <div className="h-px bg-muted w-full" />
 
           {/* ===== PAGINATION ===== */}
           <div className="flex items-center justify-between px-6 ">
@@ -458,7 +458,7 @@ export default function TopCoins() {
             <p
               className={`
                 font-mono text-[11px] uppercase tracking-[0.06em]
-                text-[#71717a]
+                text-muted-foreground
               `}
             >
               Page {currPage + 1} of {maxPages}
@@ -468,12 +468,12 @@ export default function TopCoins() {
               <p
                 className={`
                   font-mono text-[11px] uppercase tracking-[0.06em]
-                  px-3 py-1.5 border border-[#ececef] rounded-md bg-white
+                  px-3 py-1.5 border border-border rounded-md bg-background
                   cursor-pointer hover:border-[#71717a]
                   ${
                     currPage === 0
-                      ? "opacity-40 cursor-not-allowed text-[#111]"
-                      : "text-[#111]"
+                      ? "opacity-40 cursor-not-allowed text-foreground"
+                      : "text-foreground"
                   }
                 `}
                 onClick={() => gridApi?.paginationGoToPreviousPage()}
@@ -483,12 +483,12 @@ export default function TopCoins() {
               <p
                 className={`
                   font-mono text-[11px] uppercase tracking-[0.06em]
-                  px-3 py-1.5 border border-[#ececef] rounded-md bg-white
+                  px-3 py-1.5 border border-border rounded-md bg-background
                   cursor-pointer hover:border-[#71717a]
                   ${
                     currPage === maxPages - 1
-                      ? "opacity-40 cursor-not-allowed text-[#111]"
-                      : "text-[#111]"
+                      ? "opacity-40 cursor-not-allowed text-foreground"
+                      : "text-foreground"
                   }
                 `}
                 onClick={() => gridApi?.paginationGoToNextPage()}

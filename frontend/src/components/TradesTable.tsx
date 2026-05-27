@@ -105,15 +105,17 @@ function formatFullTimestamp(unixTimestamp: number): string {
 // ===== AGGRID CELL RENDERERS =====
 const idCellRenderer = (params: ICellRendererParams) => {
   return (
-    <span className="font-mono text-[13px] text-[#71717a]">{params.value}</span>
+    <span className="font-mono text-[13px] text-muted-foreground">{params.value}</span>
   );
 };
 
 const statusRenderer = (params: ICellRendererParams) => {
   const styles: Record<string, string> = {
-    open: "bg-[#ecfdf5] text-[#047857]",
-    finished: "bg-[#fffbeb] text-[#b45309]",
-    cancelled: "bg-[#fff1f2] text-[#be123c]",
+    open: "bg-[#ecfdf5] text-[#047857] dark:bg-emerald-500/15 dark:text-emerald-400",
+    finished:
+      "bg-[#fffbeb] text-[#b45309] dark:bg-amber-500/15 dark:text-amber-400",
+    cancelled:
+      "bg-[#fff1f2] text-[#be123c] dark:bg-rose-500/15 dark:text-rose-400",
   };
   const dotStyles: Record<string, string> = {
     open: "bg-[#10b981]",
@@ -139,7 +141,7 @@ const statusRenderer = (params: ICellRendererParams) => {
 
 const orderTypeRenderer = (params: ICellRendererParams) => {
   return (
-    <span className="inline-flex items-center px-1.5 py-px border border-[#ececef] rounded-lg font-mono text-[10px] leading-[1.4] font-semibold uppercase tracking-widest text-[#111] bg-white">
+    <span className="inline-flex items-center px-1.5 py-px border border-border rounded-lg font-mono text-[10px] leading-[1.4] font-semibold uppercase tracking-widest text-foreground bg-background">
       {params.value}
     </span>
   );
@@ -150,10 +152,12 @@ const transactionTypeRenderer = (params: ICellRendererParams) => {
   return (
     <span
       className={`inline-flex items-center gap-1 px-1.5 py-px rounded-lg text-[10px] leading-[1.4] font-bold tracking-[0.12em] uppercase text-white ${
-        isBuy ? "bg-[#10b981]" : "bg-[#f43f5e]"
+        isBuy
+          ? "bg-[#10b981] dark:bg-emerald-500/20 dark:text-emerald-400"
+          : "bg-[#f43f5e] dark:bg-rose-500/20 dark:text-rose-400"
       }`}
     >
-      <span className="w-1.25 h-1.25 rounded-full bg-white/50 animate-pulse" />
+      <span className="w-1.25 h-1.25 rounded-full bg-white/50 dark:bg-current/60 animate-pulse" />
       {params.value}
     </span>
   );
@@ -175,7 +179,7 @@ const quantityRenderer = (params: ICellRendererParams) => {
         {isBuy ? "+" : "-"}
         {numToMoney(params.value, false, 4)}
       </span>
-      <span className="text-[11px] uppercase text-[#71717a]">
+      <span className="text-[11px] uppercase text-muted-foreground">
         {params.data.ticker}
       </span>
     </div>
@@ -192,7 +196,7 @@ const priceRenderer = (params: ICellRendererParams) => {
 
 const executionPriceRenderer = (params: ICellRendererParams) => {
   return params.value === -1 ? (
-    <span className="font-mono text-[13px] text-[#a0a0a0]">—</span>
+    <span className="font-mono text-[13px] text-muted-foreground/70">—</span>
   ) : (
     <span className="font-mono text-[13px] font-semibold">
       ${numToMoney(params.value)}
@@ -203,10 +207,10 @@ const executionPriceRenderer = (params: ICellRendererParams) => {
 const timestampRenderer = (params: ICellRendererParams) => {
   return (
     <div className="flex flex-col leading-[1.2] font-mono gap-0.5">
-      <span className="text-[13px] font-semibold text-[#111] uppercase tracking-[0.04em]">
+      <span className="text-[13px] font-semibold text-foreground uppercase tracking-[0.04em]">
         {formatRelativeOrAbsoluteDate(params.value)}
       </span>
-      <span className="text-[11px] text-[#71717a] uppercase tracking-[0.06em]">
+      <span className="text-[11px] text-muted-foreground uppercase tracking-[0.06em]">
         {formatFullTimestamp(params.value)}
       </span>
     </div>
@@ -222,15 +226,15 @@ const actionRenderer = (
   return params.data.status === "open" ? (
     <CancelOrderBtn transaction_id={params.data.id} refetch={refetch} />
   ) : (
-    <span className="font-mono text-[13px] text-[#a0a0a0]">—</span>
+    <span className="font-mono text-[13px] text-muted-foreground/70">—</span>
   );
 };
 
 const commentRenderer = (params: ICellRendererParams) => {
   return params.value === "" ? (
-    <span className="text-[13px] text-[#a0a0a0] italic">No description</span>
+    <span className="text-[13px] text-muted-foreground/70 italic">No description</span>
   ) : (
-    <span className="text-[13px] text-[#3f3f46] leading-[1.35] line-clamp-2">
+    <span className="text-[13px] text-foreground leading-[1.35] line-clamp-2">
       {params.value}
     </span>
   );
@@ -340,13 +344,13 @@ export default function TradesTable() {
     ag-theme-alpine trades-grid w-full
     [--ag-font-family:'DM_Sans',sans-serif]
     [--ag-font-size:13px]
-    [--ag-foreground-color:#111]
+    [--ag-foreground-color:#111] dark:[--ag-foreground-color:#fafafa]
     [--ag-background-color:transparent]
     [--ag-header-background-color:transparent]
-    [--ag-header-foreground-color:#71717a]
-    [--ag-border-color:#f0f0f0]
-    [--ag-row-border-color:#f0f0f0]
-    [--ag-row-hover-color:#fafafa]
+    [--ag-header-foreground-color:#71717a] dark:[--ag-header-foreground-color:#a1a1aa]
+    [--ag-border-color:#f0f0f0] dark:[--ag-border-color:#27272a]
+    [--ag-row-border-color:#f0f0f0] dark:[--ag-row-border-color:#27272a]
+    [--ag-row-hover-color:#fafafa] dark:[--ag-row-hover-color:#1a1a1d]
     [--ag-selected-row-background-color:transparent]
     [--ag-cell-horizontal-padding:18px]
     [--ag-header-column-separator-display:none]
@@ -359,18 +363,18 @@ export default function TradesTable() {
     [&_.ag-header-cell-text]:tracking-[0.06em]
     [&_.ag-header-cell-text]:uppercase
     [&_.ag-root-wrapper]:border-0
-    [&_.ag-header]:border-b [&_.ag-header]:border-[#f0f0f0]
+    [&_.ag-header]:border-b [&_.ag-header]:border-border
   `;
 
   const skeletonGrid = (
     <div className="px-6">
-      <div className="border border-[#f0f0f0] rounded-md overflow-hidden">
+      <div className="border border-border rounded-md overflow-hidden">
         {/* fake header to match AG Grid header height */}
-        <div className="h-9.5 border-b border-[#f0f0f0]" />
+        <div className="h-9.5 border-b border-border" />
         {Array.from({ length: 10 }, (_, i) => (
           <div
             key={i}
-            className="h-15 flex items-center gap-4 px-4.5 border-b border-[#f0f0f0] last:border-b-0"
+            className="h-15 flex items-center gap-4 px-4.5 border-b border-border last:border-b-0"
           >
             <CustomSkeleton className="h-4 w-6" />
             <CustomSkeleton className="h-4 w-20 rounded-lg" />
@@ -391,9 +395,9 @@ export default function TradesTable() {
 
   const errorGrid = (
     <div className="px-6">
-      <div className="border border-[#f0f0f0] rounded-md overflow-hidden">
+      <div className="border border-border rounded-md overflow-hidden">
         {/* fake header to match AG Grid header height */}
-        <div className="h-9.5 border-b border-[#f0f0f0]" />
+        <div className="h-9.5 border-b border-border" />
         <ErrorFallback
           title="Data unavailable"
           description="Trade history could not be loaded."
@@ -423,39 +427,39 @@ export default function TradesTable() {
   );
 
   const triggerBase =
-    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer text-[#11111199] data-[state=active]:text-[#111] hover:text-[#111] capitalize";
+    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer text-[#11111199] data-[state=active]:text-foreground hover:text-foreground capitalize";
 
   return (
     <Tabs
       value={filter}
       onValueChange={(value) => setFilter(value as typeof filter)}
     >
-      <Card className="p-0 gap-0 overflow-hidden rounded-[18px] border-[#f0f0f0] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+      <Card className="p-0 gap-0 overflow-hidden rounded-[18px] border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         {/* ===== HEADER ===== */}
         <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-5">
           {/* ===== TITLE & RECORD COUNT ===== */}
           <div className="flex flex-col gap-2 min-w-0">
-            <p className="font-mono text-[13px] font-normal uppercase text-[#71717a] tracking-[0.01em] m-0">
+            <p className="font-mono text-[13px] font-normal uppercase text-muted-foreground tracking-[0.01em] m-0">
               My Trades
             </p>
             <div className="flex items-baseline gap-2">
               {tradeFilterCountsQuery.isLoading ? (
                 <CustomSkeleton className="h-8 w-14 translate-y-1.5" />
               ) : tradeFilterCountsIsError ? (
-                <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#a0a0a0]">
+                <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-muted-foreground/70">
                   —
                 </span>
               ) : (
-                <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-[#111]">
+                <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-foreground">
                   {filterCounts?.[filter] ?? 0}
                 </span>
               )}
-              <span className="text-sm text-[#71717a]">records</span>
+              <span className="text-sm text-muted-foreground">records</span>
             </div>
           </div>
 
           {/* ===== FILTER TABS ===== */}
-          <TabsList className="h-auto bg-[#f4f4f5] p-0.75 rounded-lg gap-0.5">
+          <TabsList className="h-auto bg-muted p-0.75 rounded-lg gap-0.5">
             {/* ===== ALL FILTER ===== */}
             <TabsTrigger
               value="all"
@@ -465,11 +469,11 @@ export default function TradesTable() {
             >
               All
               {filterCounts !== undefined ? (
-                <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4]">
+                <span className="px-1.25 py-px rounded-md bg-muted text-foreground text-[10px] font-mono font-semibold leading-[1.4]">
                   {filterCounts.all}
                 </span>
               ) : tradeFilterCountsIsError ? (
-                <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#a0a0a0] text-[10px] font-mono font-semibold leading-[1.4]">
+                <span className="px-1.25 py-px rounded-md bg-muted text-muted-foreground/70 text-[10px] font-mono font-semibold leading-[1.4]">
                   —
                 </span>
               ) : (
@@ -494,11 +498,11 @@ export default function TradesTable() {
                 <img className="w-1.5 h-1.5" src={imgUrl} />
                 {key === "open" ? "active" : key}
                 {filterCounts !== undefined ? (
-                  <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#111] text-[10px] font-mono font-semibold leading-[1.4] normal-case">
+                  <span className="px-1.25 py-px rounded-md bg-muted text-foreground text-[10px] font-mono font-semibold leading-[1.4] normal-case">
                     {filterCounts[key]}
                   </span>
                 ) : tradeFilterCountsIsError ? (
-                  <span className="px-1.25 py-px rounded-md bg-[#ececef] text-[#a0a0a0] text-[10px] font-mono font-semibold leading-[1.4] normal-case">
+                  <span className="px-1.25 py-px rounded-md bg-muted text-muted-foreground/70 text-[10px] font-mono font-semibold leading-[1.4] normal-case">
                     —
                   </span>
                 ) : (
@@ -526,7 +530,7 @@ export default function TradesTable() {
         </TabsContents>
 
         {/* ===== DIVIDER ===== */}
-        <div className="h-px bg-[#f0f0f0] w-full" />
+        <div className="h-px bg-muted w-full" />
 
         {/* ===== PAGINATION ===== */}
         <div className="flex items-center justify-between px-6 py-3.5">
@@ -534,24 +538,24 @@ export default function TradesTable() {
           {tradeHistoryQuery.isLoading ? (
             <CustomSkeleton className="h-3 w-24" />
           ) : tradeHistoryIsError ? (
-            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#a0a0a0]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-muted-foreground/70">
               Page — of —
             </p>
           ) : (
-            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Page {page} of {maxPages}
             </p>
           )}
           {/* ===== PREV / NEXT BUTTONS ===== */}
           <div className="inline-flex items-center gap-1.5">
             <p
-              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === 1 || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-border rounded-md bg-background cursor-pointer hover:border-[#71717a] ${page === 1 || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-foreground" : "text-foreground"}`}
               onClick={tradeHistoryIsError ? undefined : handlePrevBtnClick}
             >
               Prev
             </p>
             <p
-              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-[#ececef] rounded-md bg-white cursor-pointer hover:border-[#71717a] ${page === maxPages || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-[#111]" : "text-[#111]"}`}
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-border rounded-md bg-background cursor-pointer hover:border-[#71717a] ${page === maxPages || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-foreground" : "text-foreground"}`}
               onClick={tradeHistoryIsError ? undefined : handleNextBtnClick}
             >
               Next

@@ -6,6 +6,7 @@ import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
 import ErrorFallback from "../ErrorFallback";
+import EmptyFallback from "../EmptyFallback";
 
 const SKELETON_ITEMS = Array.from({ length: 6 }, (_, i) => i);
 
@@ -135,6 +136,19 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
             className="absolute inset-0"
           />
         </div>
+      ) : numPosts === 0 ? (
+        <div className="relative">
+          <div className="flex flex-col pb-8 invisible" aria-hidden>
+            {SKELETON_ITEMS.map((i) => (
+              <RedditPostSkeleton key={i} />
+            ))}
+          </div>
+          <EmptyFallback
+            title="No posts yet"
+            description={`No recent Reddit posts about ${coinName}.`}
+            className="absolute inset-0"
+          />
+        </div>
       ) : (
         <InfiniteScroll
           dataLength={redditPostsQuery.data?.pages.length || 0}
@@ -142,8 +156,8 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
           hasMore={!!redditPostsQuery.hasNextPage}
           loader={<span></span>}
           endMessage={
-            <p style={{ textAlign: "center" }}>
-              <b>You're all caught up.</b>
+            <p className="pt-8 text-center font-bold">
+              You're all caught up.
             </p>
           }
           className="flex flex-col pb-8"

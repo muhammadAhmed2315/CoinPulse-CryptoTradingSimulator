@@ -6,6 +6,7 @@ import NewsItem from "./NewsItem";
 import { fetchWithRefresh } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
 import ErrorFallback from "../ErrorFallback";
+import EmptyFallback from "../EmptyFallback";
 
 const SKELETON_ITEMS = Array.from({ length: 5 }, (_, i) => i);
 
@@ -131,6 +132,19 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
             className="absolute inset-0"
           />
         </div>
+      ) : numPosts === 0 ? (
+        <div className="relative">
+          <div className="flex flex-col pb-8 invisible" aria-hidden>
+            {SKELETON_ITEMS.map((i) => (
+              <NewsItemSkeleton key={i} />
+            ))}
+          </div>
+          <EmptyFallback
+            title="No news yet"
+            description={`No recent news for ${coinName}.`}
+            className="absolute inset-0"
+          />
+        </div>
       ) : (
         <InfiniteScroll
           dataLength={newsArticlesQuery.data?.pages.length || 0}
@@ -138,8 +152,8 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
           hasMore={!!newsArticlesQuery.hasNextPage}
           loader={<span></span>}
           endMessage={
-            <p style={{ textAlign: "center" }}>
-              <b>You're all caught up.</b>
+            <p className="pt-8 text-center font-bold">
+              You're all caught up.
             </p>
           }
           className="flex flex-col pb-8"

@@ -105,7 +105,9 @@ function formatFullTimestamp(unixTimestamp: number): string {
 // ===== AGGRID CELL RENDERERS =====
 const idCellRenderer = (params: ICellRendererParams) => {
   return (
-    <span className="font-mono text-[13px] text-muted-foreground">{params.value}</span>
+    <span className="font-mono text-[13px] text-muted-foreground">
+      {params.value}
+    </span>
   );
 };
 
@@ -232,7 +234,9 @@ const actionRenderer = (
 
 const commentRenderer = (params: ICellRendererParams) => {
   return params.value === "" ? (
-    <span className="text-[13px] text-muted-foreground/70 italic">No description</span>
+    <span className="text-[13px] text-muted-foreground/70 italic">
+      No description
+    </span>
   ) : (
     <span className="text-[13px] text-foreground leading-[1.35] line-clamp-2">
       {params.value}
@@ -246,9 +250,6 @@ export default function TradesTable() {
   const [filter, setFilter] = useState<
     "all" | "open" | "cancelled" | "finished"
   >("all");
-  const [hoveredTab, setHoveredTab] = useState<
-    "all" | "open" | "cancelled" | "finished" | undefined
-  >(undefined);
 
   // ===== REACT QUERY HOOKS =====
   const tradeHistoryQuery = useQuery({
@@ -459,12 +460,7 @@ export default function TradesTable() {
           {/* ===== FILTER TABS ===== */}
           <TabsList className="h-auto bg-muted p-0.75 rounded-lg gap-0.5">
             {/* ===== ALL FILTER ===== */}
-            <TabsTrigger
-              value="all"
-              className={triggerBase}
-              onHoverStart={() => setHoveredTab("all")}
-              onHoverEnd={() => setHoveredTab(undefined)}
-            >
+            <TabsTrigger value="all" className={triggerBase}>
               All
               {filterCounts !== undefined ? (
                 <span className="px-1.25 py-px rounded-md bg-muted text-foreground text-[10px] font-mono font-semibold leading-[1.4]">
@@ -486,13 +482,7 @@ export default function TradesTable() {
                 ["cancelled", DotRed],
               ] as const
             ).map(([key, imgUrl]) => (
-              <TabsTrigger
-                key={key}
-                value={key}
-                className={triggerBase}
-                onHoverStart={() => setHoveredTab(key)}
-                onHoverEnd={() => setHoveredTab(undefined)}
-              >
+              <TabsTrigger key={key} value={key} className={triggerBase}>
                 <img className="w-1.5 h-1.5" src={imgUrl} />
                 {key === "open" ? "active" : key}
                 {filterCounts !== undefined ? (
@@ -513,17 +503,13 @@ export default function TradesTable() {
 
         {/* ===== AGGRID PANELS ===== */}
         <TabsContents className="pb-4">
-          <TabsContent value="all">
-            {(filter === "all" || hoveredTab === "all") && grid}
-          </TabsContent>
-          <TabsContent value="open">
-            {(filter === "open" || hoveredTab === "open") && grid}
-          </TabsContent>
+          <TabsContent value="all">{filter === "all" && grid}</TabsContent>
+          <TabsContent value="open">{filter === "open" && grid}</TabsContent>
           <TabsContent value="finished">
-            {(filter === "finished" || hoveredTab === "finished") && grid}
+            {filter === "finished" && grid}
           </TabsContent>
           <TabsContent value="cancelled">
-            {(filter === "cancelled" || hoveredTab === "cancelled") && grid}
+            {filter === "cancelled" && grid}
           </TabsContent>
         </TabsContents>
 

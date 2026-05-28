@@ -84,9 +84,6 @@ export default function PortfolioAnalytics() {
   const [activeTab, setActiveTab] = useState<
     "totalValue" | "assets" | "balance"
   >("totalValue");
-  const [hoveredTab, setHoveredTab] = useState<
-    "totalValue" | "assets" | "balance" | undefined
-  >(undefined);
   const [totalValueOpened, setTotalValueOpened] = useState(1);
   const [assetsOpened, setAssetsOpened] = useState(0);
   const [balanceOpened, setBalanceOpened] = useState(0);
@@ -139,28 +136,13 @@ export default function PortfolioAnalytics() {
             {/* ===== TABS ===== */}
             <CardAction>
               <TabsList>
-                <TabsTrigger
-                  value="totalValue"
-                  className="cursor-pointer"
-                  onHoverStart={() => setHoveredTab("totalValue")}
-                  onHoverEnd={() => setHoveredTab(undefined)}
-                >
+                <TabsTrigger value="totalValue" className="cursor-pointer">
                   Total Value
                 </TabsTrigger>
-                <TabsTrigger
-                  value="assets"
-                  className="cursor-pointer"
-                  onHoverStart={() => setHoveredTab("assets")}
-                  onHoverEnd={() => setHoveredTab(undefined)}
-                >
+                <TabsTrigger value="assets" className="cursor-pointer">
                   Assets
                 </TabsTrigger>
-                <TabsTrigger
-                  value="balance"
-                  className="cursor-pointer"
-                  onHoverStart={() => setHoveredTab("balance")}
-                  onHoverEnd={() => setHoveredTab(undefined)}
-                >
+                <TabsTrigger value="balance" className="cursor-pointer">
                   Balance
                 </TabsTrigger>
               </TabsList>
@@ -170,7 +152,7 @@ export default function PortfolioAnalytics() {
           {/* ===== CHART + OHLC STATS ===== */}
           <TabsContents className="w-full">
             <TabsContent value="totalValue">
-              {(activeTab === "totalValue" || hoveredTab === "totalValue") &&
+              {activeTab === "totalValue" &&
                 (portfolioHistoryQuery.isLoading ? (
                   <ChartPanelSkeleton />
                 ) : isError ? (
@@ -186,7 +168,7 @@ export default function PortfolioAnalytics() {
             </TabsContent>
 
             <TabsContent value="assets">
-              {(activeTab === "assets" || hoveredTab === "assets") &&
+              {activeTab === "assets" &&
                 (portfolioHistoryQuery.isLoading ? (
                   <ChartPanelSkeleton />
                 ) : isError ? (
@@ -202,7 +184,7 @@ export default function PortfolioAnalytics() {
             </TabsContent>
 
             <TabsContent value="balance">
-              {(activeTab === "balance" || hoveredTab === "balance") &&
+              {activeTab === "balance" &&
                 (portfolioHistoryQuery.isLoading ? (
                   <ChartPanelSkeleton />
                 ) : isError ? (

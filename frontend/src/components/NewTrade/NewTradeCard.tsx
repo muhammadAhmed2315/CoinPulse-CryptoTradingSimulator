@@ -17,7 +17,7 @@ import ErrorFallback from "../ErrorFallback";
 // ===== NAVBAR PREFETCH =====
 export function prefetchNewTradeCard(
   queryClient: QueryClient,
-  coinId: string = "bitcoin",
+  coin: Pick<Coin, "id"> = { id: "bitcoin" },
 ) {
   return Promise.all([
     queryClient.prefetchQuery({
@@ -25,20 +25,20 @@ export function prefetchNewTradeCard(
       queryFn: loadAllCoinsList,
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coinInfo", coinId],
-      queryFn: () => getCoinInfo(coinId),
+      queryKey: ["coinInfo", coin.id],
+      queryFn: () => getCoinInfo(coin.id),
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coinSparkline", coinId],
-      queryFn: () => getCoinSparkline(coinId),
+      queryKey: ["coinSparkline", coin.id],
+      queryFn: () => getCoinSparkline(coin.id),
     }),
     queryClient.prefetchQuery({
       queryKey: ["userBalance"],
       queryFn: () => getUserBalance(),
     }),
     queryClient.prefetchQuery({
-      queryKey: ["coinBalance", coinId],
-      queryFn: () => getCoinBalance(coinId),
+      queryKey: ["coinBalance", coin.id],
+      queryFn: () => getCoinBalance(coin.id),
     }),
   ]);
 }
@@ -211,6 +211,7 @@ export default function NewTradeCard({ initialCoin }: NewTradeCardProps) {
               setQuery={setQuery}
               debouncedQuery={debouncedQuery}
               setCurrCoin={setCurrCoin}
+              prefetchFn={prefetchNewTradeCard}
             />
           )}
         </div>

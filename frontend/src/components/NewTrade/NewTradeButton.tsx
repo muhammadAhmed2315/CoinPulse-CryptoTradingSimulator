@@ -36,10 +36,10 @@ export default function NewTradeButton({ initialCoin }: NewTradeButtonProps) {
         <RippleButton
           className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] bg-primary hover:bg-primary/90 text-primary-foreground border-0 px-5 py-3 rounded-md"
           onFocus={() => {
-            prefetchNewTradeCard(queryClient, initialCoin?.id);
+            prefetchNewTradeCard(queryClient, initialCoin);
           }}
           onMouseEnter={() => {
-            prefetchNewTradeCard(queryClient, initialCoin?.id);
+            prefetchNewTradeCard(queryClient, initialCoin);
           }}
         >
           {initialCoin

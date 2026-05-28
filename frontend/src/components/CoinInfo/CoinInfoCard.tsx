@@ -9,6 +9,7 @@ import ErrorFallback from "../ErrorFallback";
 import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
 import { fetchWithRefresh } from "@/lib/api";
+import { prefetchCoinInfo } from "@/pages/CoinInfo";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchCoinInfoCard(
@@ -95,8 +96,7 @@ export default function CoinInfoCard({
       100
     : 0;
   const hasBodyError =
-    detailedCoinDataQuery.isError ||
-    coinSparklineQuery.isError;
+    detailedCoinDataQuery.isError || coinSparklineQuery.isError;
 
   return (
     <Card className="flex-3 p-0 gap-0 overflow-hidden rounded-[18px] border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
@@ -128,6 +128,7 @@ export default function CoinInfoCard({
               setQuery={setQuery}
               debouncedQuery={debouncedQuery}
               setCurrCoin={setCurrCoin}
+              prefetchFn={prefetchCoinInfo}
             />
           )}
         </div>

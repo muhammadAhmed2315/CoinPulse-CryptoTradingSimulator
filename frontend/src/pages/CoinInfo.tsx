@@ -18,14 +18,13 @@ import { QueryClient } from "@tanstack/react-query";
 // ===== NAVBAR PREFETCH =====
 export function prefetchCoinInfo(
   queryClient: QueryClient,
-  coinId: string = "bitcoin",
-  coinName: string = "Bitcoin",
+  coin: Pick<Coin, "id" | "name"> = { id: "bitcoin", name: "Bitcoin" },
 ) {
   return Promise.all([
-    prefetchCoinInfoCard(queryClient, coinId),
-    prefetchMarketChartsCard(queryClient, coinId),
-    prefetchNewsFeed(queryClient, coinName),
-    prefetchRedditFeed(queryClient, coinName),
+    prefetchCoinInfoCard(queryClient, coin.id),
+    prefetchMarketChartsCard(queryClient, coin.id),
+    prefetchNewsFeed(queryClient, coin.name),
+    prefetchRedditFeed(queryClient, coin.name),
   ]);
 }
 

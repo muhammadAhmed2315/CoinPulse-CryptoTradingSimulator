@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Field } from "./ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { SearchIcon } from "lucide-react";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 // ===== TYPES =====
 type CoinSearchBarProps = {
@@ -11,6 +12,7 @@ type CoinSearchBarProps = {
   query: string;
   setQuery: React.Dispatch<React.SetStateAction<string>>;
   setCurrCoin: React.Dispatch<React.SetStateAction<Coin>>;
+  prefetchFn?: (queryClient: QueryClient, coin: Coin) => any;
 };
 
 export default function CoinSearchBar({
@@ -19,6 +21,7 @@ export default function CoinSearchBar({
   setQuery,
   query,
   setCurrCoin,
+  prefetchFn,
 }: CoinSearchBarProps) {
   // ===== STATE VARIABLES =====
   const [showDropdown, setShowDropdown] = useState(false);
@@ -38,6 +41,9 @@ export default function CoinSearchBar({
   }, [coins, debouncedQuery]);
 
   const matchingCoins = coinMatching();
+
+  // ===== REACT QUERY HOOKS =====
+  const queryClient = useQueryClient();
 
   // ===== EVENT HANDLERS =====
   function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -74,6 +80,9 @@ export default function CoinSearchBar({
             <div
               className="flex justify-between rounded-md px-2 py-0.5 cursor-pointer hover:bg-muted bg-background gap-2"
               onClick={() => handleDropdownItemClick(c)}
+              onMouseEnter={
+                prefetchFn ? () => prefetchFn(queryClient, c) : undefined
+              }
             >
               <div className="flex gap-1.5 min-w-0">
                 <img className="rounded-3xl size-7 shrink-0" src={c.imgUrl} />

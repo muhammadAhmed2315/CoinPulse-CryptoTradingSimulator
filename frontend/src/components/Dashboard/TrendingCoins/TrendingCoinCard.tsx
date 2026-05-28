@@ -60,11 +60,11 @@ export default function TrendingCoinCard({
         isError ? "cursor-default" : "cursor-pointer"
       }`}
       onFocus={() => {
-        if (data) prefetchCoinInfo(queryClient, data.coin_id, data.name);
+        if (data) prefetchCoinInfo(queryClient, { id: data.coin_id, name: data.name });
       }}
       onMouseEnter={() => {
         setHovered(true);
-        if (data) prefetchCoinInfo(queryClient, data.coin_id, data.name);
+        if (data) prefetchCoinInfo(queryClient, { id: data.coin_id, name: data.name });
       }}
       onMouseLeave={() => setHovered(false)}
       onClick={

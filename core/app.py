@@ -713,6 +713,23 @@ def get_news_articles():
         response = requests.get(url)
         data = response.json()
 
+        if data["status"] == "error":
+            if data["results"]["code"] == "RateLimitExceeded":
+                return (
+                    jsonify(
+                        {
+                            "error": "News service rate limit reached. Please try again in a few minutes."
+                        }
+                    ),
+                    429,
+                )
+            return (
+                jsonify(
+                    {"error": "Failed to fetch news articles. Please try again later."}
+                ),
+                502,
+            )
+
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": f"Failed to fetch news: {str(e)}"}), 500

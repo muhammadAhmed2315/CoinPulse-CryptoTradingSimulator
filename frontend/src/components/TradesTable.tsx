@@ -262,10 +262,8 @@ export default function TradesTable() {
   });
 
   // ===== DERIVED STATE =====
-  const tradeHistoryIsError =
-    tradeHistoryQuery.isError;
-  const tradeFilterCountsIsError =
-    tradeFilterCountsQuery.isError;
+  const tradeHistoryIsError = tradeHistoryQuery.isError;
+  const tradeFilterCountsIsError = tradeFilterCountsQuery.isError;
   const tradeHistoryData = tradeHistoryIsError
     ? undefined
     : tradeHistoryQuery.data;

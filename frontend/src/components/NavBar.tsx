@@ -132,7 +132,7 @@ export default function NavBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
-                    <img src={HomeIcon} className="size-4 opacity-80" />
+                    <img src={HomeIcon} className="size-4 opacity-80 dark:invert" />
                     <p>Home</p>
                   </div>
                 )}
@@ -162,7 +162,7 @@ export default function NavBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
-                    <img src={BarChartIcon} className="size-4 opacity-80" />
+                    <img src={BarChartIcon} className="size-4 opacity-80 dark:invert" />
                     <p>My Trades</p>
                   </div>
                 )}
@@ -194,7 +194,7 @@ export default function NavBar() {
                   >
                     <img
                       src={LineChartAscendingIcon}
-                      className="size-4 opacity-80"
+                      className="size-4 opacity-80 dark:invert"
                     />
                     <p>Top Coins</p>
                   </div>
@@ -225,7 +225,7 @@ export default function NavBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
-                    <img src={InfoIcon} className="size-4 opacity-80" />
+                    <img src={InfoIcon} className="size-4 opacity-80 dark:invert" />
                     <p>Coin Info</p>
                   </div>
                 )}

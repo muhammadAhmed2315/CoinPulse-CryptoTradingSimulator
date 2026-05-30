@@ -58,7 +58,6 @@ class RedditScraper:
         try:
             access_token = response.json()["access_token"]
         except:
-            print("Error: Reddit token request failed. Response was:", response.text)
             access_token = None
 
         # Adds access token to header so that subsequent requests to the Reddit API

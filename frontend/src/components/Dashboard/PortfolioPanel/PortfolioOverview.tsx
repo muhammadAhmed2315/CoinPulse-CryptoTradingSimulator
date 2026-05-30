@@ -96,9 +96,7 @@ export default function PortfolioOverview() {
   }, []);
 
   // ===== DERIVED STATE =====
-  const isError =
-    totalPortfolioValueQuery.isError ||
-    walletAssetsQuery.isError;
+  const isError = totalPortfolioValueQuery.isError || walletAssetsQuery.isError;
 
   if (isError) {
     return (
@@ -116,7 +114,9 @@ export default function PortfolioOverview() {
       {/* ===== HEADER ===== */}
       <div className="p-5 pb-2 gap-[-2px]">
         {/* ===== PORTFOLIO VALUE ===== */}
-        <p className="text-xs text-muted-foreground font-mono">PORTFOLIO VALUE</p>
+        <p className="text-xs text-muted-foreground font-mono">
+          PORTFOLIO VALUE
+        </p>
         {totalPortfolioValueQuery.isLoading && (
           <CustomSkeleton className="h-10 w-full mt-2 mb-4" />
         )}
@@ -206,9 +206,12 @@ export default function PortfolioOverview() {
                 </div>
               ))}
           </div>
-          <div
-            className={`pointer-events-none absolute bottom-0 left-0 right-0 h-20 bg-linear-to-b from-transparent to-card transition-opacity duration-200 ${isAtBottom ? "opacity-0" : "opacity-100"}`}
-          />
+
+          {walletAssetsQuery.data && walletAssetsQuery.data.length > 8 && (
+            <div
+              className={`pointer-events-none absolute bottom-0 left-0 right-0 h-20 bg-linear-to-b from-transparent to-card transition-opacity duration-200 ${isAtBottom ? "opacity-0" : "opacity-100"}`}
+            />
+          )}
         </div>
       </div>
     </Card>

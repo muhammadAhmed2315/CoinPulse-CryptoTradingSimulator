@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { fetchWithRefresh } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import ErrorFallback from "@/components/ErrorFallback";
+import NoTradesFallback from "./NoTradesFallback";
 
 // ===== CONSTANTS =====
 const SKELETON_POSTS = Array.from({ length: 3 }, (_, i) => i);
@@ -85,6 +86,18 @@ export default function FeedPostMenu() {
     </Card>
   );
 
+  // ===== DERIVED STATE =====
+  const globalPostCount =
+    globalFeedQuery.data?.pages.reduce(
+      (acc, pg) => acc + (pg.data?.length ?? 0),
+      0,
+    ) ?? 0;
+  const privatePostCount =
+    privateFeedQuery.data?.pages.reduce(
+      (acc, pg) => acc + (pg.data?.length ?? 0),
+      0,
+    ) ?? 0;
+
   return (
     <div>
       <Tabs
@@ -115,6 +128,13 @@ export default function FeedPostMenu() {
               SKELETON_POSTS.map((i) => <FeedPostSkeleton key={i} />)
             ) : globalFeedQuery.isError ? (
               errorState
+            ) : globalPostCount === 0 ? (
+              <Card className="p-6 mb-6 gap-4 min-h-135 flex items-center justify-center">
+                <NoTradesFallback
+                  title="No trades yet"
+                  description="When other traders place trades, they'll show up here."
+                />
+              </Card>
             ) : (
               <InfiniteScroll
                 dataLength={globalFeedQuery.data?.pages.length || 0}
@@ -147,6 +167,13 @@ export default function FeedPostMenu() {
               SKELETON_POSTS.map((i) => <FeedPostSkeleton key={i} />)
             ) : privateFeedQuery.isError ? (
               errorState
+            ) : privatePostCount === 0 ? (
+              <Card className="p-6 mb-6 gap-4 min-h-135 flex items-center justify-center">
+                <NoTradesFallback
+                  title="No trades yet"
+                  description="Place your first trade to see it appear here."
+                />
+              </Card>
             ) : (
               <InfiniteScroll
                 dataLength={privateFeedQuery.data?.pages.length || 0}

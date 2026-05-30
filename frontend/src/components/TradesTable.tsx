@@ -263,18 +263,17 @@ export default function TradesTable() {
   });
 
   // ===== DERIVED STATE =====
-  const tradeHistoryIsError = tradeHistoryQuery.isError;
-  const tradeFilterCountsIsError = tradeFilterCountsQuery.isError;
-  const tradeHistoryData = tradeHistoryIsError
+  const tradeHistoryData = tradeHistoryQuery.isError
     ? undefined
     : tradeHistoryQuery.data;
   const maxPages = tradeHistoryData?.maxPages;
-  const filterCounts = tradeFilterCountsIsError
+  const filterCounts = tradeFilterCountsQuery.isError
     ? undefined
     : tradeFilterCountsQuery.data;
 
   // ===== AGGRID DATA =====
   const rowData = tradeHistoryData?.data;
+
   const columnDefs: ColDef[] = [
     {
       headerName: "#",
@@ -363,6 +362,9 @@ export default function TradesTable() {
     [&_.ag-header-cell-text]:uppercase
     [&_.ag-root-wrapper]:border-0
     [&_.ag-header]:border-b [&_.ag-header]:border-border
+    [&_.ag-overlay-no-rows-wrapper]:text-base
+    [&_.ag-overlay-no-rows-wrapper]:font-medium
+    [&_.ag-overlay-no-rows-wrapper]:text-foreground
   `;
 
   const skeletonGrid = (
@@ -408,7 +410,7 @@ export default function TradesTable() {
 
   const grid = tradeHistoryQuery.isLoading ? (
     skeletonGrid
-  ) : tradeHistoryIsError ? (
+  ) : tradeHistoryQuery.isError ? (
     errorGrid
   ) : (
     <div className={`${gridClassName} px-6`}>
@@ -444,7 +446,7 @@ export default function TradesTable() {
             <div className="flex items-baseline gap-2">
               {tradeFilterCountsQuery.isLoading ? (
                 <CustomSkeleton className="h-8 w-14 translate-y-1.5" />
-              ) : tradeFilterCountsIsError ? (
+              ) : tradeFilterCountsQuery.isError ? (
                 <span className="text-[32px] font-bold tracking-[-0.02em] leading-none text-muted-foreground/70">
                   —
                 </span>
@@ -466,7 +468,7 @@ export default function TradesTable() {
                 <span className="px-1.25 py-px rounded-md bg-muted text-foreground text-[10px] font-mono font-semibold leading-[1.4]">
                   {filterCounts.all}
                 </span>
-              ) : tradeFilterCountsIsError ? (
+              ) : tradeFilterCountsQuery.isError ? (
                 <span className="px-1.25 py-px rounded-md bg-muted text-muted-foreground/70 text-[10px] font-mono font-semibold leading-[1.4]">
                   —
                 </span>
@@ -489,7 +491,7 @@ export default function TradesTable() {
                   <span className="px-1.25 py-px rounded-md bg-muted text-foreground text-[10px] font-mono font-semibold leading-[1.4] normal-case">
                     {filterCounts[key]}
                   </span>
-                ) : tradeFilterCountsIsError ? (
+                ) : tradeFilterCountsQuery.isError ? (
                   <span className="px-1.25 py-px rounded-md bg-muted text-muted-foreground/70 text-[10px] font-mono font-semibold leading-[1.4] normal-case">
                     —
                   </span>
@@ -521,7 +523,7 @@ export default function TradesTable() {
           {/* ===== PAGE INDICATOR ===== */}
           {tradeHistoryQuery.isLoading ? (
             <CustomSkeleton className="h-3 w-24" />
-          ) : tradeHistoryIsError ? (
+          ) : tradeHistoryQuery.isError ? (
             <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-muted-foreground/70">
               Page — of —
             </p>
@@ -533,14 +535,18 @@ export default function TradesTable() {
           {/* ===== PREV / NEXT BUTTONS ===== */}
           <div className="inline-flex items-center gap-1.5">
             <p
-              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-border rounded-md bg-background cursor-pointer hover:border-[#71717a] ${page === 1 || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-foreground" : "text-foreground"}`}
-              onClick={tradeHistoryIsError ? undefined : handlePrevBtnClick}
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-border rounded-md bg-background cursor-pointer hover:border-[#71717a] ${page === 1 || tradeHistoryQuery.isError ? "opacity-40 cursor-not-allowed text-foreground" : "text-foreground"}`}
+              onClick={
+                tradeHistoryQuery.isError ? undefined : handlePrevBtnClick
+              }
             >
               Prev
             </p>
             <p
-              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-border rounded-md bg-background cursor-pointer hover:border-[#71717a] ${page === maxPages || tradeHistoryIsError ? "opacity-40 cursor-not-allowed text-foreground" : "text-foreground"}`}
-              onClick={tradeHistoryIsError ? undefined : handleNextBtnClick}
+              className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border border-border rounded-md bg-background cursor-pointer hover:border-[#71717a] ${page === maxPages || tradeHistoryQuery.isError ? "opacity-40 cursor-not-allowed text-foreground" : "text-foreground"}`}
+              onClick={
+                tradeHistoryQuery.isError ? undefined : handleNextBtnClick
+              }
             >
               Next
             </p>

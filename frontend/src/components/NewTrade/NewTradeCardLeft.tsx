@@ -161,7 +161,7 @@ export default function NewTradeCardLeft({
             <CustomSkeleton className="w-25 h-6" />
           ) : (
             <CustomTooltip
-              trigger={`${coinBalanceQuery.data.toFixed(8)}...`}
+              trigger={`${parseFloat(coinBalanceQuery.data.toFixed(8))}${coinBalanceQuery.data.toString().split(".")?.[1]?.length > 8 ? "..." : ""}`}
               content={coinBalanceQuery.data}
               triggerStyle="font-bold"
             />

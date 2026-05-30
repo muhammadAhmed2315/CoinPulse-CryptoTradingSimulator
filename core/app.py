@@ -99,17 +99,15 @@ def get_trade_filter_counts():
                 200,
             )
         else:
-            return jsonify(
-                {
-                    jsonify(
-                        {
-                            "all": 0,
-                            "open": 0,
-                            "finished": 0,
-                            "cancelled": 0,
-                        }
-                    )
-                },
+            return (
+                jsonify(
+                    {
+                        "all": 0,
+                        "open": 0,
+                        "finished": 0,
+                        "cancelled": 0,
+                    }
+                ),
                 200,
             )
     except Exception as e:
@@ -228,11 +226,13 @@ def get_trades_info():
                 200,
             )
         else:
-            return jsonify(
-                {
-                    "data": [],
-                    "maxPages": 0,
-                },
+            return (
+                jsonify(
+                    {
+                        "data": [],
+                        "maxPages": 0,
+                    },
+                ),
                 200,
             )
     except Exception as e:
@@ -346,7 +346,6 @@ def update_likes():
     """
     try:
         data = request.get_json()
-        print(data)
         is_increment = data["isIncrement"]
         transaction_id = data["transactionID"]
 
@@ -696,9 +695,6 @@ def get_news_articles():
         query = data["query"]
         next_page = data["nextPage"]
 
-        print(f"QUERY {query}")
-        print(f"NEXT PAGE {next_page}")
-
         url = (
             f"https://newsdata.io/api/1/crypto"
             f"?apikey={NEWSDATA_API_KEY}"
@@ -755,9 +751,6 @@ def get_reddit_posts():
         data = request.get_json()
         query = data["query"]
         after = data["after"]
-
-        print(query)
-        print(after)
 
         # Create a RedditScraper object
         scraper = RedditScraper()

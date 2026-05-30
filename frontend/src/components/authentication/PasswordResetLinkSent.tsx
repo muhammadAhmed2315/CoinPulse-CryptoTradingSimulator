@@ -79,28 +79,28 @@ export default function PasswordResetLinkSent() {
 
   return (
     <Card className="w-100 p-9">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3 text-center">
         {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={TickIcon} className="size-7 invert" />
         </div>
 
         {/* ===== HEADER ===== */}
-        <p className="text-[22px] font-extrabold">Check your inbox</p>
+        <p className="text-xl font-bold tracking-tight">Check your inbox</p>
 
         {/* ===== MESSAGE ===== */}
-        <p className="text-center">
+        <p className="text-sm text-muted-foreground">
           If there's an account associated with <b>{email}</b>, you'll receive a
           link to reset your password shortly. Be sure to check your spam folder
           too.
         </p>
 
-        <p>This link will expire in 1 hour.</p>
+        <p className="text-sm text-muted-foreground">This link will expire in 1 hour.</p>
 
-        <Separator className="mt-2 mb-4" />
+        <Separator className="my-1" />
 
         {/* ===== FOOTER ===== */}
-        <div className="flex flex-col items-center w-[75%]">
+        <div className="flex flex-col items-center w-[75%] gap-2.5">
           {/* ===== RESEND BUTTON ===== */}
           <RippleButton
             className="w-full cursor-pointer"

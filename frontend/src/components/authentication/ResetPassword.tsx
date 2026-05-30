@@ -124,16 +124,15 @@ export default function ResetPassword() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle>Set a new password</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">Set a new password</CardTitle>
         <CardDescription>
           Choose something strong. You won't be able to reuse your previous
           password.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         {/* ===== PASSWORD FIELD ===== */}
         <NewPassword password={password} setPassword={setPassword} />
-        <br />
         {/* ===== CONFIRM PASSWORD FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-confirm-password">
@@ -149,14 +148,11 @@ export default function ResetPassword() {
         </Field>
         {/* ===== ERROR ALERT ===== */}
         {error.at(0) !== "" && error.at(1) !== "" && (
-          <>
-            <br />
-            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-              <AlertCircle className="text-red-600 dark:text-red-400" />
-              <AlertTitle>{error.at(0)}</AlertTitle>
-              <AlertDescription>{error.at(1)}</AlertDescription>
-            </Alert>
-          </>
+          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <AlertCircle className="text-red-600 dark:text-red-400" />
+            <AlertTitle>{error.at(0)}</AlertTitle>
+            <AlertDescription>{error.at(1)}</AlertDescription>
+          </Alert>
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">

@@ -74,57 +74,59 @@ export default function EmailVerificationUnsuccessful() {
 
   return (
     <Card className="w-100 p-9">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3 text-center">
         {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={WarningIcon} className="size-7 invert" />
         </div>
 
         {/* ===== HEADER ===== */}
-        <p>VERIFICATION FAILED</p>
-        <p className="text-[22px] font-extrabold">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">VERIFICATION FAILED</p>
+        <p className="text-xl font-bold tracking-tight">
           Email could not be verified
         </p>
         <Separator />
 
         {/* ===== STATUS BADGE ===== */}
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2">
           <img src={DotRed} className="size-2" />
-          <p className="font-bold text-[#ef4444]">Not verified</p>
+          <p className="font-bold text-red-600">Not verified</p>
         </div>
 
         {/* ===== MESSAGE ===== */}
-        <p className="text-center text-sm">
+        <p className="text-center text-sm text-muted-foreground">
           This verification link is <b>invalid or has expired.</b> Verification
           links are only valid for 1 hour after they are sent.
         </p>
 
-        {/* ===== RESEND BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          onClick={handleResendEmail}
-          disabled={timer > 0}
-        >
-          {mutation.isPending ? (
-            <Spinner />
-          ) : timer > 30 ? (
-            <>Email sent!</>
-          ) : timer !== 0 ? (
-            <>Resend in {formatTime(timer)}</>
-          ) : (
-            <>Resend verification email</>
-          )}
-          <RippleButtonRipples />
-        </RippleButton>
-        {/* ===== BACK BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          variant="outline"
-          onClick={handleBackToLogin}
-        >
-          ← Back to login
-          <RippleButtonRipples />
-        </RippleButton>
+        <div className="flex flex-col gap-2.5 w-full">
+          {/* ===== RESEND BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            onClick={handleResendEmail}
+            disabled={timer > 0}
+          >
+            {mutation.isPending ? (
+              <Spinner />
+            ) : timer > 30 ? (
+              <>Email sent!</>
+            ) : timer !== 0 ? (
+              <>Resend in {formatTime(timer)}</>
+            ) : (
+              <>Resend verification email</>
+            )}
+            <RippleButtonRipples />
+          </RippleButton>
+          {/* ===== BACK BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            variant="outline"
+            onClick={handleBackToLogin}
+          >
+            ← Back to login
+            <RippleButtonRipples />
+          </RippleButton>
+        </div>
       </div>
     </Card>
   );

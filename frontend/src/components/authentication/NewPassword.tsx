@@ -15,7 +15,7 @@ export default function NewPassword({
 }: NewPasswordProps) {
   return (
     <>
-      <Field className="pb-2">
+      <Field>
         <FieldLabel htmlFor="input-password">Password</FieldLabel>
         <Input
           id="input-password"
@@ -29,8 +29,8 @@ export default function NewPassword({
           <span
             className={
               validatePasswordRule(password, "At least 8 characters")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             8+ characters
@@ -39,8 +39,8 @@ export default function NewPassword({
           <span
             className={
               validatePasswordRule(password, "At least one uppercase letter")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             uppercase letter
@@ -49,8 +49,8 @@ export default function NewPassword({
           <span
             className={
               validatePasswordRule(password, "At least one lowercase letter")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             lowercase letter
@@ -59,8 +59,8 @@ export default function NewPassword({
           <span
             className={
               validatePasswordRule(password, "At least one number")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             number
@@ -69,8 +69,8 @@ export default function NewPassword({
           <span
             className={
               validatePasswordRule(password, "At least one special character")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             special character

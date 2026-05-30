@@ -15,7 +15,7 @@ export default function NewUsername({
 }: NewUsernameProps) {
   return (
     <>
-      <Field className="pb-2">
+      <Field>
         <FieldLabel htmlFor="input-username">Username</FieldLabel>
         <Input
           id="input-username"
@@ -29,8 +29,8 @@ export default function NewUsername({
           <span
             className={
               validateUsernameRule(username, "At least 3 characters")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             at least 3 characters
@@ -39,8 +39,8 @@ export default function NewUsername({
           <span
             className={
               validateUsernameRule(username, "No more than 20 characters")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             no more than 20
@@ -49,8 +49,8 @@ export default function NewUsername({
           <span
             className={
               validateUsernameRule(username, "First character must be a letter")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             letter to start
@@ -59,8 +59,8 @@ export default function NewUsername({
           <span
             className={
               validateUsernameRule(username, "Only letters and numbers")
-                ? "text-green-400"
-                : "text-red-400"
+                ? "text-green-600"
+                : "text-red-600"
             }
           >
             only letters and numbers

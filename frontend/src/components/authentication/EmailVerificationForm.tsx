@@ -73,19 +73,19 @@ export default function EmailVerificationForm() {
 
   return (
     <Card className="w-100 p-9">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-4 text-center">
         {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={InfoIcon} className="size-7 invert" />
         </div>
 
         {/* ===== HEADER ===== */}
-        <p>SOMETHING WENT WRONG</p>
-        <p className="text-[22px] font-extrabold">Request a new link</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">SOMETHING WENT WRONG</p>
+        <p className="text-xl font-bold tracking-tight">Request a new link</p>
         <Separator />
 
         {/* ===== INSTRUCTIONS ===== */}
-        <p>
+        <p className="text-sm text-muted-foreground">
           That link is no longer valid — it may have expired or already been
           used. Enter your email below and we'll send you a fresh one.
         </p>

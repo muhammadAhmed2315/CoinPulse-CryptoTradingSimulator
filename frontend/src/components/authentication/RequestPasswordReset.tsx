@@ -75,13 +75,13 @@ export default function RequestPasswordReset() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle>Reset your password</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">Reset your password</CardTitle>
         <CardDescription>
           Enter the email address associated your account and we'll send a link
           to reset your password.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
@@ -95,26 +95,20 @@ export default function RequestPasswordReset() {
         </Field>
         {/* ===== ERROR ALERTS ===== */}
         {invalidEmail && (
-          <>
-            <br />
-            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-              <AlertTitle>Invalid email address</AlertTitle>
-              <AlertDescription>
-                Please enter a valid email address (e.g., john.doe@gmail.com)
-              </AlertDescription>
-            </Alert>
-          </>
+          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+            <AlertTitle>Invalid email address</AlertTitle>
+            <AlertDescription>
+              Please enter a valid email address (e.g., john.doe@gmail.com)
+            </AlertDescription>
+          </Alert>
         )}
         {sendResetEmailMutation.isError && (
-          <>
-            <br />
-            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-              <AlertTitle>Something went wrong</AlertTitle>
-              <AlertDescription>Please try again later.</AlertDescription>
-            </Alert>
-          </>
+          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+            <AlertTitle>Something went wrong</AlertTitle>
+            <AlertDescription>Please try again later.</AlertDescription>
+          </Alert>
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">

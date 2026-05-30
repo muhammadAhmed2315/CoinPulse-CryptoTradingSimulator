@@ -28,31 +28,31 @@ export default function EmailVerificationSuccessful() {
 
   return (
     <Card className="w-100 p-9">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3 text-center">
         {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={TickIcon} className="size-7 invert" />
         </div>
 
         {/* ===== HEADER ===== */}
-        <p>ALL DONE</p>
-        <p className="text-[22px] font-extrabold">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">ALL DONE</p>
+        <p className="text-xl font-bold tracking-tight">
           Email Verification Successful
         </p>
         <Separator />
 
         {/* ===== STATUS BADGE ===== */}
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2">
           <img src={DotGreen} className="size-2" />
-          <p className="font-bold text-[#22c55e]">Verified</p>
+          <p className="font-bold text-green-600">Verified</p>
         </div>
 
         {/* ===== MESSAGE ===== */}
-        <p className="text-center text-sm">
+        <p className="text-center text-sm text-muted-foreground">
           Your email adress <b>{email}</b> has been successfully verified.
         </p>
 
-        <p className="text-sm">You can now access your account.</p>
+        <p className="text-sm text-muted-foreground">You can now access your account.</p>
 
         {/* ===== LOGIN BUTTON ===== */}
         <RippleButton className="w-full cursor-pointer" onClick={handleLogin}>

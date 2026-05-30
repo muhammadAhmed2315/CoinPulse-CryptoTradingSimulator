@@ -55,26 +55,26 @@ export default function PickUsername() {
 
   return (
     <Card className="w-100 p-9">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3 text-center">
         {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={AtSymbolIcon} className="size-7 invert" />
         </div>
 
         {/* ===== HEADER ===== */}
-        <p>GET STARTED</p>
-        <p className="text-[22px] font-extrabold">Pick a Username</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">GET STARTED</p>
+        <p className="text-xl font-bold tracking-tight">Pick a Username</p>
         <Separator />
 
         {/* ===== INSTRUCTIONS ===== */}
-        <p>Choose something unique. This is how others will find you.</p>
+        <p className="text-sm text-muted-foreground">Choose something unique. This is how others will find you.</p>
 
         {/* ===== USERNAME FIELD ===== */}
         <NewUsername username={username} setUsername={setUsername} />
 
         {/* ===== SUBMIT BUTTON ===== */}
         <RippleButton
-          className="cursor-pointer"
+          className="w-full cursor-pointer"
           onClick={() => mutation.mutate({ username: username })}
         >
           {mutation.isPending ? <Spinner /> : <>Continue</>}

@@ -121,12 +121,12 @@ export default function Login() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle>Welcome back</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">Welcome back</CardTitle>
         <CardDescription>
           Sign in to continue where you left off.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
@@ -138,7 +138,6 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
-        <br />
         {/* ===== PASSWORD FIELD ===== */}
         <Field>
           <div className="flex items-center">
@@ -160,14 +159,11 @@ export default function Login() {
         </Field>
         {/* ===== ERROR ALERT ===== */}
         {error.at(0) !== "" && error.at(1) !== "" && (
-          <>
-            <br />
-            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-              <AlertTitle>{error.at(0)}</AlertTitle>
-              <AlertDescription>{error.at(1)}</AlertDescription>
-            </Alert>
-          </>
+          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+            <AlertTitle>{error.at(0)}</AlertTitle>
+            <AlertDescription>{error.at(1)}</AlertDescription>
+          </Alert>
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">

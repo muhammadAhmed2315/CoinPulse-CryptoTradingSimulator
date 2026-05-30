@@ -126,10 +126,10 @@ export default function CreateAccount() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle>Create an account</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">Create an account</CardTitle>
         <CardDescription>Join us. It only takes a moment.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         {/* ===== EMAIL FIELD ===== */}
         <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
@@ -141,13 +141,10 @@ export default function CreateAccount() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
-        <br />
         {/* ===== USERNAME FIELD ===== */}
         <NewUsername username={username} setUsername={setUsername} />
-        <br />
         {/* ===== PASSWORD FIELD ===== */}
         <NewPassword password={password} setPassword={setPassword} />
-        <br />
         {/* ===== CONFIRM PASSWORD FIELD ===== */}
         <Field>
           <div className="flex items-center">
@@ -163,14 +160,11 @@ export default function CreateAccount() {
         </Field>
         {/* ===== ERROR ALERT ===== */}
         {error.at(0) !== "" && error.at(1) !== "" && (
-          <>
-            <br />
-            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-              <AlertTitle>{error.at(0)}</AlertTitle>
-              <AlertDescription>{error.at(1)}</AlertDescription>
-            </Alert>
-          </>
+          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+            <AlertTitle>{error.at(0)}</AlertTitle>
+            <AlertDescription>{error.at(1)}</AlertDescription>
+          </Alert>
         )}
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">

@@ -75,19 +75,19 @@ export default function ActivationEmailSent() {
 
   return (
     <Card className="w-100 p-9">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3 text-center">
         {/* ===== ICON ===== */}
         <div className="size-14 bg-black flex items-center justify-center rounded-xl">
           <img src={MailIcon} className="size-7 invert" />
         </div>
 
         {/* ===== HEADER ===== */}
-        <p>ONE MORE STEP</p>
-        <p className="text-[22px] font-extrabold">Verify your email address</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">ONE MORE STEP</p>
+        <p className="text-xl font-bold tracking-tight">Verify your email address</p>
         <Separator />
 
         {/* ===== EMAIL CALLOUT ===== */}
-        <p>We've sent a verification link to</p>
+        <p className="text-sm text-muted-foreground">We've sent a verification link to</p>
 
         <div className="flex items-center gap-2">
           <img src={DotGreen} className="size-2" />
@@ -95,42 +95,45 @@ export default function ActivationEmailSent() {
         </div>
 
         {/* ===== INSTRUCTIONS ===== */}
-        <p>
+        <p className="text-sm text-muted-foreground">
           Click the link in your inbox to complete sign-up. Check your{" "}
           <b>spam folder</b> if you don't see it.
         </p>
 
-        {/* ===== RESEND BUTTON ===== */}
-        {canResend && (
+        {/* ===== BUTTONS ===== */}
+        <div className="flex flex-col gap-2.5 w-full">
+          {/* ===== RESEND BUTTON ===== */}
+          {canResend && (
+            <RippleButton
+              className="w-full cursor-pointer"
+              onClick={handleResendEmail}
+              disabled={timer > 0}
+            >
+              {resendActivationEmailMutation.isPending ? (
+                <Spinner />
+              ) : resendActivationEmailMutation.isError && timer > 30 ? (
+                <>Failed to send</>
+              ) : timer > 30 ? (
+                <>Email sent!</>
+              ) : timer !== 0 ? (
+                <>Resend in {formatTime(timer)}</>
+              ) : (
+                <>Resend verification email</>
+              )}
+              <RippleButtonRipples />
+            </RippleButton>
+          )}
+
+          {/* ===== BACK BUTTON ===== */}
           <RippleButton
             className="w-full cursor-pointer"
-            onClick={handleResendEmail}
-            disabled={timer > 0}
+            variant="outline"
+            onClick={handleBackToLogin}
           >
-            {resendActivationEmailMutation.isPending ? (
-              <Spinner />
-            ) : resendActivationEmailMutation.isError && timer > 30 ? (
-              <>Failed to send</>
-            ) : timer > 30 ? (
-              <>Email sent!</>
-            ) : timer !== 0 ? (
-              <>Resend in {formatTime(timer)}</>
-            ) : (
-              <>Resend verification email</>
-            )}
+            ← Back to login
             <RippleButtonRipples />
           </RippleButton>
-        )}
-
-        {/* ===== BACK BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          variant="outline"
-          onClick={handleBackToLogin}
-        >
-          ← Back to login
-          <RippleButtonRipples />
-        </RippleButton>
+        </div>
       </div>
     </Card>
   );

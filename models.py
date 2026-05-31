@@ -184,12 +184,14 @@ class Wallet(db.Model):
             If subtracting the quantity results in zero holdings of the coin,
             it is removed from the assets dictionary.
         """
-        # If transaction results in User owning 0 of the coin, then remove the coin
-        # from the assets dictionary
-        if self.assets[coin_id] == quantity:
+        # If transaction results in User owning ~0 of the coin, then remove the coin
+        # from the assets dictionary. Use an epsilon comparison rather than exact
+        # equality so floating-point error doesn't leave behind tiny dust holdings.
+        remaining = self.assets[coin_id] - quantity
+        if remaining <= 1e-8:
             self.assets.pop(coin_id)
         else:
-            self.assets[coin_id] -= quantity
+            self.assets[coin_id] = remaining
 
     def has_enough_balance(self, amount: float):
         """

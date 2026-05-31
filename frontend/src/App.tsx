@@ -1,9 +1,12 @@
 import AuthenticationBase from "./pages/AuthenticationBase";
 import { Route, BrowserRouter, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import HomeRedirect from "./components/HomeRedirect";
 import Dashboard from "./pages/Dashboard";
-import MyTrades from "./pages/MyTrades";
-import TopCoins from "./pages/TopCoins";
+
+// Lazy-loaded route components that pull in heavy libs (AG Grid / Highcharts)
+const MyTrades = lazy(() => import("./pages/MyTrades"));
+const TopCoins = lazy(() => import("./pages/TopCoins"));
 import Login from "./components/authentication/Login";
 import RequestPasswordReset from "./components/authentication/RequestPasswordReset";
 import ResetPassword from "./components/authentication/ResetPassword";
@@ -25,7 +28,7 @@ import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerifi
 import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
 import AuthenticatedPageNotFound from "./components/AuthenticatedPageNotFound.tsx";
 import NavBar from "./components/NavBar";
-import CoinInfo from "./pages/CoinInfo.tsx";
+const CoinInfo = lazy(() => import("./pages/CoinInfo.tsx"));
 
 function NotFoundHandler() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -49,6 +52,7 @@ function App() {
     <ThemeContextProvider>
       <AuthContextProvider>
         <BrowserRouter>
+        <Suspense fallback={<div>Loading…</div>}>
         <Routes>
           {/* ===== HOME REDIRECT ===== */}
           <Route path="/" element={<HomeRedirect />} />
@@ -111,6 +115,7 @@ function App() {
           {/* ===== CATCH-ALL ===== */}
           <Route path="*" element={<NotFoundHandler />} />
         </Routes>
+        </Suspense>
         </BrowserRouter>
       </AuthContextProvider>
     </ThemeContextProvider>

@@ -15,4 +15,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["@highcharts/react"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          highcharts: ["highcharts", "@highcharts/react"],
+          "ag-grid": ["ag-grid-community", "ag-grid-react"],
+        },
+      },
+    },
+  },
 });

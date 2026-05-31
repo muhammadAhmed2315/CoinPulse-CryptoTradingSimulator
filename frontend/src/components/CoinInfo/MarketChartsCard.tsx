@@ -171,11 +171,13 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
   const ohlcChartQuery = useQuery({
     queryKey: ["ohlcChart", currCoin.id],
     queryFn: () => getOhlcChart(currCoin.id),
+    staleTime: 30_000,
   });
 
   const coinChartsQuery = useQuery({
     queryKey: ["coinCharts", currCoin.id],
     queryFn: () => getCoinCharts(currCoin.id),
+    staleTime: 30_000,
   });
 
   // ===== STYLES =====

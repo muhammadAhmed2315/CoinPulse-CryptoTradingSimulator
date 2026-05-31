@@ -167,6 +167,7 @@ export default function TopCoins() {
   } = useQuery({
     queryKey: ["coins", apiSort],
     queryFn: () => fetchTopCoins(apiSort),
+    staleTime: 30_000,
   });
   const isError = isQueryError;
 

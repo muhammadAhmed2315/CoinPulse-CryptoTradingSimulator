@@ -41,6 +41,7 @@ export default function Dashboard() {
   const trendingCoinsQuery = useQuery({
     queryKey: ["trendingCoins"],
     queryFn: getTrendingCoins,
+    staleTime: 30_000,
   });
 
   return (

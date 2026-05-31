@@ -86,6 +86,7 @@ export default function CoinInfoCard({
   const coinSparklineQuery = useQuery({
     queryKey: ["coinSparkline", currCoin.id],
     queryFn: () => getCoinSparkline(currCoin.id),
+    staleTime: 30_000,
   });
 
   // ===== DERIVED STATE =====

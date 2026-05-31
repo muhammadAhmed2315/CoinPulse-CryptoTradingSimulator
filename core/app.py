@@ -8,14 +8,11 @@ import requests
 from flask import (
     Blueprint,
     jsonify,
-    redirect,
-    render_template,
     request,
     session,
-    url_for,
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_login import current_user, logout_user
+from flask_login import current_user
 from sqlalchemy import and_, or_
 
 from constants import (
@@ -29,50 +26,6 @@ from models import Transaction, TransactionLikes, User, Wallet
 from RedditScraper.RedditScraper import RedditScraper
 
 core = Blueprint("core", __name__)
-
-
-@core.route("/dashboard")
-@jwt_required()
-def dashboard():
-    """
-    Route to display the dashboard page for logged-in users.
-
-    Returns:
-        A rendered HTML template for the dashboard page, with the COINGECKO_API_KEY
-        available for use in the template.
-    """
-    # If user isn't verified and doesn't have a provider, log them out and redirect
-    # them to the login page
-    if not current_user.verified and not current_user.provider:
-        logout_user()
-        return redirect(url_for("user_authentication.login"))
-
-    # Else, render the dashboard page
-    return render_template(
-        "core/dashboard.html",
-        COINGECKO_API_KEY=COINGECKO_API_KEY,
-    )
-
-
-@core.route("/top_coins")
-@jwt_required()
-def top_coins():
-    """
-    Route to display the top 100 coins available on the market (default = market cap
-    descending).
-
-    User can view the 100 top coins and information about them, sorted by market cap
-    ascending and descending, andvolume ascending and descending. Coins are shown in a
-    pagination component, with 10 coins per page.
-
-    Returns:
-        A rendered HTML template for the top coins page, with the COINGECKO_API_KEY
-        available for use in the template.
-    """
-    return render_template(
-        "core/top-coins.html",
-        COINGECKO_API_KEY=COINGECKO_API_KEY,
-    )
 
 
 @core.route("/get_trade_filter_counts", methods=["GET"])
@@ -653,27 +606,6 @@ def get_wallet_usd_balance():
             ),
             500,
         )
-
-
-@core.route("/coin_info")
-@jwt_required()
-def coin_info():
-    """
-    Renders the coin information page for the logged-in user. This page allows the user
-    to search for a coin by name and then provides detailed information about the coin
-    such as its current price, market cap, historical graphs, etc.
-
-    This function passes the CoinGecko API key to the template so that the front-end
-    can make API requests to fetch coin data.
-
-    Returns:
-        HTML: Renders the 'core/coin-info.html' template with the CoinGecko API key passed
-        as context for use in the front-end JavaScript.
-    """
-    return render_template(
-        "core/coin-info.html",
-        COINGECKO_API_KEY=COINGECKO_API_KEY,
-    )
 
 
 @core.route("/get_news_articles", methods=["POST"])

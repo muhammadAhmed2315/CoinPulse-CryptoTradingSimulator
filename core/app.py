@@ -968,14 +968,33 @@ def update_open_trades_in_background():
 
                 url = "https://api.coingecko.com/api/v3/coins/markets"
                 params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
-                response = requests.get(url, params=params)
-                data = response.json()
+                try:
+                    response = requests.get(
+                        url,
+                        params=params,
+                        headers=COINGECKO_API_HEADERS,
+                        timeout=10,
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+                except (requests.RequestException, ValueError):
+                    # Skip this batch on network/HTTP/invalid-JSON errors; coins
+                    # left without a price are skipped in the loop below.
+                    continue
+
+                # A rate-limit/error body may be a dict rather than the expected list
+                if not isinstance(data, list):
+                    continue
 
                 for coin in data:
                     coin_market_prices[coin["id"]] = coin["current_price"]
 
             # Update each open trade, seeing if it can be closed
             for transaction in open_transactions:
+                # Skip trades whose coin price could not be fetched this cycle
+                if transaction.coin_id not in coin_market_prices:
+                    continue
+
                 if transaction.orderType == "limit":
                     if (
                         transaction.transactionType == "buy"
@@ -1038,7 +1057,10 @@ def update_open_trades_in_background():
                             cancel_open_order(transaction)
 
             # Commit all changes to the database
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
         time.sleep(OPEN_TRADE_UPDATE_INTERVAL_SECONDS)
 
@@ -1236,6 +1258,7 @@ def cancel_open_trade():
 
 
 @core.route("/get_top_coins", methods=["POST"])
+@jwt_required()
 def get_top_coins():
     """
     Retrieve and return a list of the top coins from the CoinGecko API, sorted by a
@@ -1256,6 +1279,22 @@ def get_top_coins():
     """
     data = request.get_json()
     sort_coins_by = data["sort_coins_by"]
+
+    # Validate the sort_coins_by argument
+    if sort_coins_by not in {
+        "market_cap_asc",
+        "market_cap_desc",
+        "volume_asc",
+        "volume_desc",
+    }:
+        return (
+            jsonify(
+                {
+                    "error": "Invalid sort_coins_by value. Must be one of: market_cap_asc, market_cap_desc, volume_asc, volume_desc."
+                }
+            ),
+            400,
+        )
 
     url = "https://api.coingecko.com/api/v3/coins/markets"
     params = {
@@ -1283,6 +1322,7 @@ def get_top_coins():
 
 
 @core.route("/get_coin_data/<coin_id>", methods=["GET"])
+@jwt_required()
 def get_coin_data(coin_id: str):
     """
     Fetches and returns detailed market data for a specific coin.
@@ -1311,6 +1351,7 @@ def get_coin_data(coin_id: str):
 
 
 @core.route("/get_coin_sparkline/<coin_id>", methods=["GET"])
+@jwt_required()
 def get_coin_sparkline(coin_id: str):
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
     params = {
@@ -1364,6 +1405,7 @@ def get_coin_balance(coin_id: str):
 
 
 @core.route("/get_all_coin_names")
+@jwt_required()
 def get_all_coin_names():
     """
     Fetch and return a list of all cryptocurrency coins available on CoinGecko.
@@ -1386,6 +1428,7 @@ def get_all_coin_names():
 
 
 @core.route("/get_trending_coins")
+@jwt_required()
 def get_trending_coins():
     """
     Fetch and return data for currently trending coins from the CoinGecko API.

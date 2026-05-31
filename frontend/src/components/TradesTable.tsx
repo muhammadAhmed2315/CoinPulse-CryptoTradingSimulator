@@ -17,7 +17,7 @@ import DotGreen from "@/assets/dot-green.svg";
 import DotAmber from "@/assets/dot-amber.svg";
 import DotRed from "@/assets/dot-red.svg";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AgGridReact } from "ag-grid-react";
 import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
@@ -274,59 +274,67 @@ export default function TradesTable() {
   // ===== AGGRID DATA =====
   const rowData = tradeHistoryData?.data;
 
-  const columnDefs: ColDef[] = [
-    {
-      headerName: "#",
-      valueGetter: (params) => (params.node?.rowIndex ?? -1) + 1,
-      width: 110,
-      cellRenderer: idCellRenderer,
-    },
-    { field: "status", cellRenderer: statusRenderer, width: 145 },
-    { field: "orderType", cellRenderer: orderTypeRenderer, width: 110 },
-    {
-      field: "transactionType",
-      headerName: "Buy / Sell",
-      cellRenderer: transactionTypeRenderer,
-      width: 110,
-    },
-    {
-      field: "coin_id",
-      headerName: "Coin",
-      cellRenderer: coinRenderer,
-      width: 110,
-    },
-    { field: "quantity", cellRenderer: quantityRenderer, width: 140 },
-    {
-      field: "price_per_unit",
-      headerName: "Price",
-      cellRenderer: priceRenderer,
-      width: 140,
-    },
-    {
-      field: "price_at_execution",
-      headerName: "Execution Price",
-      cellRenderer: executionPriceRenderer,
-      width: 170,
-    },
-    {
-      field: "timestamp",
-      headerName: "Time Placed",
-      cellRenderer: timestampRenderer,
-      width: 180,
-    },
-    {
-      field: "action",
-      cellRenderer: (params: ICellRendererParams) =>
-        actionRenderer(params, tradeHistoryQuery.refetch),
-      width: 80,
-    },
-    {
-      field: "comment",
-      cellRenderer: commentRenderer,
-      flex: 1,
-      minWidth: 200,
-    },
-  ];
+  const refetch = tradeHistoryQuery.refetch;
+  const actionCellRenderer = useCallback(
+    (params: ICellRendererParams) => actionRenderer(params, refetch),
+    [refetch],
+  );
+
+  const columnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: "#",
+        valueGetter: (params) => (params.node?.rowIndex ?? -1) + 1,
+        width: 110,
+        cellRenderer: idCellRenderer,
+      },
+      { field: "status", cellRenderer: statusRenderer, width: 145 },
+      { field: "orderType", cellRenderer: orderTypeRenderer, width: 110 },
+      {
+        field: "transactionType",
+        headerName: "Buy / Sell",
+        cellRenderer: transactionTypeRenderer,
+        width: 110,
+      },
+      {
+        field: "coin_id",
+        headerName: "Coin",
+        cellRenderer: coinRenderer,
+        width: 110,
+      },
+      { field: "quantity", cellRenderer: quantityRenderer, width: 140 },
+      {
+        field: "price_per_unit",
+        headerName: "Price",
+        cellRenderer: priceRenderer,
+        width: 140,
+      },
+      {
+        field: "price_at_execution",
+        headerName: "Execution Price",
+        cellRenderer: executionPriceRenderer,
+        width: 170,
+      },
+      {
+        field: "timestamp",
+        headerName: "Time Placed",
+        cellRenderer: timestampRenderer,
+        width: 180,
+      },
+      {
+        field: "action",
+        cellRenderer: actionCellRenderer,
+        width: 80,
+      },
+      {
+        field: "comment",
+        cellRenderer: commentRenderer,
+        flex: 1,
+        minWidth: 200,
+      },
+    ],
+    [actionCellRenderer],
+  );
 
   // ===== EVENT HANDLERS =====
   function handlePrevBtnClick() {

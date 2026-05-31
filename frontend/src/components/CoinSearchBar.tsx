@@ -1,5 +1,5 @@
 import type { Coin } from "@/loadAllCoinsList";
-import { useCallback, useState } from "react";
+import { useMemo, useState } from "react";
 import { Field } from "./ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { SearchIcon } from "lucide-react";
@@ -28,7 +28,7 @@ export default function CoinSearchBar({
   const [showDropdown, setShowDropdown] = useState(false);
 
   // ===== DERIVED STATE =====
-  const coinMatching = useCallback(() => {
+  const matchingCoins = useMemo(() => {
     if (debouncedQuery === "") return [];
 
     // Search by ticker
@@ -40,8 +40,6 @@ export default function CoinSearchBar({
     // Search by name
     return coins.filter((c) => c.name.toLowerCase().startsWith(debouncedQuery));
   }, [coins, debouncedQuery]);
-
-  const matchingCoins = coinMatching();
 
   // ===== EVENT HANDLERS =====
   function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {

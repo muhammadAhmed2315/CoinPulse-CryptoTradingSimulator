@@ -75,6 +75,7 @@ export default function CoinInfoCard({
   const allCoinsQuery = useQuery({
     queryKey: ["allCoinsList"],
     queryFn: loadAllCoinsList,
+    staleTime: Infinity,
   });
 
   const detailedCoinDataQuery = useQuery({

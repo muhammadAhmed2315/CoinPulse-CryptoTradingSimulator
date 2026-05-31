@@ -23,6 +23,7 @@ export function prefetchNewTradeCard(
     queryClient.prefetchQuery({
       queryKey: ["allCoinsList"],
       queryFn: loadAllCoinsList,
+      staleTime: Infinity,
     }),
     queryClient.prefetchQuery({
       queryKey: ["coinInfo", coin.id],
@@ -151,6 +152,7 @@ export default function NewTradeCard({ initialCoin }: NewTradeCardProps) {
   const allCoinsQuery = useQuery({
     queryKey: ["allCoinsList"],
     queryFn: loadAllCoinsList,
+    staleTime: Infinity,
   });
 
   const coinDataQuery = useQuery({

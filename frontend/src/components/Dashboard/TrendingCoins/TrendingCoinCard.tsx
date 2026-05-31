@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
 
 // ===== TYPES =====
 type TrendingCoinCardProps = {
@@ -46,27 +47,32 @@ export default function TrendingCoinCard({
   // ===== STATE VARIABLES =====
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { onMouseEnter, onMouseLeave } = usePrefetchOnHover(
+    data
+      ? () =>
+          prefetchCoinInfo(queryClient, { id: data?.coin_id, name: data?.name })
+      : () => {},
+  );
 
   // ===== DERIVED STATE =====
   const priceChange = data ? data.price_change_percentage_24h.usd : undefined;
   const borderBeamColor = isError ? "#ff0000" : "#444";
-
-  // ===== REACT QUERY HOOKS =====
-  const queryClient = useQueryClient();
 
   return (
     <Card
       className={`relative p-3 gap-0 w-60 min-h-60.5 overflow-hidden ${
         isError ? "cursor-default" : "cursor-pointer"
       }`}
-      onFocus={() => {
-        if (data) prefetchCoinInfo(queryClient, { id: data.coin_id, name: data.name });
-      }}
       onMouseEnter={() => {
         setHovered(true);
-        if (data) prefetchCoinInfo(queryClient, { id: data.coin_id, name: data.name });
+        onMouseEnter();
       }}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => {
+        setHovered(false);
+        onMouseLeave();
+      }}
       onClick={
         isError
           ? undefined

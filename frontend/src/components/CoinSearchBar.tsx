@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 import { Field } from "./ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { SearchIcon } from "lucide-react";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient } from "@tanstack/react-query";
+import CoinSearchResult from "./CoinSearchResult";
 
 // ===== TYPES =====
 type CoinSearchBarProps = {
@@ -42,9 +43,6 @@ export default function CoinSearchBar({
 
   const matchingCoins = coinMatching();
 
-  // ===== REACT QUERY HOOKS =====
-  const queryClient = useQueryClient();
-
   // ===== EVENT HANDLERS =====
   function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {
     setQuery(e.target.value);
@@ -76,21 +74,16 @@ export default function CoinSearchBar({
       {/* ===== RESULTS DROPDOWN ===== */}
       <div className="absolute top-full left-0 w-full z-10 bg-background overflow-hidden rounded-md">
         {showDropdown &&
-          matchingCoins.slice(0, 10).map((c) => (
-            <div
-              className="flex justify-between rounded-md px-2 py-0.5 cursor-pointer hover:bg-muted bg-background gap-2"
-              onClick={() => handleDropdownItemClick(c)}
-              onMouseEnter={
-                prefetchFn ? () => prefetchFn(queryClient, c) : undefined
-              }
-            >
-              <div className="flex gap-1.5 min-w-0">
-                <img className="rounded-3xl size-7 shrink-0" src={c.imgUrl} />
-                <p className="truncate">{c.name}</p>
-              </div>
-              <p className="uppercase shrink-0">${c.ticker}</p>
-            </div>
-          ))}
+          matchingCoins
+            .slice(0, 10)
+            .map((c) => (
+              <CoinSearchResult
+                key={c.id}
+                coin={c}
+                onDropdownItemClick={handleDropdownItemClick}
+                prefetchFn={prefetchFn}
+              />
+            ))}
       </div>
     </div>
   );

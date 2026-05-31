@@ -13,6 +13,7 @@ import {
 import NewTradeCard, { prefetchNewTradeCard } from "./NewTradeCard";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
 
 // ===== TYPES =====
 type NewTradeButtonProps = {
@@ -27,7 +28,12 @@ type NewTradeButtonProps = {
  * Component showing a "New Trade" button, opens a "New Trade" card when clicked.
  */
 export default function NewTradeButton({ initialCoin }: NewTradeButtonProps) {
+  // ===== STATE VARIABLES =====
   const queryClient = useQueryClient();
+
+  const { onMouseEnter, onMouseLeave } = usePrefetchOnHover(() =>
+    prefetchNewTradeCard(queryClient, initialCoin),
+  );
 
   return (
     <Dialog>
@@ -35,12 +41,8 @@ export default function NewTradeButton({ initialCoin }: NewTradeButtonProps) {
       <DialogTrigger asChild>
         <RippleButton
           className="cursor-pointer font-mono text-[13px] font-semibold uppercase tracking-[0.06em] bg-primary hover:bg-primary/90 text-primary-foreground border-0 px-5 py-3 rounded-md"
-          onFocus={() => {
-            prefetchNewTradeCard(queryClient, initialCoin);
-          }}
-          onMouseEnter={() => {
-            prefetchNewTradeCard(queryClient, initialCoin);
-          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
         >
           {initialCoin
             ? `Trade ${initialCoin.ticker.toUpperCase()}`

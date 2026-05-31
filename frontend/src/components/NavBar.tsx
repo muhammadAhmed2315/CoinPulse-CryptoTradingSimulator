@@ -16,7 +16,7 @@ import InfoIcon from "@/assets/icons/info.svg";
 import BarChartIcon from "@/assets/icons/bar-chart.svg";
 import LineChartAscendingIcon from "@/assets/icons/line-chart-ascending.svg";
 import ErrorFallback from "./ErrorFallback";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useMatch, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
@@ -30,6 +30,7 @@ import { prefetchDashboard } from "@/pages/Dashboard";
 import { prefetchMyTrades } from "@/pages/MyTrades";
 import { fetchWithRefresh } from "@/lib/api";
 import ThemeToggle from "./ThemeToggle";
+import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -51,6 +52,31 @@ export default function NavBar() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+
+  const isDashboardActive = !!useMatch("/dashboard");
+  const isMyTradesActive = !!useMatch("/my_trades");
+  const isTopCoinsActive = !!useMatch("/top_coins");
+  const isCoinInfoActive = !!useMatch("/coin_info");
+
+  const {
+    onMouseEnter: dashboardOnMouseEnter,
+    onMouseLeave: dashboardOnMouseLeave,
+  } = usePrefetchOnHover(() => prefetchDashboard(queryClient));
+
+  const {
+    onMouseEnter: myTradesOnMouseEnter,
+    onMouseLeave: myTradesOnMouseLeave,
+  } = usePrefetchOnHover(() => prefetchMyTrades(queryClient));
+
+  const {
+    onMouseEnter: topCoinsOnMouseEnter,
+    onMouseLeave: topCoinsOnMouseLeave,
+  } = usePrefetchOnHover(() => prefetchTopCoins(queryClient));
+
+  const {
+    onMouseEnter: coinInfoOnMouseEnter,
+    onMouseLeave: coinInfoOnMouseLeave,
+  } = usePrefetchOnHover(() => prefetchCoinInfo(queryClient));
 
   // ===== REACT QUERY HOOKS =====
   const portfolioTotalValueQuery = useQuery({
@@ -117,12 +143,12 @@ export default function NavBar() {
             >
               <NavLink
                 to="/dashboard"
-                onFocus={() => {
-                  prefetchDashboard(queryClient);
-                }}
-                onMouseEnter={() => {
-                  prefetchDashboard(queryClient);
-                }}
+                onMouseEnter={
+                  !isDashboardActive ? dashboardOnMouseEnter : () => {}
+                }
+                onMouseLeave={
+                  !isDashboardActive ? dashboardOnMouseLeave : () => {}
+                }
               >
                 {({ isActive }) => (
                   <div
@@ -132,7 +158,10 @@ export default function NavBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
-                    <img src={HomeIcon} className="size-4 opacity-80 dark:invert" />
+                    <img
+                      src={HomeIcon}
+                      className="size-4 opacity-80 dark:invert"
+                    />
                     <p>Home</p>
                   </div>
                 )}
@@ -147,12 +176,12 @@ export default function NavBar() {
             >
               <NavLink
                 to="/my_trades"
-                onFocus={() => {
-                  prefetchMyTrades(queryClient);
-                }}
-                onMouseEnter={() => {
-                  prefetchMyTrades(queryClient);
-                }}
+                onMouseEnter={
+                  !isMyTradesActive ? myTradesOnMouseEnter : () => {}
+                }
+                onMouseLeave={
+                  !isMyTradesActive ? myTradesOnMouseLeave : () => {}
+                }
               >
                 {({ isActive }) => (
                   <div
@@ -162,7 +191,10 @@ export default function NavBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
-                    <img src={BarChartIcon} className="size-4 opacity-80 dark:invert" />
+                    <img
+                      src={BarChartIcon}
+                      className="size-4 opacity-80 dark:invert"
+                    />
                     <p>My Trades</p>
                   </div>
                 )}
@@ -177,12 +209,12 @@ export default function NavBar() {
             >
               <NavLink
                 to="/top_coins"
-                onFocus={() => {
-                  prefetchTopCoins(queryClient);
-                }}
-                onMouseEnter={() => {
-                  prefetchTopCoins(queryClient);
-                }}
+                onMouseEnter={
+                  !isTopCoinsActive ? topCoinsOnMouseEnter : () => {}
+                }
+                onMouseLeave={
+                  !isTopCoinsActive ? topCoinsOnMouseLeave : () => {}
+                }
               >
                 {({ isActive }) => (
                   <div
@@ -210,12 +242,12 @@ export default function NavBar() {
             >
               <NavLink
                 to="/coin_info"
-                onFocus={() => {
-                  prefetchCoinInfo(queryClient);
-                }}
-                onMouseEnter={() => {
-                  prefetchCoinInfo(queryClient);
-                }}
+                onMouseEnter={
+                  !isCoinInfoActive ? coinInfoOnMouseEnter : () => {}
+                }
+                onMouseLeave={
+                  !isCoinInfoActive ? coinInfoOnMouseLeave : () => {}
+                }
               >
                 {({ isActive }) => (
                   <div
@@ -225,7 +257,10 @@ export default function NavBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
-                    <img src={InfoIcon} className="size-4 opacity-80 dark:invert" />
+                    <img
+                      src={InfoIcon}
+                      className="size-4 opacity-80 dark:invert"
+                    />
                     <p>Coin Info</p>
                   </div>
                 )}

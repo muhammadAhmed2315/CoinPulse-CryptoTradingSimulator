@@ -621,6 +621,27 @@ def reset_password():
 
     user = User.query.filter_by(email=email).first()
 
+    if user is None:
+        return {
+            "error": "User not found",
+            "description": "No account exists with this email address.",
+        }, 404
+
+    # Decode the user's provided token
+    try:
+        decoded_token = decode_token(token)
+    except Exception as e:
+        return {
+            "error": "Invalid token",
+            "description": "This password reset link is invalid.",
+        }, 400
+
+    if str(user.id) != decoded_token["sub"]:
+        return {
+            "error": "Invalid token",
+            "description": "This password reset link is invalid.",
+        }, 400
+
     # Check if reset link has already been used
     if user.last_password_reset_token == token:
         return {
@@ -643,7 +664,6 @@ def reset_password():
         }, 400
 
     # Update user password in the database
-    user = db.session.get(User, user.id)
     user.update_password(password)
     user.update_last_password_reset_token(token)
     db.session.add(user)

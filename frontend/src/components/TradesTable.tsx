@@ -433,7 +433,10 @@ export default function TradesTable() {
   return (
     <Tabs
       value={filter}
-      onValueChange={(value) => setFilter(value as typeof filter)}
+      onValueChange={(value) => {
+        setFilter(value as typeof filter);
+        setPage(1);
+      }}
     >
       <Card className="p-0 gap-0 overflow-hidden rounded-[18px] border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         {/* ===== HEADER ===== */}

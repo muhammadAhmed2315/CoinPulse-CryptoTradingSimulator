@@ -329,11 +329,13 @@ def update_likes():
             500,
         )
 
-    return jsonify(
-        {
-            "success": "Like count successfully updated",
-            "currLikes": transaction.get_number_of_likes(),
-        },
+    return (
+        jsonify(
+            {
+                "success": "Like count successfully updated",
+                "currLikes": transaction.get_number_of_likes(),
+            },
+        ),
         200,
     )
 
@@ -392,7 +394,12 @@ def process_order():
         return jsonify({"error": "Invalid order request"}), 422
 
     # Make sure user did not enter an invalid quantity
-    if not isinstance(data["quantity"], (int, float)) or data["quantity"] <= 0:
+    if (
+        not isinstance(data["quantity"], (int, float))
+        or isinstance(data["quantity"], bool)
+        or not math.isfinite(data["quantity"])
+        or data["quantity"] <= 0
+    ):
         return (
             jsonify({"error": "Quantity must be a positive number"}),
             422,
@@ -401,6 +408,8 @@ def process_order():
     # Validate correct trigger price for limit and stop orders
     if data["orderType"] != "market" and (
         not isinstance(data["price_per_unit"], (int, float))
+        or isinstance(data["price_per_unit"], bool)
+        or not math.isfinite(data["price_per_unit"])
         or data["price_per_unit"] <= 0
     ):
         return (
@@ -410,7 +419,23 @@ def process_order():
 
     # Fetch current price for market orders
     if data["orderType"] == "market":
-        data["price_per_unit"] = get_coins_data(data["coin_id"])[0]["current_price"]
+        try:
+            market_data = get_coins_data(data["coin_id"])
+            current_price = market_data[0]["current_price"]
+        except (requests.RequestException, IndexError, KeyError, TypeError, ValueError):
+            return (
+                jsonify({"error": "Could not fetch current market price"}),
+                502,
+            )
+
+        # CoinGecko can return a null/zero price for unknown or delisted coins
+        if not isinstance(current_price, (int, float)) or current_price <= 0:
+            return (
+                jsonify({"error": "No valid market price for this coin"}),
+                502,
+            )
+
+        data["price_per_unit"] = current_price
 
     # Get the current user
     user_id = get_jwt_identity()
@@ -794,7 +819,7 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 # If more than one page of data needs to be fetched from the API, then
                 # sleep for 25 seconds before making another request so that we don't get
                 # rate-limited by the API
-                if len(coins) > 250:
+                if i + 250 < len(coins):
                     time.sleep(25)
 
             # Update the following fields for each wallet:
@@ -1019,10 +1044,12 @@ def update_open_trades_in_background():
 
 
 @jwt_required()
-def get_coins_data(coin_ids: str):
+def get_coins_data(coin_ids: str, precision: int | None = None):
     try:
         url = "https://api.coingecko.com/api/v3/coins/markets"
-        params = {"vs_currency": "usd", "ids": coin_ids, "precision": 2}
+        params = {"vs_currency": "usd", "ids": coin_ids}
+        if precision:
+            params = {**params, "precision": precision}
 
         response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
         data = response.json()
@@ -1058,7 +1085,7 @@ def get_wallet_assets():
         owned_coins = ",".join(current_assets.keys())
 
         # Fetch current market data for each coin
-        coin_market_data = get_coins_data(owned_coins)
+        coin_market_data = get_coins_data(owned_coins, 2)
 
         # Filter the coin market data
         coin_market_data = [
@@ -1143,7 +1170,7 @@ def get_open_trades():
         res.append(temp)
         coins.add(transaction.coin_id)
 
-    coins_data = get_coins_data(",".join(coins))
+    coins_data = get_coins_data(",".join(coins), 2)
     coins_data = {
         coin["id"]: [coin["current_price"], coin["image"], coin["symbol"], coin["name"]]
         for coin in coins_data

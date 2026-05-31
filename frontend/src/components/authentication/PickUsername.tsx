@@ -46,6 +46,12 @@ export default function PickUsername() {
     },
   });
 
+  // ===== SUBMIT HANDLER =====
+  function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    mutation.mutate({ username: username });
+  }
+
   // ===== AUTH REDIRECTS =====
   if (isLoading) {
     return (
@@ -83,26 +89,29 @@ export default function PickUsername() {
           Choose something unique. This is how others will find you.
         </p>
 
-        {/* ===== USERNAME FIELD ===== */}
-        <NewUsername username={username} setUsername={setUsername} />
-
-        {/* ===== ERROR ALERT ===== */}
-        {error.at(0) !== "" && error.at(1) !== "" && (
-          <Alert className="text-left border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-            <AlertTitle>{error.at(0)}</AlertTitle>
-            <AlertDescription>{error.at(1)}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* ===== SUBMIT BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          onClick={() => mutation.mutate({ username: username })}
+        {/* ===== USERNAME FORM ===== */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full flex-col items-center gap-3"
         >
-          {mutation.isPending ? <Spinner /> : <>Continue</>}
-          <RippleButtonRipples />
-        </RippleButton>
+          {/* ===== USERNAME FIELD ===== */}
+          <NewUsername username={username} setUsername={setUsername} />
+
+          {/* ===== ERROR ALERT ===== */}
+          {error.at(0) !== "" && error.at(1) !== "" && (
+            <Alert className="text-left border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>{error.at(0)}</AlertTitle>
+              <AlertDescription>{error.at(1)}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* ===== SUBMIT BUTTON ===== */}
+          <RippleButton type="submit" className="w-full cursor-pointer">
+            {mutation.isPending ? <Spinner /> : <>Continue</>}
+            <RippleButtonRipples />
+          </RippleButton>
+        </form>
       </div>
     </Card>
   );

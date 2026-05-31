@@ -58,7 +58,8 @@ export default function EmailVerificationForm() {
   });
 
   // ===== EVENT HANDLERS =====
-  async function handleEmailSubmit(): Promise<void> {
+  async function handleEmailSubmit(e?: React.FormEvent): Promise<void> {
+    e?.preventDefault();
     if (!validateEmail(email)) {
       setErrorVisible(true);
     } else {
@@ -91,7 +92,11 @@ export default function EmailVerificationForm() {
         </p>
 
         {/* ===== EMAIL FIELD ===== */}
-        <Field>
+        <form
+          className="flex w-full flex-col items-center gap-4"
+          onSubmit={handleEmailSubmit}
+        >
+          <Field>
           <FieldLabel htmlFor="input-email">Email</FieldLabel>
           <InputGroup>
             <InputGroupAddon>
@@ -118,14 +123,12 @@ export default function EmailVerificationForm() {
           </Alert>
         )}
 
-        {/* ===== SUBMIT BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          onClick={handleEmailSubmit}
-        >
-          {mutation.isPending ? <Spinner /> : <>Send new link</>}
-          <RippleButtonRipples />
-        </RippleButton>
+          {/* ===== SUBMIT BUTTON ===== */}
+          <RippleButton className="w-full cursor-pointer" type="submit">
+            {mutation.isPending ? <Spinner /> : <>Send new link</>}
+            <RippleButtonRipples />
+          </RippleButton>
+        </form>
         {/* ===== SUPPORT LINK ===== */}
         <div className="flex text-sm underline-offset-4 ">
           Need help?&nbsp;

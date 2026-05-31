@@ -103,7 +103,8 @@ export default function ResetPassword() {
   });
 
   // ===== EVENT HANDLERS =====
-  function handleSubmit() {
+  function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
     const errors = validatePassword(password);
     if (errors.length !== 0) {
       setError([
@@ -130,6 +131,7 @@ export default function ResetPassword() {
           password.
         </CardDescription>
       </CardHeader>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <CardContent className="flex flex-col gap-4">
         {/* ===== PASSWORD FIELD ===== */}
         <NewPassword password={password} setPassword={setPassword} />
@@ -159,7 +161,7 @@ export default function ResetPassword() {
         {/* ===== SUBMIT BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
-          onClick={handleSubmit}
+          type="submit"
           disabled={successTimer > 0}
         >
           {resetPasswordMutation.isPending ? (
@@ -177,12 +179,14 @@ export default function ResetPassword() {
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"
+          type="button"
           onClick={() => navigate("/login", { state: { prefillEmail: email } })}
         >
           ← Back to login
           <RippleButtonRipples />
         </RippleButton>
       </CardFooter>
+      </form>
     </Card>
   );
 }

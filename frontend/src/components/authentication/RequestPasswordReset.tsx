@@ -59,7 +59,8 @@ export default function RequestPasswordReset() {
     navigate("/login");
   }
 
-  function handleSendEmailClick() {
+  function handleSendEmailClick(e?: React.FormEvent) {
+    e?.preventDefault();
     if (validateEmail(email)) {
       sendResetEmailMutation.mutate(undefined, {
         onSuccess: () => {
@@ -81,6 +82,7 @@ export default function RequestPasswordReset() {
           to reset your password.
         </CardDescription>
       </CardHeader>
+      <form onSubmit={handleSendEmailClick} className="flex flex-col gap-6">
       <CardContent className="flex flex-col gap-4">
         {/* ===== EMAIL FIELD ===== */}
         <Field>
@@ -115,7 +117,7 @@ export default function RequestPasswordReset() {
         {/* ===== SEND BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
-          onClick={handleSendEmailClick}
+          type="submit"
         >
           {sendResetEmailMutation.isPending ? (
             <Spinner />
@@ -128,12 +130,14 @@ export default function RequestPasswordReset() {
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"
+          type="button"
           onClick={handleBackToLogin}
         >
           ← Back to login
           <RippleButtonRipples />
         </RippleButton>
       </CardFooter>
+      </form>
     </Card>
   );
 }

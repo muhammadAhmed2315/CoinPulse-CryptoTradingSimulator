@@ -106,7 +106,8 @@ export default function Login() {
   });
 
   // ===== EVENT HANDLERS =====
-  async function handleLogin(): Promise<void> {
+  async function handleLogin(e?: React.FormEvent): Promise<void> {
+    e?.preventDefault();
     if (!validateEmail(email)) {
       setError([
         "Invalid email address",
@@ -138,6 +139,7 @@ export default function Login() {
           Sign in to continue where you left off.
         </CardDescription>
       </CardHeader>
+      <form onSubmit={handleLogin} className="flex flex-col gap-6">
       <CardContent className="flex flex-col gap-4">
         {/* ===== EMAIL FIELD ===== */}
         <Field>
@@ -180,7 +182,7 @@ export default function Login() {
       </CardContent>
       <CardFooter className="flex flex-col gap-2.5">
         {/* ===== LOGIN BUTTON ===== */}
-        <RippleButton className="w-full cursor-pointer" onClick={handleLogin}>
+        <RippleButton className="w-full cursor-pointer" type="submit">
           {loginMutation.isPending ? <Spinner /> : <>Login</>}
           <RippleButtonRipples />
         </RippleButton>
@@ -189,6 +191,7 @@ export default function Login() {
         <RippleButton
           className="w-full cursor-pointer"
           variant="outline"
+          type="button"
           onClick={handleTestAccountLogin}
         >
           Login to test account
@@ -209,6 +212,7 @@ export default function Login() {
           <RippleButton
             className="cursor-pointer"
             variant="outline"
+            type="button"
             onClick={() => {
               window.location.href = "http://localhost:5000/login_discord";
             }}
@@ -225,6 +229,7 @@ export default function Login() {
           <RippleButton
             className="cursor-pointer"
             variant="outline"
+            type="button"
             onClick={() => {
               window.location.href = "http://localhost:5000/login_google";
             }}
@@ -250,6 +255,7 @@ export default function Login() {
           </p>
         </div>
       </CardFooter>
+      </form>
     </Card>
   );
 }

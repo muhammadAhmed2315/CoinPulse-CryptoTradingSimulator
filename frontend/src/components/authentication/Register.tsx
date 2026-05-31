@@ -80,7 +80,8 @@ export default function CreateAccount() {
   });
 
   // ===== EVENT HANDLERS =====
-  function handleCreateAccount() {
+  function handleCreateAccount(e?: React.FormEvent) {
+    e?.preventDefault();
     if (!validateEmail(email)) {
       setError([
         "Invalid email address",
@@ -129,6 +130,7 @@ export default function CreateAccount() {
         <CardTitle className="text-xl font-bold tracking-tight">Create an account</CardTitle>
         <CardDescription>Join us. It only takes a moment.</CardDescription>
       </CardHeader>
+      <form onSubmit={handleCreateAccount} className="flex flex-col gap-6">
       <CardContent className="flex flex-col gap-4">
         {/* ===== EMAIL FIELD ===== */}
         <Field>
@@ -171,7 +173,7 @@ export default function CreateAccount() {
         {/* ===== SUBMIT BUTTON ===== */}
         <RippleButton
           className="w-full cursor-pointer"
-          onClick={handleCreateAccount}
+          type="submit"
         >
           {createAccountMutation.isPending ? <Spinner /> : <>Create account</>}
           <RippleButtonRipples />
@@ -190,6 +192,7 @@ export default function CreateAccount() {
         <div className="flex gap-2 justify-center">
           <RippleButton
             className="cursor-pointer"
+            type="button"
             variant="outline"
             onClick={() => {
               window.location.href = "http://localhost:5000/login_discord";
@@ -206,6 +209,7 @@ export default function CreateAccount() {
 
           <RippleButton
             className="cursor-pointer"
+            type="button"
             variant="outline"
             onClick={() => {
               window.location.href = "http://localhost:5000/login_google";
@@ -232,6 +236,7 @@ export default function CreateAccount() {
           </p>
         </div>
       </CardFooter>
+      </form>
     </Card>
   );
 }

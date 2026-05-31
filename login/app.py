@@ -45,6 +45,7 @@ from constants import (
     GOOGLE_TOKEN_URL,
     GOOGLE_USERINFO_URL,
     PASSWORD_ALLOWED_SPECIAL_CHARS,
+    FLASK_ENV,
 )
 from extensions import db
 from models import User, ValueHistory, Wallet
@@ -128,7 +129,9 @@ def callback_discord():
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Only for development on localhost
+# Only for development on localhost
+if FLASK_ENV == "development":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 @user_authentication.route("/login_google")

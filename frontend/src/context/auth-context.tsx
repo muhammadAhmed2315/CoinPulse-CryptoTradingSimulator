@@ -4,7 +4,6 @@ import { getStrictContext } from "@/lib/get-strict-context";
 
 // ===== TYPES =====
 interface User {
-  id: number;
   username: string;
   email: string;
 }
@@ -16,7 +15,8 @@ interface AuthContextValue {
 }
 
 // ===== CONTEXT =====
-const [AuthProvider, useAuth] = getStrictContext<AuthContextValue>("AuthContext");
+const [AuthProvider, useAuth] =
+  getStrictContext<AuthContextValue>("AuthContext");
 
 function AuthContextProvider({ children }: { children: React.ReactNode }) {
   // ===== REACT QUERY HOOKS =====

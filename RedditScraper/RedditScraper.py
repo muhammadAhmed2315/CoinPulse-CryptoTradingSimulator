@@ -58,16 +58,27 @@ class RedditScraper:
         # Requests access token from Reddit API
         try:
             token_data = response.json()
-            access_token = token_data["access_token"]
-            # Reddit returns the token lifetime in seconds (typically 3600). Store an
-            # absolute expiry timestamp so callers can cache/reuse this scraper until
-            # the token is close to expiring.
-            expires_in = token_data.get("expires_in", 3600)
-            self.token_expires_at = time.time() + float(expires_in)
-        except:
-            access_token = None
+        except Exception as exc:
             # Treat a failed token fetch as already expired so it is not cached/reused.
             self.token_expires_at = 0
+            raise RuntimeError("Failed to obtain Reddit access token") from exc
+
+        access_token = token_data.get("access_token") if isinstance(
+            token_data, dict
+        ) else None
+
+        # If the response was not successful or did not contain a usable token, fail
+        # loudly instead of proceeding with a "bearer None" header.
+        if response.status_code != 200 or not access_token:
+            # Treat a failed token fetch as already expired so it is not cached/reused.
+            self.token_expires_at = 0
+            raise RuntimeError("Failed to obtain Reddit access token")
+
+        # Reddit returns the token lifetime in seconds (typically 3600). Store an
+        # absolute expiry timestamp so callers can cache/reuse this scraper until
+        # the token is close to expiring.
+        expires_in = token_data.get("expires_in", 3600)
+        self.token_expires_at = time.time() + float(expires_in)
 
         self.access_token = access_token
 
@@ -236,32 +247,68 @@ class RedditScraper:
 
         if sort in ["relevance", "top", "comments"]:
             RedditScraper.validate_params(time=time)
-            res = requests.get(
-                f"https://oauth.reddit.com/search.json?q={keyword}&limit={limit}&t={time}&sort={sort}&after={after}",
-                headers=self.headers,
-            ).json()
+            params = {
+                "q": keyword,
+                "limit": limit,
+                "t": time,
+                "sort": sort,
+                "after": after,
+            }
         else:
-            res = requests.get(
-                f"https://oauth.reddit.com/search.json?q={keyword}&limit={limit}&sort={sort}&after={after}",
-                headers=self.headers,
-            ).json()
+            params = {
+                "q": keyword,
+                "limit": limit,
+                "sort": sort,
+                "after": after,
+            }
+
+        res = requests.get(
+            "https://oauth.reddit.com/search.json",
+            params=params,
+            headers=self.headers,
+        ).json()
 
         posts = []
 
-        for post in res["data"]["children"]:
-            post = post["data"]
+        # Reddit error bodies (e.g. 401/429) do not contain a "data"/"children"
+        # structure, so validate the shape before indexing to avoid a KeyError.
+        if not isinstance(res, dict):
+            return []
+        data = res.get("data")
+        if not isinstance(data, dict):
+            return []
+        children = data.get("children")
+        if not isinstance(children, list):
+            return []
+
+        for post in children:
+            if not isinstance(post, dict):
+                continue
+            post = post.get("data")
+            if not isinstance(post, dict):
+                continue
+            thumbnail = post.get("thumbnail")
+            permalink = post.get("permalink")
             posts.append(
                 RedditPost(
-                    title=post["title"],
-                    thumbnail=post["thumbnail"].replace("&amp;", "&"),
-                    content=post["selftext"],
-                    subreddit=post["subreddit_name_prefixed"],
-                    score=post["ups"],
-                    comment_count=post["num_comments"],
-                    id=post["id"],
-                    url="https://www.reddit.com" + post["permalink"],
-                    fullname=post["name"],
-                    timestamp=post["created_utc"],
+                    title=post.get("title"),
+                    thumbnail=(
+                        thumbnail.replace("&amp;", "&")
+                        if isinstance(thumbnail, str)
+                        else thumbnail
+                    ),
+                    content=post.get("selftext"),
+                    subreddit=post.get("subreddit_name_prefixed"),
+                    score=post.get("ups"),
+                    comment_count=post.get("num_comments"),
+                    id=post.get("id"),
+                    url=(
+                        "https://www.reddit.com" + permalink
+                        if isinstance(permalink, str)
+                        else permalink
+                    ),
+                    fullname=post.get("name"),
+                    timestamp=post.get("created_utc"),
                 )
             )
 

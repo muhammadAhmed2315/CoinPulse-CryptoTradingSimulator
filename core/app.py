@@ -378,21 +378,39 @@ def process_order():
         "quantity",
         "coin_id",
         "comment",
-        "price_per_unit",
         "visibility",
     }
 
     # Verify required fields have been provided
     for key in required_fields:
         if key not in data:
-            return jsonify({"error": "Order failed: Invalid request data"}), 422
+            return jsonify({"error": "Invalid order request"}), 422
 
-    # Make sure user did not enter a negative quantity
-    if data["quantity"] <= 0:
+    if (data["orderType"] == "market" and data.get("price_per_unit")) or (
+        data["orderType"] != "market" and not data.get("price_per_unit")
+    ):
+        return jsonify({"error": "Invalid order request"}), 422
+
+    # Make sure user did not enter an invalid quantity
+    if not isinstance(data["quantity"], (int, float)) or data["quantity"] <= 0:
         return (
-            jsonify({"error": "Order failed: Order quantity must be greater than 0"}),
+            jsonify({"error": "Quantity must be a positive number"}),
             422,
         )
+
+    # Validate correct trigger price for limit and stop orders
+    if data["orderType"] != "market" and (
+        not isinstance(data["price_per_unit"], (int, float))
+        or data["price_per_unit"] <= 0
+    ):
+        return (
+            jsonify({"error": "Trigger price must be a positive number"}),
+            422,
+        )
+
+    # Fetch current price for market orders
+    if data["orderType"] == "market":
+        data["price_per_unit"] = get_coins_data(data["coin_id"])[0]["current_price"]
 
     # Get the current user
     user_id = get_jwt_identity()

@@ -158,12 +158,6 @@ export const USERNAME_RULES = [
   },
 ];
 
-export function validateUsername(username: string) {
-  return USERNAME_RULES.filter((rule) => !rule.test(username)).map(
-    (rule) => rule.label,
-  );
-}
-
 export function validateUsernameRule(username: string, rule: string) {
   return USERNAME_RULES.some((x) => x.label === rule && x.test(username));
 }

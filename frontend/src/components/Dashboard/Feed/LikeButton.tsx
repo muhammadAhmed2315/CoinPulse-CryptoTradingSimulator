@@ -192,7 +192,9 @@ export default function LikeButton({
         })}
 
         {/* Heart icon */}
-        <span className={`inline-flex ${anim === "like" ? "heart-anim" : anim === "unlike" ? "heart-break" : ""}`}>
+        <span
+          className={`inline-flex ${anim === "like" ? "heart-anim" : anim === "unlike" ? "heart-break" : ""}`}
+        >
           <HeartSVG filled={liked} />
         </span>
 
@@ -206,21 +208,3 @@ export default function LikeButton({
     </>
   );
 }
-
-// ── Demo ────────────────────────────────────────────────────────────────────
-
-// export default function App() {
-//   const [liked, setLiked] = useState(false);
-//   const [count, setCount] = useState(4);
-
-//   function handleToggle() {
-//     setLiked((p) => !p);
-//     setCount((p) => (liked ? p - 1 : p + 1));
-//   }
-
-//   return (
-//     <div className="flex items-center justify-center min-h-screen">
-//       <HeartButton liked={liked} count={count} onToggle={handleToggle} />
-//     </div>
-//   );
-// }

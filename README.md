@@ -6,7 +6,7 @@ The website is deployed on [CoinPulse](https://coin-pulse-ffda7bc3f791.herokuapp
 
 ## Project Description
 
-A Flask-based web application that allows users to simulate cryptocurrency trading in a realistic environment. Users can place different types of trades, view historical trade data, monitor their portfolio over time, and interact with other users by liking their trades. The website also offers a RESTful API to allow programmatic interaction.
+A Flask-based web application that allows users to simulate cryptocurrency trading in a realistic environment. Users can place different types of trades, view historical trade data, monitor their portfolio over time, and interact with other users by liking their trades.
 
 ## Features
 
@@ -19,7 +19,6 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
 - **Charts and Market Data:** Users can access detailed charts for any cryptocurrency, including historical data such as OHLC (Open, High, Low, Close), price, volume, and market cap.
 - **Real-Time News:** Users can access real-time news about any given coin, thanks to web scraping Yahoo News.
 - **Reddit Integration:** Users can access recent Reddit posts about a specific coin using the Reddit API.
-- **RESTful API:** Programmatic access to user actions (such as placing orders), market data, news articles, and Reddit posts.
 
 ## Setup Instructions
 

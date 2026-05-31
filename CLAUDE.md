@@ -42,11 +42,10 @@ The project uses `black` for Python formatting (listed in requirements.txt).
 
 ### Backend Structure (Flask Blueprints)
 
-The app factory is in `app.py` (`create_app()`). Extensions (db, jwt, login_manager) are initialized in `extensions.py` to avoid circular imports. Three blueprints:
+The app factory is in `app.py` (`create_app()`). Extensions (db, jwt, login_manager) are initialized in `extensions.py` to avoid circular imports. Two blueprints:
 
 - **`login/app.py`** (`user_authentication`) - Registration, login (email/password + Discord/Google OAuth), email verification, password reset. Uses JWT cookies (not headers) for session management via Flask-JWT-Extended.
 - **`core/app.py`** (`core`) - All frontend-facing endpoints: placing orders, feed posts, wallet data, coin data proxied from CoinGecko, news (Yahoo scraper), Reddit posts. Most routes are `@jwt_required()`.
-- **`api/app.py`** (`api`, prefix `/api`) - RESTful API with JWT Bearer token auth. Mirrors much of core's functionality for programmatic access. Caches CoinGecko coin list every 5 minutes via `@api.before_request`.
 
 ### Background Threads (started only via `python app.py`)
 
@@ -87,7 +86,6 @@ Required in `.env`: `DATABASE_URL`, `COINGECKO_API_KEY`, `MAIL_USERNAME`, `MAIL_
 
 ## Key Conventions
 
-- The `core` blueprint endpoints are consumed by the React frontend; the `api` blueprint is the public REST API. They have overlapping functionality but different auth mechanisms (cookies vs Bearer tokens).
 - CoinGecko rate limits are a persistent constraint: the code throttles with `time.sleep()` between batch requests and caches coin lists.
 - Frontend dev server runs on port 5173, backend on port 5000. CORS is configured for both `localhost` origins.
 - Database migrations use Flask-Migrate (Alembic). Migration files are in `migrations/versions/`.

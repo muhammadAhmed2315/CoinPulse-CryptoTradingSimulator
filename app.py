@@ -101,14 +101,12 @@ def create_app():
         return db.session.get(User, uid)
 
     # Import blueprints
-    from api.app import api
     from core.app import core
     from login.app import user_authentication
 
     # Register blueprints
     app.register_blueprint(user_authentication)
     app.register_blueprint(core)
-    app.register_blueprint(api, url_prefix="/api")
 
     # Create database tables
     with app.app_context():

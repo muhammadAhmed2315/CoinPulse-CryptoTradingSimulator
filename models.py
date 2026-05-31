@@ -97,15 +97,6 @@ class User(db.Model, UserMixin):
             return check_password_hash(self.password_hash, password)
         return False
 
-    def is_oauth_user(self):
-        """
-        Checks whether a user registered via an OAuth provider
-
-        Returns:
-            bool: True if the user is an OAuth user, else False
-        """
-        return self.provider and self.provider_id
-
 
 class Wallet(db.Model):
     """

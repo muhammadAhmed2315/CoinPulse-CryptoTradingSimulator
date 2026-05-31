@@ -568,46 +568,6 @@ def get_wallet_total_current_value():
         )
 
 
-@core.route("/get_wallet_usd_balance", methods=["GET"])
-@jwt_required()
-def get_wallet_usd_balance():
-    """
-    Retrieves the current USD balance from the user's wallet.
-
-    Returns:
-        tuple: A tuple containing a JSON response and an HTTP status code. On
-               successful retrieval, it returns the USD balance along with a 200 status
-               code. If an error occurs, it returns an error message with a 500 status
-               code.
-
-    Raises:
-        Exception: Captures any exceptions that may occur during the process of
-                   fetching the balance from the database and includes it in the error
-                   response.
-    """
-    try:
-        current_usd_balance = current_user.wallet.balance
-
-        return (
-            jsonify(
-                {"success": "Data successfully retrieved", "data": current_usd_balance}
-            ),
-            200,
-        )
-    except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error": (
-                        "An error occurred while retrieving the wallet's current USD balance from the database. "
-                        f"Reason: {str(e)}"
-                    )
-                }
-            ),
-            500,
-        )
-
-
 @core.route("/get_news_articles", methods=["POST"])
 @jwt_required()
 def get_news_articles():
@@ -1055,30 +1015,6 @@ def get_coins_data(coin_ids: str):
     return data
 
 
-@core.route("/get_multiple_coin_data", methods=["POST"])
-@jwt_required()
-def get_multiple_coin_data():
-    """
-    Fetch and return market data for multiple specified coins.
-
-    This function processes a POST request that should include a JSON body containing
-    'coin_ids', a string of coin IDs (comma-separated). It constructs a query to the
-    CoinGecko API to retrievethe current market data for the specified coins in USD.
-
-    Returns:
-        Flask.Response: A JSON response containing the market data for the specified coins.
-    """
-    try:
-        data = request.get_json()
-        coin_ids = data["coin_ids"]
-        data = jsonify(get_coins_data(coin_ids))
-
-    except Exception as e:
-        return jsonify({"error": f"Failed to fetch coin data: {str(e)}"}), 500
-
-    return data, 200
-
-
 @core.route("/get_wallet_assets", methods=["GET"])
 @jwt_required()
 def get_wallet_assets():
@@ -1178,9 +1114,6 @@ def get_open_trades():
     coins = set()
 
     for transaction in open_transactions:
-        # Skip market orders
-        if transaction.orderType == "MARKET":
-            continue
 
         temp = {}
         temp["id"] = transaction.id

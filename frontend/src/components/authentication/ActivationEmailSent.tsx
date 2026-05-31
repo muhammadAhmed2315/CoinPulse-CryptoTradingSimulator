@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import MailIcon from "@/assets/icons/mail.svg";
 import { Separator } from "../ui/separator";
 import DotGreen from "@/assets/dot-green.svg";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Spinner } from "../ui/spinner";
 import { useEffect, useState } from "react";
@@ -60,8 +60,7 @@ export default function ActivationEmailSent() {
 
   // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
   if (!email) {
-    navigate("/login", { replace: true });
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   // ===== EVENT HANDLERS =====

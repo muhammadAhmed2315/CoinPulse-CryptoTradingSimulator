@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import ClockIcon from "@/assets/icons/clock.svg";
 import { Separator } from "../ui/separator";
 import DotBlue from "@/assets/dot-blue.svg";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 export default function EmailAlreadyVerified() {
   const navigate = useNavigate();
@@ -14,8 +14,7 @@ export default function EmailAlreadyVerified() {
 
   // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
   if (!email) {
-    navigate("/login", { replace: true });
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   // ===== EVENT HANDLERS =====

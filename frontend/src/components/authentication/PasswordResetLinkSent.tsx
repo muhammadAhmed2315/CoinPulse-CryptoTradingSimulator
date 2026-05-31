@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import TickIcon from "@/assets/icons/tick.svg";
 import { Separator } from "../ui/separator";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   RippleButton,
   RippleButtonRipples,
@@ -37,14 +37,7 @@ export default function PasswordResetLinkSent() {
   const email = useLocation().state?.email;
   const [timer, setTimer] = useState(0);
 
-  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
-  if (!email) {
-    navigate("/request_password_reset", { replace: true });
-    return null;
-  }
-
   // ===== EFFECTS =====
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (timer === 0) return;
 
@@ -53,7 +46,6 @@ export default function PasswordResetLinkSent() {
   }, [timer]);
 
   // ===== REACT QUERY HOOKS =====
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const mutation = useMutation({
     mutationFn: () => {
       return sendPasswordResetEmail(email);
@@ -67,6 +59,11 @@ export default function PasswordResetLinkSent() {
       setTimer(33);
     },
   });
+
+  // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
+  if (!email) {
+    return <Navigate to="/request_password_reset" replace />;
+  }
 
   // ===== EVENT HANDLERS =====
   function handleResendEmail() {

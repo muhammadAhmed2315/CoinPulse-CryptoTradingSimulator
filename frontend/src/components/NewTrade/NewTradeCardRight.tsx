@@ -32,26 +32,30 @@ async function placeOrder(
   orderType: OrderType,
   quantity: number,
   coin_id: string,
-  pricePerUnit: number,
   visibility: boolean,
   comment: string,
+  pricePerUnit?: number,
 ) {
-  const data = {
+  let data: any = {
     transactionType: orderSide.toLowerCase(),
     orderType: orderType.toLowerCase(),
     quantity: quantity,
     coin_id: coin_id,
-    price_per_unit: pricePerUnit,
     visibility: visibility,
     comment: comment,
   };
 
-  const response = await fetchWithRefresh("http://localhost:5000/process_order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-    credentials: "include",
-  });
+  if (pricePerUnit) data = { ...data, price_per_unit: pricePerUnit };
+
+  const response = await fetchWithRefresh(
+    "http://localhost:5000/process_order",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) throw await response.json();
 
@@ -106,7 +110,8 @@ export default function NewTradeCardRight({
 
   const placeOrderBtnDisabled =
     queryError ||
-    parseFloat(usdAmount) >= userBalanceQuery.data ||
+    (orderSide === "BUY" && parseFloat(usdAmount) > userBalanceQuery.data) ||
+    (orderSide === "SELL" && parseFloat(coinAmount) > coinBalanceQuery.data) ||
     (orderType !== "MARKET" && orderPrice === "") ||
     parseFloat(orderPrice) === 0 ||
     parseFloat(usdAmount) === 0 ||
@@ -124,11 +129,9 @@ export default function NewTradeCardRight({
         orderType,
         parseFloat(coinAmount),
         currCoin.id,
-        orderType === "MARKET"
-          ? coinDataQuery.data.current_price
-          : parseFloat(orderPrice),
         shareOnTimeline,
         timelineMsg,
+        orderType === "MARKET" ? undefined : parseFloat(orderPrice),
       ),
 
     onSuccess: async () => {
@@ -246,7 +249,9 @@ export default function NewTradeCardRight({
   return (
     <div className="flex-2 p-4">
       {/* ===== HEADER ===== */}
-      <p className="text-xs font-mono mt-2 mb-1 text-muted-foreground/70">ORDER ENTRY</p>
+      <p className="text-xs font-mono mt-2 mb-1 text-muted-foreground/70">
+        ORDER ENTRY
+      </p>
       <p className="font-bold text-xl mb-4">
         {toTitleCase(orderSide)} {currCoin.ticker.toUpperCase()}
       </p>
@@ -289,7 +294,9 @@ export default function NewTradeCardRight({
       </div>
 
       {/* ===== USD AMOUNT INPUT ===== */}
-      <p className="text-xs text-muted-foreground/70 mb-2 font-mono">TOTAL (USD)</p>
+      <p className="text-xs text-muted-foreground/70 mb-2 font-mono">
+        TOTAL (USD)
+      </p>
       <Field
         data-invalid={
           amountZero || parseFloat(usdAmount) > userBalanceQuery.data

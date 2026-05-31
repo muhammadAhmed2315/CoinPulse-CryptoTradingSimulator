@@ -4,6 +4,7 @@ import * as React from 'react';
 import { motion, isMotionComponent, type HTMLMotionProps } from 'motion/react';
 import { cn } from '@/lib/utils';
 
+// ===== TYPES =====
 type AnyProps = Record<string, unknown>;
 
 type DOMMotionProps<T extends HTMLElement = HTMLElement> = Omit<
@@ -20,6 +21,7 @@ type SlotProps<T extends HTMLElement = HTMLElement> = {
   children?: any;
 } & DOMMotionProps<T>;
 
+// ===== HELPER FUNCTIONS =====
 function mergeRefs<T>(
   ...refs: (React.Ref<T> | undefined)[]
 ): React.RefCallback<T> {
@@ -58,6 +60,7 @@ function mergeProps<T extends HTMLElement>(
   return merged;
 }
 
+// ===== SLOT =====
 function Slot<T extends HTMLElement = HTMLElement>({
   children,
   ref,

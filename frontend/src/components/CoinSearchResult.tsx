@@ -2,6 +2,7 @@ import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
 import type { Coin } from "@/loadAllCoinsList";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 
+// ===== TYPES =====
 type CoinSearchResultProps = {
   coin: Coin;
   onDropdownItemClick: (c: Coin) => void;
@@ -13,7 +14,10 @@ export default function CoinSearchResult({
   onDropdownItemClick,
   prefetchFn = () => {},
 }: CoinSearchResultProps) {
+  // ===== REACT QUERY HOOKS =====
   const queryClient = useQueryClient();
+
+  // ===== EVENT HANDLERS =====
   const { onMouseEnter, onMouseLeave } = usePrefetchOnHover(() =>
     prefetchFn(queryClient, coin),
   );
@@ -25,10 +29,13 @@ export default function CoinSearchResult({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
+      {/* ===== COIN INFO ===== */}
       <div className="flex gap-1.5 min-w-0">
         <img className="rounded-3xl size-7 shrink-0" src={coin.imgUrl} />
         <p className="truncate">{coin.name}</p>
       </div>
+
+      {/* ===== TICKER ===== */}
       <p className="uppercase shrink-0">${coin.ticker}</p>
     </div>
   );

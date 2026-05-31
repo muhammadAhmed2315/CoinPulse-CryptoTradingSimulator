@@ -14,6 +14,7 @@ import {
 } from "@/components/animate-ui/primitives/animate/tabs";
 import { cn } from "@/lib/utils";
 
+// ===== TYPES =====
 type TabsProps = TabsPrimitiveProps;
 
 function Tabs({ className, ...props }: TabsProps) {
@@ -27,6 +28,7 @@ function Tabs({ className, ...props }: TabsProps) {
 
 type TabsListProps = TabsListPrimitiveProps;
 
+// ===== TABS LIST =====
 function TabsList({ className, ...props }: TabsListProps) {
   return (
     <TabsHighlightPrimitive className="absolute z-0 inset-0 border border-transparent rounded-md bg-background dark:border-input dark:bg-input/30 shadow-sm">
@@ -43,6 +45,7 @@ function TabsList({ className, ...props }: TabsListProps) {
 
 type TabsTriggerProps = TabsTriggerPrimitiveProps;
 
+// ===== TABS TRIGGER =====
 function TabsTrigger({ className, ...props }: TabsTriggerProps) {
   return (
     <TabsHighlightItemPrimitive value={props.value} className="flex-1">
@@ -59,12 +62,14 @@ function TabsTrigger({ className, ...props }: TabsTriggerProps) {
 
 type TabsContentsProps = TabsContentsPrimitiveProps;
 
+// ===== TABS CONTENTS =====
 function TabsContents(props: TabsContentsProps) {
   return <TabsContentsPrimitive {...props} />;
 }
 
 type TabsContentProps = TabsContentPrimitiveProps;
 
+// ===== TABS CONTENT =====
 function TabsContent({ className, ...props }: TabsContentProps) {
   return (
     <TabsContentPrimitive

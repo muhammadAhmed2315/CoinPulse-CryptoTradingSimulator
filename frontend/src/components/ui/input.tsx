@@ -4,6 +4,7 @@ import { Input as InputPrimitive } from "@base-ui/react/input";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 
+// ===== TYPES =====
 export type InputProps = Omit<
   InputPrimitive.Props & React.RefAttributes<HTMLInputElement>,
   "size"
@@ -20,6 +21,7 @@ export function Input({
   nativeInput = false,
   ...props
 }: InputProps): React.ReactElement {
+  // ===== DERIVED STATE =====
   const inputClassName = cn(
     "h-8.5 w-full min-w-0 rounded-[inherit] px-[calc(--spacing(3)-1px)] leading-8.5 outline-none [transition:background-color_5000000s_ease-in-out_0s] placeholder:text-muted-foreground/72 sm:h-7.5 sm:leading-7.5",
     size === "sm" &&

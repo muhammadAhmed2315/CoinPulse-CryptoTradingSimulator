@@ -12,12 +12,14 @@ import {
 import { getStrictContext } from '@/lib/get-strict-context';
 import { Slot, type WithAsChild } from '@/components/animate-ui/primitives/animate/slot';
 
+// ===== TYPES =====
 type TabsContextType = {
   activeValue: string;
   handleValueChange: (value: string) => void;
   registerTrigger: (value: string, node: HTMLElement | null) => void;
 };
 
+// ===== CONTEXT =====
 const [TabsProvider, useTabs] =
   getStrictContext<TabsContextType>('TabsContext');
 
@@ -39,6 +41,7 @@ type ControlledTabsProps = BaseTabsProps & {
 
 type TabsProps = UnControlledTabsProps | ControlledTabsProps;
 
+// ===== TABS =====
 function Tabs({
   defaultValue,
   value,
@@ -46,6 +49,7 @@ function Tabs({
   children,
   ...props
 }: TabsProps) {
+  // ===== STATE VARIABLES =====
   const [activeValue, setActiveValue] = React.useState<string | undefined>(
     defaultValue,
   );
@@ -53,6 +57,7 @@ function Tabs({
   const initialSet = React.useRef(false);
   const isControlled = value !== undefined;
 
+  // ===== EFFECTS =====
   React.useEffect(() => {
     if (
       !isControlled &&
@@ -70,6 +75,7 @@ function Tabs({
     }
   }, [activeValue, isControlled]);
 
+  // ===== EVENT HANDLERS =====
   const registerTrigger = React.useCallback(
     (val: string, node: HTMLElement | null) => {
       if (node) {
@@ -110,6 +116,7 @@ function Tabs({
 
 type TabsHighlightProps = Omit<HighlightProps, 'controlledItems' | 'value'>;
 
+// ===== TABS HIGHLIGHT =====
 function TabsHighlight({
   transition = { type: 'spring', stiffness: 200, damping: 25 },
   ...props
@@ -132,6 +139,7 @@ type TabsListProps = React.ComponentProps<'div'> & {
   children: React.ReactNode;
 };
 
+// ===== TABS LIST =====
 function TabsList(props: TabsListProps) {
   return <div role="tablist" data-slot="tabs-list" {...props} />;
 }
@@ -140,6 +148,7 @@ type TabsHighlightItemProps = HighlightItemProps & {
   value: string;
 };
 
+// ===== TABS HIGHLIGHT ITEM =====
 function TabsHighlightItem(props: TabsHighlightItemProps) {
   return <HighlightItem data-slot="tabs-highlight-item" {...props} />;
 }
@@ -151,6 +160,7 @@ type TabsTriggerProps = WithAsChild<
   } & HTMLMotionProps<'button'>
 >;
 
+// ===== TABS TRIGGER =====
 function TabsTrigger({
   ref,
   value,
@@ -159,9 +169,11 @@ function TabsTrigger({
 }: TabsTriggerProps) {
   const { activeValue, handleValueChange, registerTrigger } = useTabs();
 
+  // ===== REFS =====
   const localRef = React.useRef<HTMLButtonElement | null>(null);
   React.useImperativeHandle(ref, () => localRef.current as HTMLButtonElement);
 
+  // ===== EFFECTS =====
   React.useEffect(() => {
     registerTrigger(value, localRef.current);
     return () => registerTrigger(value, null);
@@ -186,6 +198,7 @@ type TabsContentsProps = HTMLMotionProps<'div'> & {
   transition?: Transition;
 };
 
+// ===== TABS CONTENTS =====
 function TabsContents({
   children,
   transition = {
@@ -198,6 +211,8 @@ function TabsContents({
   ...props
 }: TabsContentsProps) {
   const { activeValue } = useTabs();
+
+  // ===== DERIVED STATE =====
   const childrenArray = React.Children.toArray(children);
   const activeIndex = childrenArray.findIndex(
     (child): child is React.ReactElement<{ value: string }> =>
@@ -208,11 +223,13 @@ function TabsContents({
       child.props.value === activeValue,
   );
 
+  // ===== REFS =====
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const itemRefs = React.useRef<Array<HTMLDivElement | null>>([]);
   const [height, setHeight] = React.useState(0);
   const roRef = React.useRef<ResizeObserver | null>(null);
 
+  // ===== HELPER FUNCTIONS =====
   const measure = React.useCallback((index: number) => {
     const pane = itemRefs.current[index];
     const container = containerRef.current;
@@ -238,6 +255,7 @@ function TabsContents({
     return total;
   }, []);
 
+  // ===== EFFECTS =====
   React.useEffect(() => {
     if (roRef.current) {
       roRef.current.disconnect();
@@ -286,6 +304,7 @@ function TabsContents({
         animate={{ x: activeIndex * -100 + '%' }}
         transition={transition}
       >
+        {/* ===== CONTENT PANES ===== */}
         {childrenArray.map((child, index) => (
           <div
             key={index}
@@ -309,6 +328,7 @@ type TabsContentProps = WithAsChild<
   } & HTMLMotionProps<'div'>
 >;
 
+// ===== TABS CONTENT =====
 function TabsContent({
   value,
   style,

@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
+// ===== TYPES =====
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
 type CarouselOptions = UseCarouselParameters[0]
@@ -28,8 +29,10 @@ type CarouselContextProps = {
   canScrollNext: boolean
 } & CarouselProps
 
+// ===== CONTEXT =====
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
+// ===== HELPER HOOKS =====
 function useCarousel() {
   const context = React.useContext(CarouselContext)
 
@@ -40,6 +43,7 @@ function useCarousel() {
   return context
 }
 
+// ===== COMPONENTS =====
 function Carousel({
   orientation = "horizontal",
   opts,

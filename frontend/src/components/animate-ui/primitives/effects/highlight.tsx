@@ -5,6 +5,7 @@ import { AnimatePresence, motion, type Transition } from 'motion/react';
 
 import { cn } from '@/lib/utils';
 
+// ===== TYPES =====
 type HighlightMode = 'children' | 'parent';
 
 type Bounds = {
@@ -14,6 +15,7 @@ type Bounds = {
   height: number;
 };
 
+// ===== CONSTANTS =====
 const DEFAULT_BOUNDS_OFFSET: Bounds = {
   top: 0,
   left: 0,
@@ -42,6 +44,7 @@ type HighlightContextType<T extends string> = {
   forceUpdateBounds?: boolean;
 };
 
+// ===== CONTEXT =====
 const HighlightContext = React.createContext<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   HighlightContextType<any> | undefined
@@ -117,6 +120,7 @@ type HighlightProps<T extends React.ElementType = 'div'> =
   | UncontrolledParentModeHighlightProps<T>
   | UncontrolledChildrenModeHighlightProps<T>;
 
+// ===== HIGHLIGHT =====
 function Highlight<T extends React.ElementType = 'div'>({
   ref,
   ...props
@@ -139,9 +143,11 @@ function Highlight<T extends React.ElementType = 'div'>({
     mode = 'children',
   } = props;
 
+  // ===== REFS =====
   const localRef = React.useRef<HTMLDivElement>(null);
   React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
 
+  // ===== DERIVED STATE =====
   const propsBoundsOffset = (props as ParentModeHighlightProps)?.boundsOffset;
   const boundsOffset = propsBoundsOffset ?? DEFAULT_BOUNDS_OFFSET;
   const boundsOffsetTop = boundsOffset.top ?? 0;
@@ -170,6 +176,7 @@ function Highlight<T extends React.ElementType = 'div'>({
     boundsOffsetHeight,
   ]);
 
+  // ===== STATE VARIABLES =====
   const [activeValue, setActiveValue] = React.useState<string | null>(
     value ?? defaultValue ?? null,
   );
@@ -177,6 +184,7 @@ function Highlight<T extends React.ElementType = 'div'>({
   const [activeClassNameState, setActiveClassNameState] =
     React.useState<string>('');
 
+  // ===== EVENT HANDLERS =====
   const safeSetActiveValue = (id: string | null) => {
     setActiveValue((prev) => {
       if (prev !== id) {
@@ -252,6 +260,7 @@ function Highlight<T extends React.ElementType = 'div'>({
     return () => container.removeEventListener('scroll', onScroll);
   }, [mode, activeValue]);
 
+  // ===== HELPER FUNCTIONS =====
   const render = (children: React.ReactNode) => {
     if (mode === 'parent') {
       return (
@@ -338,6 +347,7 @@ function Highlight<T extends React.ElementType = 'div'>({
   );
 }
 
+// ===== HELPER FUNCTIONS =====
 function getNonOverridingDataAttributes(
   element: React.ReactElement,
   dataAttributes: Record<string, unknown>,
@@ -353,6 +363,7 @@ function getNonOverridingDataAttributes(
   );
 }
 
+// ===== TYPES =====
 type ExtendedChildProps = React.ComponentProps<'div'> & {
   id?: string;
   ref?: React.Ref<HTMLElement>;
@@ -379,6 +390,7 @@ type HighlightItemProps<T extends React.ElementType = 'div'> =
     forceUpdateBounds?: boolean;
   };
 
+// ===== HIGHLIGHT ITEM =====
 function HighlightItem<T extends React.ElementType>({
   ref,
   as,
@@ -415,6 +427,7 @@ function HighlightItem<T extends React.ElementType>({
     setActiveClassName,
   } = useHighlight();
 
+  // ===== DERIVED STATE =====
   const Component = as ?? 'div';
   const element = children as React.ReactElement<ExtendedChildProps>;
   const childValue =
@@ -423,6 +436,7 @@ function HighlightItem<T extends React.ElementType>({
   const isDisabled = disabled === undefined ? contextDisabled : disabled;
   const itemTransition = transition ?? contextTransition;
 
+  // ===== REFS =====
   const localRef = React.useRef<HTMLDivElement>(null);
   React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
 
@@ -430,6 +444,7 @@ function HighlightItem<T extends React.ElementType>({
     localRef.current = node as HTMLDivElement;
   }, []);
 
+  // ===== EFFECTS =====
   React.useEffect(() => {
     if (mode !== 'parent') return;
     let rafId: number;
@@ -481,6 +496,7 @@ function HighlightItem<T extends React.ElementType>({
 
   if (!React.isValidElement(children)) return children;
 
+  // ===== EVENT HANDLERS =====
   const dataAttributes = {
     'data-active': isActive ? 'true' : 'false',
     'aria-selected': isActive,

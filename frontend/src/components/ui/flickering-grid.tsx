@@ -2,6 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
+// ===== TYPES =====
 export interface FlickeringGridProps {
   squareSize?: number;
   gridGap?: number;
@@ -23,11 +24,15 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   className,
   maxOpacity = 0.3,
 }) => {
+  // ===== REFS =====
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // ===== STATE VARIABLES =====
   const [isInView, setIsInView] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
+  // ===== DERIVED STATE =====
   const memoizedColor = useMemo(() => {
     const toRGBA = (color: string) => {
       if (typeof window === "undefined") {
@@ -47,6 +52,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     return toRGBA(color);
   }, [color]);
 
+  // ===== HELPER FUNCTIONS =====
   const setupCanvas = useCallback(
     (canvas: HTMLCanvasElement, width: number, height: number) => {
       const dpr = window.devicePixelRatio || 1;
@@ -108,6 +114,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     [memoizedColor, squareSize, gridGap],
   );
 
+  // ===== EFFECTS =====
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;

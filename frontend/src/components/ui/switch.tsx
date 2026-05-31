@@ -20,6 +20,7 @@ function Switch({
       )}
       {...props}
     >
+      {/* ===== THUMB ===== */}
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "@/context/theme-context";
 
+// ===== TYPES =====
 type FlickerGridProps = {
   /** Size of each dot in px. Default: 3 */
   squareSize?: number;
@@ -33,11 +34,17 @@ export default function BannerFlickerGrid({
   maxOpacity = 0.4,
   color,
 }: FlickerGridProps) {
+  // ===== REFS =====
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // ===== STATE VARIABLES =====
   const { resolvedTheme } = useTheme();
+
+  // ===== DERIVED STATE =====
   const dotColor = color ?? (resolvedTheme === "dark" ? "255,255,255" : "0,0,0");
 
+  // ===== EFFECTS =====
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -136,6 +143,7 @@ export default function BannerFlickerGrid({
         borderRadius: "10px",
       }}
     >
+      {/* ===== CANVAS ===== */}
       <canvas
         ref={canvasRef}
         style={{ width: "100%", height: "100%", display: "block" }}

@@ -11,6 +11,7 @@ import {
 } from "@/components/animate-ui/primitives/buttons/ripple";
 import { cn } from "@/lib/utils";
 
+// ===== VARIANTS =====
 const rippleButtonVariants = {
   default: "[--ripple-button-ripple-color:var(--primary-foreground)]",
   accent: "[--ripple-button-ripple-color:var(--accent-foreground)]",
@@ -21,6 +22,7 @@ const rippleButtonVariants = {
   link: "[--ripple-button-ripple-color:var(--primary-foreground)]",
 };
 
+// ===== TYPES =====
 type RippleButtonProps = RippleButtonPrimitiveProps &
   VariantProps<typeof buttonVariants>;
 
@@ -43,6 +45,7 @@ function RippleButton({
 
 type RippleButtonRipplesProps = RippleButtonRipplesPrimitiveProps;
 
+// ===== RIPPLE BUTTON RIPPLES =====
 function RippleButtonRipples(props: RippleButtonRipplesProps) {
   return <RippleButtonRipplesPrimitive {...props} />;
 }

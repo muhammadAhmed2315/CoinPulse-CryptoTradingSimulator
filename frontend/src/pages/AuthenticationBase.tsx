@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 export default function AuthenticationBase() {
   return (
     <FlickeringGrid color="#ffffff" backgroundColor="#000000">
+      {/* ===== CONTENT ===== */}
       <Outlet />
     </FlickeringGrid>
   );

@@ -4,6 +4,7 @@ import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
+// ===== TYPES =====
 export interface FlickeringGridProps {
   squareSize?: number;
   gridGap?: number;
@@ -29,11 +30,15 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   maxOpacity = 0.3,
   children,
 }) => {
+  // ===== REFS =====
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // ===== STATE VARIABLES =====
   const [isInView, setIsInView] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
+  // ===== DERIVED STATE =====
   const memoizedColor = useMemo(() => {
     const toRGBA = (color: string) => {
       if (typeof window === "undefined") {
@@ -53,6 +58,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     return toRGBA(color);
   }, [color]);
 
+  // ===== HELPER FUNCTIONS =====
   const setupCanvas = useCallback(
     (canvas: HTMLCanvasElement, width: number, height: number) => {
       const dpr = window.devicePixelRatio || 1;
@@ -114,6 +120,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     [memoizedColor, squareSize, gridGap, backgroundColor],
   );
 
+  // ===== EFFECTS =====
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -191,6 +198,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       className={cn("relative w-full h-screen", className)}
       ref={containerRef}
     >
+      {/* ===== CANVAS ===== */}
       <canvas
         className="pointer-events-none absolute inset-0 w-full h-full"
         ref={canvasRef}
@@ -199,6 +207,8 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
           height: canvasSize.height,
         }}
       />
+
+      {/* ===== OVERLAY CONTENT ===== */}
       {children && (
         <div className="relative z-10 h-full w-full flex items-center justify-center">
           {children}

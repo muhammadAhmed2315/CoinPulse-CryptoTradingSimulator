@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+// ===== TYPES =====
 type ProfileAvatarProps = {
   letter: string;
   size?: number;
@@ -19,9 +20,11 @@ export default function ProfileAvatar({
   maxOpacity = 0.5,
   color = "255,255,255",
 }: ProfileAvatarProps) {
+  // ===== REFS =====
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ===== EFFECTS =====
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -109,6 +112,7 @@ export default function ProfileAvatar({
     };
   }, [squareSize, gridGap, flickerChance, maxOpacity, color]);
 
+  // ===== DERIVED STATE =====
   const displayLetter = (letter?.[0] ?? "?").toUpperCase();
 
   return (
@@ -123,10 +127,13 @@ export default function ProfileAvatar({
           "inset 0 0 0 1px rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.18)",
       }}
     >
+      {/* ===== CANVAS ===== */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 block h-full w-full"
       />
+
+      {/* ===== AVATAR LETTER ===== */}
       <span
         className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center font-semibold leading-none text-[#fafafa]"
         style={{ fontSize: size * 0.5, letterSpacing: "-0.02em" }}

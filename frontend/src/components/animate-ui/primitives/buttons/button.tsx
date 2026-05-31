@@ -7,6 +7,7 @@ import {
   type WithAsChild,
 } from "@/components/animate-ui/primitives/animate/slot";
 
+// ===== TYPES =====
 type ButtonProps = WithAsChild<
   HTMLMotionProps<"button"> & {
     hoverScale?: number;
@@ -14,6 +15,7 @@ type ButtonProps = WithAsChild<
   }
 >;
 
+// ===== BUTTON =====
 function Button({
   hoverScale = 1.05,
   tapScale = 0.95,

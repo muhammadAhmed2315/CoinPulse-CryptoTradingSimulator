@@ -1,10 +1,12 @@
 import * as React from 'react';
 
+// ===== TYPES =====
 interface CommonControlledStateProps<T> {
   value?: T;
   defaultValue?: T;
 }
 
+// ===== HOOK =====
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useControlledState<T, Rest extends any[] = []>(
   props: CommonControlledStateProps<T> & {

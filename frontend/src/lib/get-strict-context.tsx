@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+// ===== HELPER FUNCTIONS =====
 function getStrictContext<T>(
   name?: string,
 ): readonly [

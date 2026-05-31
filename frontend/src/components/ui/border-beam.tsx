@@ -4,6 +4,7 @@ import type { Transition } from "motion/react"
 
 import { cn } from "@/lib/utils"
 
+// ===== TYPES =====
 interface BorderBeamProps {
   /**
    * The size of the border beam.
@@ -51,6 +52,7 @@ interface BorderBeamProps {
   borderWidth?: number
 }
 
+// ===== COMPONENT =====
 export const BorderBeam = ({
   className,
   size = 50,

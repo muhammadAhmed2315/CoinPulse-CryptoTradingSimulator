@@ -14,6 +14,7 @@ import {
 } from "@/components/animate-ui/primitives/base/accordion";
 import { cn } from "@/lib/utils";
 
+// ===== TYPES =====
 type AccordionProps = AccordionPrimitiveProps;
 
 function Accordion(props: AccordionProps) {
@@ -22,6 +23,7 @@ function Accordion(props: AccordionProps) {
 
 type AccordionItemProps = AccordionItemPrimitiveProps;
 
+// ===== ACCORDION ITEM =====
 function AccordionItem({ className, ...props }: AccordionItemProps) {
   return (
     <AccordionItemPrimitive
@@ -35,6 +37,7 @@ type AccordionTriggerProps = AccordionTriggerPrimitiveProps & {
   showArrow?: boolean;
 };
 
+// ===== ACCORDION TRIGGER =====
 function AccordionTrigger({
   className,
   children,
@@ -50,6 +53,7 @@ function AccordionTrigger({
         )}
         {...props}
       >
+        {/* ===== CHEVRON ICON ===== */}
         {showArrow && (
           <ChevronDownIcon className="text-muted-foreground size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
         )}
@@ -63,6 +67,7 @@ type AccordionPanelProps = AccordionPanelPrimitiveProps & {
   children: React.ReactNode;
 };
 
+// ===== ACCORDION PANEL =====
 function AccordionPanel({
   className,
   children,

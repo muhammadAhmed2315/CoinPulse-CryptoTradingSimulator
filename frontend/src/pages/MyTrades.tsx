@@ -4,6 +4,7 @@ import PortfolioAnalytics, {
 } from "../components/PortfolioAnalytics";
 import type { QueryClient } from "@tanstack/react-query";
 
+// ===== API FUNCTIONS =====
 export function prefetchMyTrades(queryClient: QueryClient) {
   return Promise.all([
     prefetchPortfolioAnalytics(queryClient),
@@ -14,8 +15,10 @@ export function prefetchMyTrades(queryClient: QueryClient) {
 export default function MyTrades() {
   return (
     <div>
+      {/* ===== PORTFOLIO ANALYTICS ===== */}
       <PortfolioAnalytics />
       <br />
+      {/* ===== TRADES TABLE ===== */}
       <TradesTable />
     </div>
   );

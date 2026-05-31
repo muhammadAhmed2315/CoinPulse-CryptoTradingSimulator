@@ -3,6 +3,7 @@ import { Separator as SeparatorPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+// ===== COMPONENT =====
 function Separator({
   className,
   orientation = "horizontal",

@@ -19,6 +19,7 @@ export function ScrollArea({
       className={cn("size-full min-h-0", className)}
       {...props}
     >
+      {/* ===== VIEWPORT ===== */}
       <ScrollAreaPrimitive.Viewport
         className={cn(
           "h-full rounded-[inherit] outline-none transition-shadows focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-has-overflow-y:overscroll-y-contain data-has-overflow-x:overscroll-x-contain",
@@ -31,8 +32,10 @@ export function ScrollArea({
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
+      {/* ===== SCROLLBARS ===== */}
       <ScrollBar orientation="vertical" />
       <ScrollBar orientation="horizontal" />
+      {/* ===== CORNER ===== */}
       <ScrollAreaPrimitive.Corner data-slot="scroll-area-corner" />
     </ScrollAreaPrimitive.Root>
   );
@@ -53,6 +56,7 @@ export function ScrollBar({
       orientation={orientation}
       {...props}
     >
+      {/* ===== THUMB ===== */}
       <ScrollAreaPrimitive.Thumb
         className="relative flex-1 rounded-full bg-foreground/20"
         data-slot="scroll-area-thumb"

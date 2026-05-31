@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+// ===== COMPONENTS =====
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -55,7 +56,9 @@ function DialogContent({
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
+      {/* ===== OVERLAY ===== */}
       <DialogOverlay />
+      {/* ===== CONTENT ===== */}
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
@@ -65,6 +68,7 @@ function DialogContent({
         {...props}
       >
         {children}
+        {/* ===== CLOSE BUTTON ===== */}
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"

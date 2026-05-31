@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import { Shader } from "react-shaders";
 import { cn } from "@/lib/utils";
 
+// ===== TYPES =====
 export interface MatrixShadersProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Digital rain speed
@@ -35,6 +36,7 @@ export interface MatrixShadersProps extends React.HTMLAttributes<HTMLDivElement>
   variation?: number;
 }
 
+// ===== CONSTANTS =====
 const fragmentShader = `
 // Hash function for pseudo-random values
 float hash(vec2 p) {

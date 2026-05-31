@@ -7,6 +7,7 @@ import { AnimatePresence, motion, type HTMLMotionProps } from "motion/react";
 import { getStrictContext } from "@/lib/get-strict-context";
 import { useControlledState } from "@/hooks/use-controlled-state";
 
+// ===== TYPES =====
 type AccordionContextType = {
   value: string | string[] | undefined;
   setValue: (value: string | string[] | undefined) => void;
@@ -17,6 +18,7 @@ type AccordionItemContextType = {
   setIsOpen: (open: boolean) => void;
 };
 
+// ===== CONTEXT =====
 const [AccordionProvider, useAccordion] =
   getStrictContext<AccordionContextType>("AccordionContext");
 
@@ -25,6 +27,7 @@ const [AccordionItemProvider, useAccordionItem] =
 
 type AccordionProps = React.ComponentProps<typeof AccordionPrimitive.Root>;
 
+// ===== ACCORDION =====
 function Accordion(props: AccordionProps) {
   const [value, setValue] = useControlledState<string | string[] | undefined>({
     value: props?.value,
@@ -47,12 +50,16 @@ function Accordion(props: AccordionProps) {
 
 type AccordionItemProps = React.ComponentProps<typeof AccordionPrimitive.Item>;
 
+// ===== ACCORDION ITEM =====
 function AccordionItem(props: AccordionItemProps) {
   const { value } = useAccordion();
+
+  // ===== STATE VARIABLES =====
   const [isOpen, setIsOpen] = React.useState(
     value?.includes(props?.value) ?? false,
   );
 
+  // ===== EFFECTS =====
   React.useEffect(() => {
     setIsOpen(value?.includes(props?.value) ?? false);
   }, [value, props?.value]);
@@ -68,6 +75,7 @@ type AccordionHeaderProps = React.ComponentProps<
   typeof AccordionPrimitive.Header
 >;
 
+// ===== ACCORDION HEADER =====
 function AccordionHeader(props: AccordionHeaderProps) {
   return <AccordionPrimitive.Header data-slot="accordion-header" {...props} />;
 }
@@ -76,6 +84,7 @@ type AccordionTriggerProps = React.ComponentProps<
   typeof AccordionPrimitive.Trigger
 >;
 
+// ===== ACCORDION TRIGGER =====
 function AccordionTrigger(props: AccordionTriggerProps) {
   return (
     <AccordionPrimitive.Trigger data-slot="accordion-trigger" {...props} />
@@ -90,6 +99,7 @@ type AccordionPanelProps = Omit<
     keepRendered?: boolean;
   };
 
+// ===== ACCORDION PANEL =====
 function AccordionPanel({
   transition = { duration: 0.2, ease: "easeInOut" },
   hiddenUntilFound,

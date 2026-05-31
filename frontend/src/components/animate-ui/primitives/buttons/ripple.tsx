@@ -6,6 +6,7 @@ import { motion, type HTMLMotionProps } from 'motion/react';
 import { getStrictContext } from '@/lib/get-strict-context';
 import { Slot, type WithAsChild } from '@/components/animate-ui/primitives/animate/slot';
 
+// ===== TYPES =====
 type Ripple = {
   id: number;
   x: number;
@@ -17,6 +18,7 @@ type RippleButtonContextType = {
   setRipples: (ripples: Ripple[]) => void;
 };
 
+// ===== CONTEXT =====
 const [RippleButtonProvider, useRippleButton] =
   getStrictContext<RippleButtonContextType>('RippleButtonContext');
 
@@ -27,6 +29,7 @@ type RippleButtonProps = WithAsChild<
   }
 >;
 
+// ===== RIPPLE BUTTON =====
 function RippleButton({
   ref,
   onClick,
@@ -36,10 +39,14 @@ function RippleButton({
   style,
   ...props
 }: RippleButtonProps) {
+  // ===== STATE VARIABLES =====
   const [ripples, setRipples] = React.useState<Ripple[]>([]);
+
+  // ===== REFS =====
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   React.useImperativeHandle(ref, () => buttonRef.current as HTMLButtonElement);
 
+  // ===== EVENT HANDLERS =====
   const createRipple = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       const button = buttonRef.current;
@@ -102,6 +109,7 @@ type RippleButtonRipplesProps = WithAsChild<
   }
 >;
 
+// ===== RIPPLE BUTTON RIPPLES =====
 function RippleButtonRipples({
   color = 'var(--ripple-button-ripple-color)',
   scale = 10,

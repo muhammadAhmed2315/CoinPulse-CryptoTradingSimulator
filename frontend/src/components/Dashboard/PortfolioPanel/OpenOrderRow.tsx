@@ -63,7 +63,7 @@ export default function OpenOrderRow({ order, refetch }: OpenOrderRowProps) {
 
           <div className="pt-0.5">
             <span className="uppercase font-mono text-[12px] text-muted-foreground">
-              {numToMoney(order.quantity.toFixed(4))} {order.ticker}
+              {numToMoney(order.quantity, false, 4)} {order.ticker}
             </span>
           </div>
         </div>

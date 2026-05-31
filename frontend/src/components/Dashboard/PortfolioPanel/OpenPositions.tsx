@@ -116,7 +116,9 @@ export default function OpenPositions() {
       {/* ===== HEADER ===== */}
       <div className="p-5 pb-0">
         {/* ===== RESERVED VALUE ===== */}
-        <p className="text-xs text-muted-foreground font-mono">RESERVED VALUE</p>
+        <p className="text-xs text-muted-foreground font-mono">
+          RESERVED VALUE
+        </p>
         {openTradesQuery.isLoading && (
           <CustomSkeleton className="h-10 w-full mt-2 mb-4" />
         )}
@@ -186,6 +188,7 @@ export default function OpenPositions() {
                   {openOrdersByType[orders.id].length > 0 &&
                     openOrdersByType[orders.id].map((order) => (
                       <OpenOrderRow
+                        key={order.id}
                         order={order}
                         refetch={openTradesQuery.refetch}
                       />

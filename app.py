@@ -14,6 +14,7 @@ from constants import (
     JWT_SECRET_KEY,
     MAIL_PASSWORD,
     MAIL_USERNAME,
+    FLASK_APP_SECRET_KEY,
 )
 from extensions import db, jwt, login_manager
 from models import User

@@ -14,6 +14,7 @@ from flask import (
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_login import current_user
 from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
 
 from constants import (
     COINGECKO_API_HEADERS,
@@ -133,13 +134,13 @@ def get_trades_info():
         # If the user has transactions, sort them based on the specified criteria and
         # paginate the results
         if transactions:
-            max_pages = (len(transactions) // 10) + 1
-
-            # Filter the transactions
+            # Filter the transactions first so the page count reflects the filter
             if dataFilter != "all":
                 transactions = [
                     trnsctn for trnsctn in transactions if trnsctn.status == dataFilter
                 ]
+
+            max_pages = math.ceil(len(transactions) / 10)
 
             transactions = transactions[(page - 1) * 10 : page * 10]
 
@@ -213,8 +214,8 @@ def get_feedposts():
 
     Args:
         None directly. Expects a JSON payload in the request containing:
-            type (str): Can be 'global' = fetch transactions visible to all users or
-                        'own' = fetch transactions specific to the current user.
+            type (str): Can be 'GLOBAL' = fetch transactions visible to all users or
+                        'PRIVATE' = fetch transactions specific to the current user.
             page (int): The page number for pagination purposes, used to calculate the
                         slice of transactions to return (0-indexed).
 
@@ -224,67 +225,82 @@ def get_feedposts():
             - 'data': A list of dictionaries, each representing a transaction with
                       details such as transaction ID, username, timestamp, number of
                       likes, coin ID, quantity, price per unit, transaction type, and
-                      order type. Additional visibility status is included for 'own'
-                      type.
+                      order type.
     """
-    data = request.get_json()
-    type = data["type"]
-    page = data["page"]
+    try:
+        data = request.get_json()
+        type = data["type"]
+        page = data["page"]
 
-    PAGE_SIZE = 10
+        PAGE_SIZE = 10
 
-    # Fetch the current user
-    user_id = get_jwt_identity()
-    user = User.query.filter_by(id=user_id).first()
+        # Fetch the current user
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
 
-    if type == "GLOBAL":
-        base_query = Transaction.query.filter_by(visibility=True).order_by(
-            Transaction.timestamp.desc()
-        )
-    elif type == "PRIVATE":
-        base_query = Transaction.query.filter_by(wallet_id=user.wallet.id).order_by(
-            Transaction.timestamp.desc()
-        )
-
-    total = base_query.count()
-    max_pages = max(math.ceil(total / PAGE_SIZE) - 1, 0)
-    transactions = base_query.offset(page * PAGE_SIZE).limit(PAGE_SIZE).all()
-
-    res = []
-
-    for transaction in transactions:
-        temp = {}
-
-        temp["id"] = transaction.id
-        temp["username"] = transaction.wallet.owner.username
-        temp["timestamp"] = transaction.timestamp
-        temp["comment"] = transaction.comment
-        temp["likes"] = transaction.get_number_of_likes()
-        temp["coin_id"] = transaction.coin_id
-        temp["quantity"] = transaction.quantity
-        temp["price_per_unit"] = transaction.price_per_unit
-        temp["transaction_type"] = transaction.transactionType
-        temp["order_type"] = transaction.orderType
-        if type == "own":
-            temp["visibility"] = transaction.visibility
-
-        # Has user liked the current transaction
-        if user.id in transaction.likes.liked_by_user_ids:
-            temp["curr_user_liked"] = True
+        if type == "GLOBAL":
+            base_query = Transaction.query.filter_by(visibility=True).order_by(
+                Transaction.timestamp.desc()
+            )
+        elif type == "PRIVATE":
+            base_query = Transaction.query.filter_by(wallet_id=user.wallet.id).order_by(
+                Transaction.timestamp.desc()
+            )
         else:
-            temp["curr_user_liked"] = False
+            return jsonify({"error": "Invalid feed type"}), 400
 
-        res.append(temp)
+        # Eager-load the relationships accessed per post to avoid N+1 queries
+        base_query = base_query.options(
+            joinedload(Transaction.wallet).joinedload(Wallet.owner),
+            joinedload(Transaction.likes),
+        )
 
-    return (
-        jsonify(
-            {
-                "data": res,
-                "nextPage": page + 1 if page < max_pages else None,
-            }
-        ),
-        200,
-    )
+        total = base_query.count()
+        max_pages = max(math.ceil(total / PAGE_SIZE) - 1, 0)
+        transactions = base_query.offset(page * PAGE_SIZE).limit(PAGE_SIZE).all()
+
+        res = []
+
+        for transaction in transactions:
+            temp = {}
+
+            # Guard against transactions without a TransactionLikes row
+            likes_obj = transaction.likes
+            num_likes = len(likes_obj.liked_by_user_ids) if likes_obj else 0
+            curr_user_liked = bool(
+                likes_obj and user.id in likes_obj.liked_by_user_ids
+            )
+
+            temp["id"] = transaction.id
+            temp["username"] = transaction.wallet.owner.username
+            temp["timestamp"] = transaction.timestamp
+            temp["comment"] = transaction.comment
+            temp["likes"] = num_likes
+            temp["coin_id"] = transaction.coin_id
+            temp["quantity"] = transaction.quantity
+            temp["price_per_unit"] = transaction.price_per_unit
+            temp["transaction_type"] = transaction.transactionType
+            temp["order_type"] = transaction.orderType
+
+            # Has user liked the current transaction
+            temp["curr_user_liked"] = curr_user_liked
+
+            res.append(temp)
+
+        return (
+            jsonify(
+                {
+                    "data": res,
+                    "nextPage": page + 1 if page < max_pages else None,
+                }
+            ),
+            200,
+        )
+    except Exception as e:
+        return (
+            jsonify({"error": "Failed to fetch feed posts due to internal error"}),
+            500,
+        )
 
 
 @core.route("/update_likes", methods=["POST"])
@@ -298,9 +314,13 @@ def update_likes():
     transaction's TransactionLikes.liked_by_user_ids list.
     """
     try:
-        data = request.get_json()
-        is_increment = data["isIncrement"]
-        transaction_id = data["transactionID"]
+        data = request.get_json() or {}
+        is_increment = data.get("isIncrement")
+        transaction_id = data.get("transactionID")
+
+        # Validate that a transaction ID was provided
+        if transaction_id is None:
+            return jsonify({"error": "Missing transaction ID"}), 400
 
         # Get the current user
         user_id = get_jwt_identity()
@@ -308,6 +328,16 @@ def update_likes():
 
         # Get the transaction object from the database
         transaction = Transaction.query.get(transaction_id)
+
+        # Guard against an unknown/missing transaction
+        if transaction is None:
+            return jsonify({"error": "Transaction not found"}), 404
+
+        # Guard against a transaction without a TransactionLikes row by creating one
+        if transaction.likes is None:
+            likes = TransactionLikes(transaction_id=transaction.id)
+            db.session.add(likes)
+            db.session.flush()
 
         # Increment or decrement the number of likes for the transaction
         if is_increment:
@@ -499,12 +529,14 @@ def process_order():
                 transaction.coin_id, transaction.quantity
             )
 
-        # Add transaction and update user_wallet in the database
+        # Add transaction and update user_wallet, then flush to assign the
+        # transaction's primary key without committing yet.
         db.session.add(transaction)
         db.session.add(user_wallet)
-        db.session.commit()
+        db.session.flush()
 
-        # Create a TransactionLikes object for the transaction
+        # Create the likes row and commit everything in a single transaction, so a
+        # failure can't leave an orphan transaction with no TransactionLikes row.
         transaction_likes = TransactionLikes(transaction_id=transaction.id)
         db.session.add(transaction_likes)
         db.session.commit()
@@ -666,6 +698,22 @@ def get_news_articles():
         return jsonify({"error": f"Failed to fetch news: {str(e)}"}), 500
 
 
+# Module-level cache for the RedditScraper instance. The scraper performs a blocking
+# OAuth token POST in its constructor, and the resulting token is valid for ~1 hour, so
+# we reuse a single instance across requests and only recreate it once its token is
+# close to expiring.
+_reddit_scraper = None
+
+
+def get_reddit_scraper():
+    """Returns a cached RedditScraper instance, recreating it (and its OAuth token)
+    only when no valid cached token is available."""
+    global _reddit_scraper
+    if _reddit_scraper is None or not _reddit_scraper.is_token_valid():
+        _reddit_scraper = RedditScraper()
+    return _reddit_scraper
+
+
 @core.route("/get_reddit_posts", methods=["POST"])
 @jwt_required()
 def get_reddit_posts():
@@ -687,8 +735,9 @@ def get_reddit_posts():
         query = data["query"]
         after = data["after"]
 
-        # Create a RedditScraper object
-        scraper = RedditScraper()
+        # Reuse a cached RedditScraper (and its OAuth token) until the token is
+        # close to expiring, instead of doing a fresh token POST on every request.
+        scraper = get_reddit_scraper()
 
         # Search for Reddit posts
         posts = scraper.search_keyword_in_reddit(

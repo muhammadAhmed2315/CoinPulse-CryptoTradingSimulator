@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 import requests
@@ -56,13 +57,30 @@ class RedditScraper:
 
         # Requests access token from Reddit API
         try:
-            access_token = response.json()["access_token"]
+            token_data = response.json()
+            access_token = token_data["access_token"]
+            # Reddit returns the token lifetime in seconds (typically 3600). Store an
+            # absolute expiry timestamp so callers can cache/reuse this scraper until
+            # the token is close to expiring.
+            expires_in = token_data.get("expires_in", 3600)
+            self.token_expires_at = time.time() + float(expires_in)
         except:
             access_token = None
+            # Treat a failed token fetch as already expired so it is not cached/reused.
+            self.token_expires_at = 0
+
+        self.access_token = access_token
 
         # Adds access token to header so that subsequent requests to the Reddit API
         # are made with the access token included
         self.headers["Authorization"] = f"bearer {access_token}"
+
+    def is_token_valid(self, leeway: float = 60) -> bool:
+        """Returns True if a valid access token exists and is not within ``leeway``
+        seconds of expiring."""
+        return self.access_token is not None and (
+            time.time() < self.token_expires_at - leeway
+        )
 
     def get_posts_from_subreddit(
         self, sort: str, subreddit: str, time: str = "", limit: int = 10

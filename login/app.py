@@ -260,7 +260,10 @@ def login():
     access_token = create_access_token(identity=user.id)
 
     if not user.verified:
-        send_activation_email(user.email, access_token, user.username)
+        verification_token = create_access_token(
+            identity=user.id, additional_claims={"purpose": "verify"}
+        )
+        send_activation_email(user.email, verification_token, user.username)
         return {
             "error": "Email not verified",
             "description": "A verification email has been sent. Please check your inbox and verify your account before logging in.",
@@ -365,7 +368,9 @@ def create_account():
     db.session.commit()
 
     # Send verification email
-    token = create_access_token(identity=user.id)
+    token = create_access_token(
+        identity=user.id, additional_claims={"purpose": "verify"}
+    )
     send_activation_email(user.email, token, user.username)
     return {
         "message": "User registered successfully. Please check your email to verify your account."
@@ -480,7 +485,9 @@ def retry_verification_from_email():
 
     user = User.query.filter_by(email=email).first()
     if user and not user.provider:
-        token = create_access_token(identity=user.id)
+        token = create_access_token(
+            identity=user.id, additional_claims={"purpose": "verify"}
+        )
         send_activation_email(user.email, token, user.username)
 
     return {
@@ -509,6 +516,13 @@ def verify_email(token):
     try:
         # Decode the token back into a Python object
         data = decode_token(token)
+
+        # Reject tokens minted for a different purpose (e.g. password reset)
+        if data.get("purpose") != "verify":
+            return {
+                "error": "Unauthorised",
+                "message": "Invalid or expired verification token",
+            }, 401
 
         user = User.query.filter_by(id=data["sub"]).first()
         # Token is valid and matches data
@@ -567,6 +581,14 @@ def retry_verification_from_token():
 
     try:
         decoded = decode_token(token, allow_expired=True)
+
+        # Reject tokens minted for a different purpose (e.g. password reset)
+        if decoded.get("purpose") != "verify":
+            return {
+                "error": "Invalid token",
+                "message": "This token is invalid. Please request a new verification email.",
+            }, 401
+
         user_id = decoded["sub"]
         token_expiry_time = decoded["exp"]
 
@@ -580,7 +602,9 @@ def retry_verification_from_token():
         # Otherwise resend the verification email
         user = User.query.filter_by(id=user_id).first()
         if user:
-            new_token = create_access_token(identity=user.id)
+            new_token = create_access_token(
+                identity=user.id, additional_claims={"purpose": "verify"}
+            )
             send_activation_email(user.email, new_token, user.username)
             return {
                 "message": "Account activation email sent. Please check your email to verify your account."
@@ -641,6 +665,13 @@ def verify_password_reset_token(token: str):
             "message": "Invalid or expired verification token",
         }, 401
 
+    # Reject tokens minted for a different purpose (e.g. email verification)
+    if data.get("purpose") != "reset":
+        return {
+            "error": "Unauthorised",
+            "message": "Invalid or expired verification token",
+        }, 401
+
     # Token is valid
     user_id = data["sub"]
     user = User.query.filter_by(id=user_id).first()
@@ -688,6 +719,13 @@ def reset_password():
     try:
         decoded_token = decode_token(token)
     except Exception as e:
+        return {
+            "error": "Invalid token",
+            "description": "This password reset link is invalid.",
+        }, 400
+
+    # Reject tokens minted for a different purpose (e.g. email verification)
+    if decoded_token.get("purpose") != "reset":
         return {
             "error": "Invalid token",
             "description": "This password reset link is invalid.",
@@ -768,7 +806,9 @@ def request_password_reset():
     user = User.query.filter_by(email=email).first()
     if user and not user.provider:
         token = create_access_token(
-            identity=user.id, expires_delta=timedelta(seconds=600)
+            identity=user.id,
+            expires_delta=timedelta(seconds=600),
+            additional_claims={"purpose": "reset"},
         )
         send_password_reset_email(
             user_email=user.email, token=token, username=user.username

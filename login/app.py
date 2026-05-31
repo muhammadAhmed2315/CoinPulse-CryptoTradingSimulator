@@ -769,7 +769,7 @@ def send_password_reset_email(user_email: str, token: str, username: str) -> Non
     from app import mail_server
 
     html_body = render_template(
-        "passwordReset/password-reset-email.html", token=token, username=username
+        "password-reset-email.html", token=token, username=username
     )
     msg = Message(
         subject="Reset your CoinPulse password",
@@ -795,7 +795,7 @@ def send_activation_email(user_email: str, token: str, username: str) -> None:
     from app import mail_server
 
     html_body = render_template(
-        "emailVerification/verification-email.html", token=token, username=username
+        "verification-email.html", token=token, username=username
     )
     msg = Message(
         subject="Verify Your CoinPulse Account",

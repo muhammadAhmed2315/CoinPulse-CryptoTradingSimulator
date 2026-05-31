@@ -10,13 +10,10 @@ import CustomSkeleton from "@/components/CustomSkeleton";
 import { Card } from "@/components/ui/card";
 import ErrorFallback from "@/components/ErrorFallback";
 
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import SparklineGraph from "@/components/SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
 import type { GridApi, GridReadyEvent } from "ag-grid-community";
 import { useNavigate } from "react-router";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 const maxPages = 10;
 
@@ -110,7 +107,11 @@ function bigNumRenderer(props: CustomCellRendererProps) {
 function pctRenderer(props: CustomCellRendererProps) {
   const n = Number(props.value);
   const cls =
-    n > 0 ? "text-[#21c45d]" : n < 0 ? "text-[#ef4444]" : "text-muted-foreground";
+    n > 0
+      ? "text-[#21c45d]"
+      : n < 0
+        ? "text-[#ef4444]"
+        : "text-muted-foreground";
   const arrow = n > 0 ? "↑" : n < 0 ? "↓" : "";
   return (
     <span className={`font-mono text-[13px] font-semibold tabular-nums ${cls}`}>

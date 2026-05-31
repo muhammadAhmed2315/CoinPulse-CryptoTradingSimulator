@@ -128,7 +128,7 @@ class Wallet(db.Model):
     )
     status = db.Column(db.Text, default="active", nullable="False")
     total_current_value = db.Column(db.Float, default=0.0, nullable=False)
-    owner_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"))
+    owner_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), unique=True)
     transactions = db.relationship("Transaction", backref="wallet", lazy="dynamic")
     value_history = db.relationship("ValueHistory", backref="wallet", uselist=False)
 

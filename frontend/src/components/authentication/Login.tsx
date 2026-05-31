@@ -49,10 +49,22 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [searchParams] = useSearchParams();
   const oauthError = searchParams.get("error");
+  const oauthErrorMessages: Record<string, [string, string]> = {
+    oauth_denied: [
+      "Authentication denied",
+      "OAuth sign-in was cancelled or denied.",
+    ],
+    account_exists: [
+      "Account already exists",
+      "An account with this email already exists. Sign in with your email and password (or the provider you originally used).",
+    ],
+    email_unverified: [
+      "Email not verified",
+      "Your provider account's email isn't verified, so we can't sign you in with it.",
+    ],
+  };
   const [error, setError] = useState<[string, string]>(
-    oauthError === "oauth_denied"
-      ? ["Authentication denied", "OAuth sign-in was cancelled or denied."]
-      : ["", ""],
+    oauthError ? (oauthErrorMessages[oauthError] ?? ["", ""]) : ["", ""],
   );
   const navigate = useNavigate();
   const queryClient = useQueryClient();

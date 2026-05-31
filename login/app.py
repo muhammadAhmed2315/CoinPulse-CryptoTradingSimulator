@@ -89,6 +89,45 @@ def login_discord():
     return redirect(authorization_url)
 
 
+def resolve_oauth_user(provider, provider_id, email, email_verified):
+    """
+    Resolves the application user for an OAuth login.
+
+    Returns a tuple (user, error_code):
+      - (user, None): the caller should be logged in as `user`.
+      - (None, error_code): login must be refused; error_code is a short string
+        suitable for a `?error=` query param on the login page.
+
+    Security rules:
+      - The provider must assert the email is verified, otherwise we don't trust it.
+      - The account is matched on (provider, provider_id) first, so a provider login
+        only ever authenticates the account actually created/linked with it.
+      - If the email already belongs to a different account (a password account or a
+        different provider), we refuse to auto-login (prevents account takeover).
+      - Only when the email is unused do we create a new OAuth-backed account.
+    """
+    if not email or not email_verified:
+        return None, "email_unverified"
+
+    # Match the OAuth identity first so a provider only logs into its own account
+    user = User.query.filter_by(provider=provider, provider_id=provider_id).first()
+    if user:
+        return user, None
+
+    # Email belongs to an existing (password or other-provider) account: refuse to
+    # auto-login to avoid account takeover. The user must sign in with that method.
+    if User.query.filter_by(email=email).first():
+        return None, "account_exists"
+
+    # No existing account: create a new OAuth-backed user. The provider has verified
+    # the email, so the account is considered verified.
+    user = User(email=email, provider=provider, provider_id=provider_id)
+    user.verified = True
+    db.session.add(user)
+    db.session.commit()
+    return user, None
+
+
 @user_authentication.route("/callback_discord")
 def callback_discord():
     """
@@ -109,14 +148,13 @@ def callback_discord():
 
     discord = make_session(token=session.get("oauth2_token"))
     user_info = discord.get(DISCORD_API_BASE_URL + "/users/@me").json()
-    user_email = user_info["email"]
-    user_id = user_info["id"]
+    user_email = user_info.get("email")
+    user_id = user_info.get("id")
+    email_verified = user_info.get("verified", False)
 
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        user = User(email=user_email, provider="discord", provider_id=user_id)
-        db.session.add(user)
-        db.session.commit()
+    user, error = resolve_oauth_user("discord", user_id, user_email, email_verified)
+    if error:
+        return redirect(f"{FRONTEND_URL}/login?error={error}")
 
     access_token = create_access_token(identity=user.id)
     refresh_token = create_refresh_token(identity=user.id)
@@ -176,12 +214,11 @@ def callback_google():
     userinfo = userinfo_response.json()
     user_email = userinfo.get("email")
     user_id = userinfo.get("id")
+    email_verified = userinfo.get("verified_email", False)
 
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        user = User(email=user_email, provider="google", provider_id=user_id)
-        db.session.add(user)
-        db.session.commit()
+    user, error = resolve_oauth_user("google", user_id, user_email, email_verified)
+    if error:
+        return redirect(f"{FRONTEND_URL}/login?error={error}")
 
     access_token = create_access_token(identity=user.id)
     refresh_token = create_refresh_token(identity=user.id)
@@ -360,6 +397,21 @@ def pick_username():
     """
     data = request.get_json()
     username = data["username"]
+
+    # A user may only pick a username (and be granted a wallet) once. Without this
+    # guard, a repeat call would overwrite the username and create a duplicate wallet
+    # for the same owner, resetting the user's balance to a fresh $1,000,000.
+    current = db.session.get(User, get_jwt_identity())
+    if current is None:
+        return {
+            "error": "Unauthorised",
+            "description": "User not found.",
+        }, 401
+    if current.username:
+        return {
+            "error": "Username already set",
+            "description": "Your account already has a username.",
+        }, 409
 
     if len(username) < 3 or len(username) > 20:
         return {

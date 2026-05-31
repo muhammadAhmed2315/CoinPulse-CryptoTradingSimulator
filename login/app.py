@@ -21,7 +21,11 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
 )
 from flask_mail import Message
-from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
+from jwt.exceptions import (
+    ExpiredSignatureError,
+    InvalidSignatureError,
+    PyJWTError,
+)
 from requests_oauthlib import OAuth2Session
 from validate_email_address import validate_email
 
@@ -41,7 +45,6 @@ from constants import (
     GOOGLE_TOKEN_URL,
     GOOGLE_USERINFO_URL,
     PASSWORD_ALLOWED_SPECIAL_CHARS,
-    TOKEN_GENERATOR_SECRET_KEY,
 )
 from extensions import db
 from models import User, ValueHistory, Wallet
@@ -576,15 +579,8 @@ def verify_password_reset_token(token: str):
         # Decode the token back into a Python object
         data = decode_token(token)
 
-    except ExpiredSignatureError:
-        # Expired token
-        return {
-            "error": "Unauthorised",
-            "message": "Invalid or expired verification token",
-        }, 401
-
-    except InvalidSignatureError:
-        # Token has been corrupted or tampered with or is invalid token
+    except PyJWTError:
+        # Expired, tampered, malformed, or otherwise invalid token
         return {
             "error": "Unauthorised",
             "message": "Invalid or expired verification token",
@@ -593,6 +589,12 @@ def verify_password_reset_token(token: str):
     # Token is valid
     user_id = data["sub"]
     user = User.query.filter_by(id=user_id).first()
+
+    if user is None:
+        return {
+            "error": "Unauthorised",
+            "message": "Invalid or expired verification token",
+        }, 401
 
     # Check if token has already been used
     if user.last_password_reset_token == token:

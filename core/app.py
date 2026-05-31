@@ -1,5 +1,5 @@
 from constants import NEWSDATA_API_KEY
-import json
+import logging
 import math
 import time
 from datetime import datetime
@@ -28,49 +28,58 @@ from RedditScraper.RedditScraper import RedditScraper
 
 core = Blueprint("core", __name__)
 
+_COINS_LIST_CACHE = {"data": None, "fetched_at": 0}
+COINS_LIST_CACHE_TTL_SECONDS = 600  # 10 minutes
+
+
+def _lock_wallet(wallet_id):
+    """Load and row-lock a wallet within the current transaction (SELECT ... FOR UPDATE)."""
+    return db.session.scalar(
+        db.select(Wallet).filter_by(id=wallet_id).with_for_update()
+    )
+
+
+def get_coins_list_cached():
+    """Returns the full CoinGecko /coins/list as a Python list, cached for COINS_LIST_CACHE_TTL_SECONDS."""
+    now = int(time.time())
+    if (
+        _COINS_LIST_CACHE["data"] is not None
+        and now - _COINS_LIST_CACHE["fetched_at"] < COINS_LIST_CACHE_TTL_SECONDS
+    ):
+        return _COINS_LIST_CACHE["data"]
+    url = "https://api.coingecko.com/api/v3/coins/list"
+    response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
+    data = response.json()
+    _COINS_LIST_CACHE["data"] = data
+    _COINS_LIST_CACHE["fetched_at"] = now
+    return data
+
 
 @core.route("/get_trade_filter_counts", methods=["GET"])
 @jwt_required()
 def get_trade_filter_counts():
     try:
-        # Get current user's transactions
+        # Get current user
         user_id = get_jwt_identity()
         user = User.query.filter_by(id=user_id).first()
-        transactions = user.wallet.transactions.all()
 
-        # If the user has transactions, get their counts by filter
-        if transactions:
-            # Count transactions by status
-            filterCounts = {
-                "all": len(transactions),
-                "open": sum(1 for t in transactions if t.status == "open"),
-                "finished": sum(1 for t in transactions if t.status == "finished"),
-                "cancelled": sum(1 for t in transactions if t.status == "cancelled"),
-            }
+        # Count transactions by status in SQL
+        base = user.wallet.transactions
+        filterCounts = {
+            "all": base.count(),
+            "open": base.filter_by(status="open").count(),
+            "finished": base.filter_by(status="finished").count(),
+            "cancelled": base.filter_by(status="cancelled").count(),
+        }
 
-            return (
-                jsonify(filterCounts),
-                200,
-            )
-        else:
-            return (
-                jsonify(
-                    {
-                        "all": 0,
-                        "open": 0,
-                        "finished": 0,
-                        "cancelled": 0,
-                    }
-                ),
-                200,
-            )
-    except Exception as e:
         return (
-            jsonify(
-                {
-                    "error": f"Failed to fetch trade counts by filters due to internal error: {str(e)}"
-                }
-            ),
+            jsonify(filterCounts),
+            200,
+        )
+    except Exception:
+        logging.exception("Failed to fetch trade counts by filters")
+        return (
+            jsonify({"error": "Internal server error"}),
             500,
         )
 
@@ -128,26 +137,30 @@ def get_trades_info():
         page = data["page"]
         dataFilter = data["filter"]
 
-        # Get current user's transactions
-        transactions = user.wallet.transactions.all()
+        # Build the (optionally filtered) transactions query in SQL
+        filtered_query = user.wallet.transactions
+        if dataFilter != "all":
+            filtered_query = filtered_query.filter_by(status=dataFilter)
 
-        # If the user has transactions, sort them based on the specified criteria and
-        # paginate the results
-        if transactions:
-            # Filter the transactions first so the page count reflects the filter
-            if dataFilter != "all":
-                transactions = [
-                    trnsctn for trnsctn in transactions if trnsctn.status == dataFilter
-                ]
+        # Total for pagination
+        total_count = filtered_query.count()
 
-            max_pages = math.ceil(len(transactions) / 10)
+        # If the user has transactions, paginate the results in SQL
+        if total_count:
+            max_pages = math.ceil(total_count / 10)
 
-            transactions = transactions[(page - 1) * 10 : page * 10]
+            # Fetch only the requested page, most recent first
+            page_transactions = (
+                filtered_query.order_by(Transaction.timestamp.desc())
+                .offset((page - 1) * 10)
+                .limit(10)
+                .all()
+            )
 
             res = []
 
             # Extract the necessary data from each transaction
-            for transaction in transactions:
+            for transaction in page_transactions:
                 temp = {}
                 temp["orderType"] = transaction.orderType
                 temp["transactionType"] = transaction.transactionType
@@ -161,8 +174,7 @@ def get_trades_info():
                 temp["price_at_execution"] = transaction.price_per_unit_at_execution
                 res.append(temp)
 
-            all_coins = get_all_coin_names()
-            all_coins = json.loads(all_coins.get_data().decode("utf-8"))
+            all_coins = get_coins_list_cached()
             all_coins_dict = {}
             for coin in all_coins:
                 all_coins_dict[coin["id"]] = coin["symbol"]
@@ -189,13 +201,10 @@ def get_trades_info():
                 ),
                 200,
             )
-    except Exception as e:
+    except Exception:
+        logging.exception("Failed to fetch trade history")
         return (
-            jsonify(
-                {
-                    "error": f"Failed to fetch trade history due to internal error: {str(e)}"
-                }
-            ),
+            jsonify({"error": "Internal server error"}),
             500,
         )
 
@@ -349,13 +358,10 @@ def update_likes():
         db.session.add(transaction)
         db.session.add(transaction.likes)
         db.session.commit()
-    except Exception as e:
+    except Exception:
+        logging.exception("Failed to update like count")
         return (
-            jsonify(
-                {
-                    "error": f"Failed to update like count due to internal error: {str(e)}"
-                }
-            ),
+            jsonify({"error": "Internal server error"}),
             500,
         )
 
@@ -507,8 +513,29 @@ def process_order():
     )
 
     try:
-        user_wallet = user.wallet
+        # Acquire a row-level lock on the wallet so the authoritative funds/holdings
+        # check and the subsequent mutation happen atomically (prevents TOCTOU races
+        # against concurrent orders or the background executor). The pre-lock checks
+        # above are only a cheap fast-fail; the checks below are authoritative.
+        user_wallet = _lock_wallet(user.wallet.id)
+        if user_wallet is None:
+            db.session.rollback()
+            return jsonify({"error": "Wallet not found"}), 404
+
         if transaction.orderType == "market" and transaction.transactionType == "buy":
+            # Re-validate against the locked wallet before mutating
+            if not user_wallet.has_enough_balance(
+                transaction.quantity * transaction.price_per_unit
+            ):
+                db.session.rollback()
+                return (
+                    jsonify({"error": "Order failed: insufficient USD balance"}),
+                    400,
+                )
+
+            # Record the balance as read under the lock
+            transaction.balance_before = user_wallet.balance
+
             # Update wallet balance
             user_wallet.update_balance_subtract(
                 transaction.quantity * transaction.price_per_unit
@@ -519,6 +546,19 @@ def process_order():
         elif (
             transaction.orderType == "market" and transaction.transactionType == "sell"
         ):
+            # Re-validate against the locked wallet before mutating
+            if not user_wallet.has_enough_coins(
+                transaction.coin_id, transaction.quantity
+            ):
+                db.session.rollback()
+                return (
+                    jsonify({"error": "Order failed: insufficient coin balance"}),
+                    400,
+                )
+
+            # Record the balance as read under the lock
+            transaction.balance_before = user_wallet.balance
+
             # Update wallet balance
             user_wallet.update_balance_add(
                 transaction.quantity * transaction.price_per_unit
@@ -528,6 +568,40 @@ def process_order():
             user_wallet.update_assets_subtract(
                 transaction.coin_id, transaction.quantity
             )
+        elif transaction.status == "open":
+            # Placing an open limit/stop order: reserve the funds (buy) or coins
+            # (sell) against the locked wallet so they cannot be double-spent by
+            # other orders before this one fills. Reservation is computed at the
+            # TRIGGER price (transaction.price_per_unit) and validated against the
+            # AVAILABLE (unreserved) balance/holdings; the pre-lock checks above are
+            # only a looser total-funds fast-fail and do not reserve.
+            if transaction.transactionType == "buy":
+                required = transaction.quantity * transaction.price_per_unit
+                if not user_wallet.has_enough_available_balance(required):
+                    db.session.rollback()
+                    return (
+                        jsonify(
+                            {
+                                "error": "Order failed: insufficient available USD balance"
+                            }
+                        ),
+                        400,
+                    )
+                user_wallet.reserve_balance(required)
+            elif transaction.transactionType == "sell":
+                if not user_wallet.has_enough_available_coins(
+                    transaction.coin_id, transaction.quantity
+                ):
+                    db.session.rollback()
+                    return (
+                        jsonify(
+                            {
+                                "error": "Order failed: insufficient available coin balance"
+                            }
+                        ),
+                        400,
+                    )
+                user_wallet.reserve_coins(transaction.coin_id, transaction.quantity)
 
         # Add transaction and update user_wallet, then flush to assign the
         # transaction's primary key without committing yet.
@@ -544,12 +618,11 @@ def process_order():
         update_user_wallet_value_in_background(user_wallet.id)
 
         return jsonify({"success": "Transaction processed successfully"}), 201
-    except Exception as e:
+    except Exception:
         db.session.rollback()
+        logging.exception("Order processing failed")
         return (
-            jsonify(
-                {"error": f"Order failed — an unexpected error occurred: {str(e)}"}
-            ),
+            jsonify({"error": "Internal server error"}),
             500,
         )
 
@@ -634,11 +707,10 @@ def get_wallet_total_current_value():
         current_total_value = user.wallet.total_current_value
         return jsonify(current_total_value), 200
 
-    except Exception as e:
+    except Exception:
+        logging.exception("Could not get user's total portfolio value")
         return (
-            jsonify(
-                {"error": (f"Could not get user's total portfolio value: {str(e)}")}
-            ),
+            jsonify({"error": "Internal server error"}),
             500,
         )
 
@@ -662,18 +734,17 @@ def get_news_articles():
         query = data["query"]
         next_page = data["nextPage"]
 
-        url = (
-            f"https://newsdata.io/api/1/crypto"
-            f"?apikey={NEWSDATA_API_KEY}"
-            f"&q={query}"
-            f"&removeduplicate=1"
-            f"&language=en"
-        )
+        params = {
+            "apikey": NEWSDATA_API_KEY,
+            "q": query,
+            "removeduplicate": 1,
+            "language": "en",
+        }
 
         if next_page != "":
-            url += f"&page={next_page}"
+            params["page"] = next_page
 
-        response = requests.get(url)
+        response = requests.get("https://newsdata.io/api/1/crypto", params=params)
         data = response.json()
 
         if data["status"] == "error":
@@ -694,8 +765,9 @@ def get_news_articles():
             )
 
         return jsonify(data), 200
-    except Exception as e:
-        return jsonify({"error": f"Failed to fetch news: {str(e)}"}), 500
+    except Exception:
+        logging.exception("Failed to fetch news")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 # Module-level cache for the RedditScraper instance. The scraper performs a blocking
@@ -762,8 +834,9 @@ def get_reddit_posts():
             res.append(temp)
 
         return jsonify(res), 200
-    except Exception as e:
-        return jsonify({"error": f"Failed to fetch Reddit posts: {str(e)}"}), 500
+    except Exception:
+        logging.exception("Failed to fetch Reddit posts")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 def time_ago(unix_timestamp):
@@ -925,25 +998,34 @@ def update_open_trades_in_background():
                             balances and assets.
     """
 
-    def cancel_open_order(transaction):
+    def cancel_open_order(transaction, wallet):
         """
         Cancels an open order/transaction and updates the transaction in the database
         (does not commit the changes to the database)
 
         This function invokes the `cancel_open_order` method of the given transaction
-        object to change its status to 'cancelled'. It then adds the updated transaction
-        object to the database session for persistence.
+        object to change its status to 'cancelled', releases the funds/coins that were
+        reserved when the order was placed (back onto the row-locked wallet), and adds
+        both the transaction and wallet to the database session for persistence.
 
         Args:
         transaction (Transaction): The transaction object representing the order to be cancelled.
+        wallet (Wallet): The row-locked wallet instance whose reservation should be released.
 
         Returns:
         None
         """
+        # Release the reservation held at placement (computed at the trigger price)
+        if transaction.transactionType == "buy":
+            wallet.release_balance(transaction.quantity * transaction.price_per_unit)
+        else:
+            wallet.release_coins(transaction.coin_id, transaction.quantity)
+
         transaction.cancel_open_order()
         db.session.add(transaction)
+        db.session.add(wallet)
 
-    def execute_open_order(transaction, is_buy):
+    def execute_open_order(transaction, is_buy, wallet):
         """
         Executes an open order based on the current market price and updates the wallet
         balance and assets.
@@ -959,32 +1041,38 @@ def update_open_trades_in_background():
                                    executed.
         is_buy (bool): A flag indicating whether the transaction is a buy (True) or
                        sell (False).
+        wallet (Wallet): The row-locked wallet instance to mutate.
 
         Returns:
         None
         """
-        # Execute the order
+        # Execute the order. transaction.execute_open_order sets
+        # price_per_unit_at_execution and leaves price_per_unit (the trigger price)
+        # untouched, so it is safe to use price_per_unit below for the release.
         transaction.execute_open_order(coin_market_prices[transaction.coin_id])
         if is_buy:
+            # Release the USD reserved at placement (trigger cost), then apply the
+            # actual fill cost at the market price. reserved-at-trigger >= actual
+            # fill cost for a buy limit/stop, so available balance is restored.
+            wallet.release_balance(transaction.quantity * transaction.price_per_unit)
             # Update wallet balance and assets for buy order
-            transaction.wallet.update_balance_subtract(
+            wallet.update_balance_subtract(
                 transaction.quantity * coin_market_prices[transaction.coin_id]
             )
-            transaction.wallet.update_assets_add(
-                transaction.coin_id, transaction.quantity
-            )
+            wallet.update_assets_add(transaction.coin_id, transaction.quantity)
         else:
+            # Release the coins reserved at placement BEFORE subtracting the sold
+            # quantity, keeping the reserved-coins bookkeeping consistent.
+            wallet.release_coins(transaction.coin_id, transaction.quantity)
             # Update wallet balance and assets for sell order
-            transaction.wallet.update_balance_add(
+            wallet.update_balance_add(
                 transaction.quantity * coin_market_prices[transaction.coin_id]
             )
-            transaction.wallet.update_assets_subtract(
-                transaction.coin_id, transaction.quantity
-            )
+            wallet.update_assets_subtract(transaction.coin_id, transaction.quantity)
 
         # Update the transaction and the wallet in the database
         db.session.add(transaction)
-        db.session.add(transaction.wallet)
+        db.session.add(wallet)
 
     while True:
         from app import app
@@ -1038,78 +1126,90 @@ def update_open_trades_in_background():
                 for coin in data:
                     coin_market_prices[coin["id"]] = coin["current_price"]
 
-            # Update each open trade, seeing if it can be closed
+            # Update each open trade, seeing if it can be closed. Each trade is
+            # processed under a row-level lock on its wallet and committed
+            # individually so FOR UPDATE locks are released promptly and never held
+            # across the whole batch (which would block live requests).
             for transaction in open_transactions:
                 # Skip trades whose coin price could not be fetched this cycle
                 if transaction.coin_id not in coin_market_prices:
                     continue
 
-                if transaction.orderType == "limit":
-                    if (
-                        transaction.transactionType == "buy"
-                        and coin_market_prices[transaction.coin_id]
-                        <= transaction.price_per_unit
-                    ):
-                        # If user has enough balance to execute the trade, execute it
-                        if transaction.wallet.has_enough_balance(
-                            transaction.quantity
-                            * coin_market_prices[transaction.coin_id]
-                        ):
-                            # Execute the order
-                            execute_open_order(transaction, True)
-                        else:
-                            # If user doesn't have enough balance to execute the trade, cancel it
-                            cancel_open_order(transaction)
-                    elif (
-                        transaction.transactionType == "sell"
-                        and coin_market_prices[transaction.coin_id]
-                        >= transaction.price_per_unit
-                    ):
-                        # If the user has enough coins to execute the trade, execute it
-                        if transaction.wallet.has_enough_coins(
-                            transaction.coin_id, transaction.quantity
-                        ):
-                            # Execute the order
-                            execute_open_order(transaction, False)
-                        else:
-                            # If user doesn't have enough coins to execute the trade, cancel it
-                            cancel_open_order(transaction)
-                elif transaction.orderType == "stop":
-                    if (
-                        transaction.transactionType == "buy"
-                        and coin_market_prices[transaction.coin_id]
-                        >= transaction.price_per_unit
-                    ):
-                        # If user has enough balance to execute the trade, execute it
-                        if transaction.wallet.has_enough_balance(
-                            transaction.quantity
-                            * coin_market_prices[transaction.coin_id]
-                        ):
-                            # Execute the order
-                            execute_open_order(transaction, True)
-                        else:
-                            # If user doesn't have enough balance to execute the trade, cancel it
-                            cancel_open_order(transaction)
-                    elif (
-                        transaction.transactionType == "sell"
-                        and coin_market_prices[transaction.coin_id]
-                        <= transaction.price_per_unit
-                    ):
-                        # If the user has enough coins to execute the trade, execute it
-                        if transaction.wallet.has_enough_coins(
-                            transaction.coin_id, transaction.quantity
-                        ):
-                            # Execute the order
-                            execute_open_order(transaction, False)
-                        else:
-                            # If user doesn't have enough coins to execute the trade, cancel it
-                            cancel_open_order(transaction)
+                try:
+                    # Lock the wallet for this transaction; check/fill against the
+                    # locked instance so balance/holdings reads are authoritative.
+                    wallet = _lock_wallet(transaction.wallet_id)
+                    if wallet is None:
+                        db.session.rollback()
+                        continue
 
-            # Commit all changes to the database
-            try:
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
+                    if transaction.orderType == "limit":
+                        if (
+                            transaction.transactionType == "buy"
+                            and coin_market_prices[transaction.coin_id]
+                            <= transaction.price_per_unit
+                        ):
+                            # If user has enough balance to execute the trade, execute it
+                            if wallet.has_enough_balance(
+                                transaction.quantity
+                                * coin_market_prices[transaction.coin_id]
+                            ):
+                                # Execute the order
+                                execute_open_order(transaction, True, wallet)
+                            else:
+                                # If user doesn't have enough balance to execute the trade, cancel it
+                                cancel_open_order(transaction, wallet)
+                        elif (
+                            transaction.transactionType == "sell"
+                            and coin_market_prices[transaction.coin_id]
+                            >= transaction.price_per_unit
+                        ):
+                            # If the user has enough coins to execute the trade, execute it
+                            if wallet.has_enough_coins(
+                                transaction.coin_id, transaction.quantity
+                            ):
+                                # Execute the order
+                                execute_open_order(transaction, False, wallet)
+                            else:
+                                # If user doesn't have enough coins to execute the trade, cancel it
+                                cancel_open_order(transaction, wallet)
+                    elif transaction.orderType == "stop":
+                        if (
+                            transaction.transactionType == "buy"
+                            and coin_market_prices[transaction.coin_id]
+                            >= transaction.price_per_unit
+                        ):
+                            # If user has enough balance to execute the trade, execute it
+                            if wallet.has_enough_balance(
+                                transaction.quantity
+                                * coin_market_prices[transaction.coin_id]
+                            ):
+                                # Execute the order
+                                execute_open_order(transaction, True, wallet)
+                            else:
+                                # If user doesn't have enough balance to execute the trade, cancel it
+                                cancel_open_order(transaction, wallet)
+                        elif (
+                            transaction.transactionType == "sell"
+                            and coin_market_prices[transaction.coin_id]
+                            <= transaction.price_per_unit
+                        ):
+                            # If the user has enough coins to execute the trade, execute it
+                            if wallet.has_enough_coins(
+                                transaction.coin_id, transaction.quantity
+                            ):
+                                # Execute the order
+                                execute_open_order(transaction, False, wallet)
+                            else:
+                                # If user doesn't have enough coins to execute the trade, cancel it
+                                cancel_open_order(transaction, wallet)
+
+                    # Commit this trade (and release its wallet lock) before
+                    # moving on to the next one.
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    continue
 
         time.sleep(OPEN_TRADE_UPDATE_INTERVAL_SECONDS)
 
@@ -1195,8 +1295,9 @@ def get_wallet_assets():
         # Sort by totalValue
         data.sort(key=lambda x: -x["totalValue"])
 
-    except Exception as e:
-        return jsonify({"error": f"Failed to retrieve wallet assets: {str(e)}"}), 500
+    except Exception:
+        logging.exception("Failed to retrieve wallet assets")
+        return jsonify({"error": "Internal server error"}), 500
 
     return data, 200
 
@@ -1219,41 +1320,50 @@ def get_open_trades():
         database query fails), the function needs proper error handling to manage such
         exceptions.
     """
-    user_id = get_jwt_identity()
-    user = User.query.filter_by(id=user_id).first()
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
 
-    open_transactions = Transaction.query.filter_by(
-        wallet_id=user.wallet.id, status="open"
-    ).all()
+        open_transactions = Transaction.query.filter_by(
+            wallet_id=user.wallet.id, status="open"
+        ).all()
 
-    res = []
-    coins = set()
+        res = []
+        coins = set()
 
-    for transaction in open_transactions:
+        for transaction in open_transactions:
 
-        temp = {}
-        temp["id"] = transaction.id
-        temp["coin_id"] = transaction.coin_id
-        temp["quantity"] = transaction.quantity
-        temp["price_per_unit"] = transaction.price_per_unit
-        temp["transaction_type"] = transaction.transactionType
-        temp["order_type"] = transaction.orderType
-        res.append(temp)
-        coins.add(transaction.coin_id)
+            temp = {}
+            temp["id"] = transaction.id
+            temp["coin_id"] = transaction.coin_id
+            temp["quantity"] = transaction.quantity
+            temp["price_per_unit"] = transaction.price_per_unit
+            temp["transaction_type"] = transaction.transactionType
+            temp["order_type"] = transaction.orderType
+            res.append(temp)
+            coins.add(transaction.coin_id)
 
-    coins_data = get_coins_data(",".join(coins), 2)
-    coins_data = {
-        coin["id"]: [coin["current_price"], coin["image"], coin["symbol"], coin["name"]]
-        for coin in coins_data
-    }
+        coins_data = get_coins_data(",".join(coins), 2)
+        coins_data = {
+            coin["id"]: [
+                coin["current_price"],
+                coin["image"],
+                coin["symbol"],
+                coin["name"],
+            ]
+            for coin in coins_data
+        }
 
-    for coin in res:
-        coin["current_price"] = coins_data[coin["coin_id"]][0]
-        coin["image"] = coins_data[coin["coin_id"]][1]
-        coin["ticker"] = coins_data[coin["coin_id"]][2]
-        coin["name"] = coins_data[coin["coin_id"]][3]
+        for coin in res:
+            coin["current_price"] = coins_data[coin["coin_id"]][0]
+            coin["image"] = coins_data[coin["coin_id"]][1]
+            coin["ticker"] = coins_data[coin["coin_id"]][2]
+            coin["name"] = coins_data[coin["coin_id"]][3]
 
-    return jsonify(res), 200
+        return jsonify(res), 200
+    except Exception:
+        logging.exception("get_open_trades failed")
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/cancel_open_trade", methods=["POST"])
@@ -1278,8 +1388,11 @@ def cancel_open_trade():
         if not transaction_id:
             return jsonify({"error": "Missing transaction_id"}), 400
 
-        # Get the transaction object
-        transaction = Transaction.query.get(transaction_id)
+        # Get the transaction object, locking the row to prevent a concurrent
+        # background executor from filling it while we cancel it
+        transaction = db.session.scalar(
+            db.select(Transaction).filter_by(id=transaction_id).with_for_update()
+        )
         if not transaction:
             return jsonify({"error": "Order no longer exists"}), 404
 
@@ -1296,9 +1409,32 @@ def cancel_open_trade():
                 403,
             )
 
+        # Reject if the order is no longer open (e.g. already filled/cancelled)
+        if transaction.status != "open":
+            return (
+                jsonify(
+                    {"error": "Order is no longer open and cannot be cancelled"}
+                ),
+                409,
+            )
+
+        # Row-lock the wallet so the reservation release happens atomically with the
+        # status flip (and never races the background executor's own wallet lock).
+        wallet = _lock_wallet(transaction.wallet_id)
+        if wallet is None:
+            db.session.rollback()
+            return jsonify({"error": "Wallet not found"}), 404
+
+        # Release the funds/coins reserved at placement (computed at trigger price)
+        if transaction.transactionType == "buy":
+            wallet.release_balance(transaction.quantity * transaction.price_per_unit)
+        else:
+            wallet.release_coins(transaction.coin_id, transaction.quantity)
+
         # Else cancel the order and commit to the db
         transaction.cancel_open_order()
         db.session.add(transaction)
+        db.session.add(wallet)
         db.session.commit()
 
         return jsonify({"success": "Transaction successfully cancelled"}), 200
@@ -1326,48 +1462,54 @@ def get_top_coins():
         according to the specified parameter. Each item in the array includes detailed
         market data of the coin.
     """
-    data = request.get_json()
-    sort_coins_by = data["sort_coins_by"]
+    try:
+        data = request.get_json()
+        sort_coins_by = data["sort_coins_by"]
 
-    # Validate the sort_coins_by argument
-    if sort_coins_by not in {
-        "market_cap_asc",
-        "market_cap_desc",
-        "volume_asc",
-        "volume_desc",
-    }:
-        return (
-            jsonify(
+        # Validate the sort_coins_by argument
+        if sort_coins_by not in {
+            "market_cap_asc",
+            "market_cap_desc",
+            "volume_asc",
+            "volume_desc",
+        }:
+            return (
+                jsonify(
+                    {
+                        "error": "Invalid sort_coins_by value. Must be one of: market_cap_asc, market_cap_desc, volume_asc, volume_desc."
+                    }
+                ),
+                400,
+            )
+
+        url = "https://api.coingecko.com/api/v3/coins/markets"
+        params = {
+            "vs_currency": "usd",
+            "order": sort_coins_by,
+            "per_page": 100,
+            "page": 1,
+            "price_change_percentage": "1h,24h,7d",
+            "precision": 2,
+            "sparkline": "true",
+        }
+
+        response = requests.get(
+            url, params=params, headers=COINGECKO_API_HEADERS, timeout=10
+        )
+        data = response.json()
+        temp = []
+        for coin in data:
+            temp.append(
                 {
-                    "error": "Invalid sort_coins_by value. Must be one of: market_cap_asc, market_cap_desc, volume_asc, volume_desc."
+                    **coin,
+                    "identity": {"name": coin["name"], "symbol": coin["symbol"]},
+                    "sparkline_in_7d": coin["sparkline_in_7d"]["price"],
                 }
-            ),
-            400,
-        )
-
-    url = "https://api.coingecko.com/api/v3/coins/markets"
-    params = {
-        "vs_currency": "usd",
-        "order": sort_coins_by,
-        "per_page": 100,
-        "page": 1,
-        "price_change_percentage": "1h,24h,7d",
-        "precision": 2,
-        "sparkline": "true",
-    }
-
-    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    temp = []
-    for coin in data:
-        temp.append(
-            {
-                **coin,
-                "identity": {"name": coin["name"], "symbol": coin["symbol"]},
-                "sparkline_in_7d": coin["sparkline_in_7d"]["price"],
-            }
-        )
-    return jsonify(temp)
+            )
+        return jsonify(temp)
+    except Exception:
+        logging.exception("get_top_coins failed")
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/get_coin_data/<coin_id>", methods=["GET"])
@@ -1384,19 +1526,25 @@ def get_coin_data(coin_id: str):
     Returns:
         Flask.Response: A JSON response containing detailed market data for the specified cryptocurrency coin.
     """
-    url = "https://api.coingecko.com/api/v3/coins/markets"
-    params = {
-        "vs_currency": "usd",
-        "ids": coin_id,
-        "price_change_percentage": "24h",
-        "precision": 5,
-    }
+    try:
+        url = "https://api.coingecko.com/api/v3/coins/markets"
+        params = {
+            "vs_currency": "usd",
+            "ids": coin_id,
+            "price_change_percentage": "24h",
+            "precision": 5,
+        }
 
-    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    data = jsonify(data[0])
+        response = requests.get(
+            url, params=params, headers=COINGECKO_API_HEADERS, timeout=10
+        )
+        data = response.json()
+        data = jsonify(data[0])
 
-    return data
+        return data
+    except Exception:
+        logging.exception("get_coin_data failed")
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/get_coin_sparkline/<coin_id>", methods=["GET"])
@@ -1467,13 +1615,7 @@ def get_all_coin_names():
         Flask.Response: A JSON response containing a list of all cryptocurrencies, with each entry including
         the coin's ID, symbol, and name.
     """
-    url = "https://api.coingecko.com/api/v3/coins/list"
-
-    response = requests.get(url, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    data = jsonify(data)
-
-    return data
+    return jsonify(get_coins_list_cached())
 
 
 @core.route("/get_trending_coins")
@@ -1517,8 +1659,9 @@ def get_trending_coins():
         ]
 
         return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        logging.exception("Failed to fetch top coins data")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @core.route("/get_coin_OHLC_data/<coin_id>", methods=["GET"])

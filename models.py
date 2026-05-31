@@ -119,10 +119,23 @@ class Wallet(db.Model):
     """
 
     __tablename__ = "wallets"
+    __table_args__ = (
+        db.CheckConstraint("balance >= 0", name="ck_wallets_balance_nonneg"),
+        db.CheckConstraint(
+            "reserved_balance >= 0", name="ck_wallets_reserved_balance_nonneg"
+        ),
+        db.CheckConstraint(
+            "balance >= reserved_balance", name="ck_wallets_balance_ge_reserved"
+        ),
+    )
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     balance = db.Column(db.Float, default=1000000)
     assets = db.Column(MutableDict.as_mutable(JSONB), default={}, nullable=False)
+    reserved_balance = db.Column(db.Float, default=0.0, nullable=False)
+    reserved_assets = db.Column(
+        MutableDict.as_mutable(JSONB), default=dict, nullable=False
+    )
     time_created = db.Column(
         db.Integer, default=lambda: int(time.time()), nullable=False
     )
@@ -217,6 +230,42 @@ class Wallet(db.Model):
             bool: True if the wallet has enough of the specified coin, False otherwise.
         """
         return self.assets.get(coin_id, 0) >= coin_quantity
+
+    def available_balance(self):
+        """Returns the spendable USD balance (total balance minus reserved funds)."""
+        return self.balance - self.reserved_balance
+
+    def available_coins(self, coin_id):
+        """Returns the spendable quantity of a coin (holdings minus reserved coins)."""
+        return self.assets.get(coin_id, 0) - self.reserved_assets.get(coin_id, 0)
+
+    def has_enough_available_balance(self, amount):
+        """Returns True if available (unreserved) USD balance covers the amount."""
+        return self.available_balance() >= amount
+
+    def has_enough_available_coins(self, coin_id, quantity):
+        """Returns True if available (unreserved) holdings cover the quantity."""
+        return self.available_coins(coin_id) >= quantity
+
+    def reserve_balance(self, amount):
+        """Reserves USD against the wallet for an open buy order."""
+        self.reserved_balance += amount
+
+    def release_balance(self, amount):
+        """Releases previously reserved USD (clamped at zero)."""
+        self.reserved_balance = max(0.0, self.reserved_balance - amount)
+
+    def reserve_coins(self, coin_id, quantity):
+        """Reserves a quantity of a coin against the wallet for an open sell order."""
+        self.reserved_assets[coin_id] = self.reserved_assets.get(coin_id, 0) + quantity
+
+    def release_coins(self, coin_id, quantity):
+        """Releases previously reserved coins, removing the key when it reaches ~0."""
+        remaining = self.reserved_assets.get(coin_id, 0) - quantity
+        if remaining <= 1e-8:
+            self.reserved_assets.pop(coin_id, None)
+        else:
+            self.reserved_assets[coin_id] = remaining
 
 
 class ValueHistory(db.Model):

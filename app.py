@@ -1,4 +1,3 @@
-import logging
 import os
 import threading
 import uuid
@@ -18,9 +17,6 @@ from constants import (
 )
 from extensions import db, jwt, login_manager
 from models import User
-
-# Configure logging
-log = logging.getLogger("werkzeug")
 
 
 def create_app():

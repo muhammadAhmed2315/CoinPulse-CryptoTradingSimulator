@@ -21,7 +21,6 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
 )
 from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
 from requests_oauthlib import OAuth2Session
 from validate_email_address import validate_email
@@ -47,8 +46,6 @@ from constants import (
 from extensions import db
 from models import User, ValueHistory, Wallet
 
-# This URLSafeTimedSerializer object will handle generating and verifying tokens
-serializer = URLSafeTimedSerializer(TOKEN_GENERATOR_SECRET_KEY)
 user_authentication = Blueprint("user_authentication", __name__)
 
 

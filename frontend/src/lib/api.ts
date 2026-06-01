@@ -1,8 +1,55 @@
 import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { queryClient } from "./query-client";
 
 const API_BASE = "http://localhost:5000";
 const REFRESH_URL = `${API_BASE}/refresh`;
+
+// Unauthenticated route paths (see AuthenticationBase group in App.tsx). When
+// a refresh fails we redirect to /login, but never if we're already on one of
+// these — that would cause a redirect loop.
+const AUTH_ROUTE_PREFIXES = [
+  "/login",
+  "/create_account",
+  "/request_password_reset",
+  "/reset_password",
+  "/activation_email_sent",
+  "/pick_username",
+  "/password_reset_link_sent",
+  "/verify_email",
+  "/email_verification_successful",
+  "/email_already_verified",
+  "/email_verification_unsuccessful",
+  "/email_verification_form",
+  "/verify_password_reset_token",
+  "/password_reset_link_invalid",
+];
+
+function isOnAuthRoute(): boolean {
+  const path = window.location.pathname;
+  return AUTH_ROUTE_PREFIXES.some(
+    (p) => path === p || path.startsWith(`${p}/`),
+  );
+}
+
+// Fires once per failure burst: a refresh failure means the session is dead,
+// so purge all cached private data, flip AuthContext to logged-out, and
+// redirect to /login. Guarded so concurrent 401s don't clear/redirect twice.
+let loggingOut = false;
+
+function forceLogout(): void {
+  if (loggingOut) return;
+  loggingOut = true;
+
+  // Purge all cached private data, then explicitly mark the auth query as
+  // logged-out so AuthContext flips immediately without awaiting a refetch.
+  queryClient.clear();
+  queryClient.setQueryData(["auth", "me"], null);
+
+  if (!isOnAuthRoute()) {
+    window.location.assign("/login");
+  }
+}
 
 // Paths that must never trigger a refresh-then-retry on 401 — either they
 // ARE the refresh flow, or a 401 from them legitimately means "bad creds"
@@ -51,6 +98,7 @@ axios.interceptors.response.use(
     try {
       await refreshTokens();
     } catch {
+      forceLogout();
       return Promise.reject(error);
     }
 
@@ -81,6 +129,7 @@ export async function fetchWithRefresh(
   try {
     await refreshTokens();
   } catch {
+    forceLogout();
     return response;
   }
 

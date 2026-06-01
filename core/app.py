@@ -929,11 +929,19 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
             coins = set()
             coin_market_prices = {}
 
-            if current_wallet_id:
-                all_wallets = [db.session.query(Wallet).get(current_wallet_id)]
-            else:
-                # Get list of all coins currently owned by users
-                all_wallets = Wallet.query.all()
+            try:
+                if current_wallet_id:
+                    all_wallets = [db.session.query(Wallet).get(current_wallet_id)]
+                else:
+                    # Get list of all coins currently owned by users
+                    all_wallets = Wallet.query.all()
+            except Exception:
+                db.session.rollback()
+                logging.exception("Failed to load wallets for value update")
+                # Empty list: the loop below no-ops, then the background path
+                # sleeps and retries next cycle while the synchronous
+                # (current_wallet_id) path breaks out — no busy-spin, no hang.
+                all_wallets = []
 
             for wallet in all_wallets:
                 coins.update(set(wallet.assets.keys()))
@@ -948,14 +956,23 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 current_batch = coins[i : i + 250]
                 current_batch = ",".join(current_batch)
 
-                url = "https://api.coingecko.com/api/v3/coins/markets"
-                params = {"vs_currency": "usd", "per_page": 250, "ids": current_batch}
-                headers = {"X-CoinGecko-Api-Key": COINGECKO_API_KEY}
-                response = requests.get(url, params=params, headers=headers)
-                data = response.json()
+                try:
+                    url = "https://api.coingecko.com/api/v3/coins/markets"
+                    params = {
+                        "vs_currency": "usd",
+                        "per_page": 250,
+                        "ids": current_batch,
+                    }
+                    headers = {"X-CoinGecko-Api-Key": COINGECKO_API_KEY}
+                    response = requests.get(
+                        url, params=params, headers=headers, timeout=10
+                    )
+                    data = response.json()
 
-                for coin in data:
-                    coin_market_prices[coin["id"]] = coin["current_price"]
+                    for coin in data:
+                        coin_market_prices[coin["id"]] = coin["current_price"]
+                except Exception:
+                    continue
 
                 # If more than one page of data needs to be fetched from the API, then
                 # sleep for 25 seconds before making another request so that we don't get
@@ -968,23 +985,27 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
             # - assets_value_history
             # - total_value_history
             # - total_current_value
-            for wallet in all_wallets:
-                # Get current total value of assets
-                curr_assets_value = 0
-                for key in wallet.assets:
-                    if key in coin_market_prices:
-                        curr_assets_value += (
-                            wallet.assets[key] * coin_market_prices[key]
-                        )
+            try:
+                for wallet in all_wallets:
+                    # Get current total value of assets
+                    curr_assets_value = 0
+                    for key in wallet.assets:
+                        if key in coin_market_prices:
+                            curr_assets_value += (
+                                wallet.assets[key] * coin_market_prices[key]
+                            )
 
-                wallet.value_history.update_value_history(
-                    wallet.balance, curr_assets_value, current_time
-                )
+                    wallet.value_history.update_value_history(
+                        wallet.balance, curr_assets_value, current_time
+                    )
 
-                wallet.total_current_value = wallet.balance + curr_assets_value
+                    wallet.total_current_value = wallet.balance + curr_assets_value
 
-                db.session.add(wallet)
-            db.session.commit()
+                    db.session.add(wallet)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                logging.exception("Failed to update wallet value history")
 
         if not current_wallet_id:
             time.sleep(WALLET_VALUE_UPDATE_INTERVAL_SECONDS)

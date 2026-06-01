@@ -276,9 +276,7 @@ def get_feedposts():
             # Guard against transactions without a TransactionLikes row
             likes_obj = transaction.likes
             num_likes = len(likes_obj.liked_by_user_ids) if likes_obj else 0
-            curr_user_liked = bool(
-                likes_obj and user.id in likes_obj.liked_by_user_ids
-            )
+            curr_user_liked = bool(likes_obj and user.id in likes_obj.liked_by_user_ids)
 
             temp["id"] = transaction.id
             temp["username"] = transaction.wallet.owner.username
@@ -417,17 +415,13 @@ def process_order():
         "coin_id",
         "comment",
         "visibility",
+        "price_per_unit",
     }
 
     # Verify required fields have been provided
     for key in required_fields:
         if key not in data:
             return jsonify({"error": "Invalid order request"}), 422
-
-    if (data["orderType"] == "market" and data.get("price_per_unit")) or (
-        data["orderType"] != "market" and not data.get("price_per_unit")
-    ):
-        return jsonify({"error": "Invalid order request"}), 422
 
     # Make sure user did not enter an invalid quantity
     if (
@@ -441,15 +435,15 @@ def process_order():
             422,
         )
 
-    # Validate correct trigger price for limit and stop orders
-    if data["orderType"] != "market" and (
+    # Validate correct quoted price
+    if (
         not isinstance(data["price_per_unit"], (int, float))
         or isinstance(data["price_per_unit"], bool)
         or not math.isfinite(data["price_per_unit"])
         or data["price_per_unit"] <= 0
     ):
         return (
-            jsonify({"error": "Trigger price must be a positive number"}),
+            jsonify({"error": "Trigger/quoted price must be a positive number"}),
             422,
         )
 
@@ -469,6 +463,31 @@ def process_order():
             return (
                 jsonify({"error": "No valid market price for this coin"}),
                 502,
+            )
+
+        # Validate unfavourable slippage tolerance
+        if (
+            data["transactionType"] == "buy"
+            and ((current_price - data["price_per_unit"]) / data["price_per_unit"])
+            > 0.005
+        ):
+            return (
+                jsonify(
+                    {"error": "Slippage tolerance exceeded (0.5%). Please refresh."}
+                ),
+                409,
+            )
+
+        elif (
+            data["transactionType"] == "sell"
+            and ((current_price - data["price_per_unit"]) / data["price_per_unit"])
+            < -0.005
+        ):
+            return (
+                jsonify(
+                    {"error": "Slippage tolerance exceeded (0.5%). Please refresh."}
+                ),
+                409,
             )
 
         data["price_per_unit"] = current_price
@@ -524,7 +543,7 @@ def process_order():
 
         if transaction.orderType == "market" and transaction.transactionType == "buy":
             # Re-validate against the locked wallet before mutating
-            if not user_wallet.has_enough_balance(
+            if not user_wallet.has_enough_available_balance(
                 transaction.quantity * transaction.price_per_unit
             ):
                 db.session.rollback()
@@ -547,7 +566,7 @@ def process_order():
             transaction.orderType == "market" and transaction.transactionType == "sell"
         ):
             # Re-validate against the locked wallet before mutating
-            if not user_wallet.has_enough_coins(
+            if not user_wallet.has_enough_available_coins(
                 transaction.coin_id, transaction.quantity
             ):
                 db.session.rollback()
@@ -1412,9 +1431,7 @@ def cancel_open_trade():
         # Reject if the order is no longer open (e.g. already filled/cancelled)
         if transaction.status != "open":
             return (
-                jsonify(
-                    {"error": "Order is no longer open and cannot be cancelled"}
-                ),
+                jsonify({"error": "Order is no longer open and cannot be cancelled"}),
                 409,
             )
 

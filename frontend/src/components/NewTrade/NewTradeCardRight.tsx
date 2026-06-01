@@ -34,18 +34,17 @@ async function placeOrder(
   coin_id: string,
   visibility: boolean,
   comment: string,
-  pricePerUnit?: number,
+  pricePerUnit: number,
 ) {
-  let data: any = {
+  const data: any = {
     transactionType: orderSide.toLowerCase(),
     orderType: orderType.toLowerCase(),
     quantity: quantity,
     coin_id: coin_id,
     visibility: visibility,
     comment: comment,
+    price_per_unit: pricePerUnit,
   };
-
-  if (pricePerUnit) data = { ...data, price_per_unit: pricePerUnit };
 
   const response = await fetchWithRefresh(
     "http://localhost:5000/process_order",
@@ -131,7 +130,9 @@ export default function NewTradeCardRight({
         currCoin.id,
         shareOnTimeline,
         timelineMsg,
-        orderType === "MARKET" ? undefined : parseFloat(orderPrice),
+        orderType === "MARKET"
+          ? coinDataQuery.data.current_price
+          : parseFloat(orderPrice),
       ),
 
     onSuccess: async () => {
@@ -173,7 +174,7 @@ export default function NewTradeCardRight({
     if (val === "") {
       setUsdAmount("");
       setCoinAmount("");
-    } else if (/^\d*\.?\d{0,2}$/.test(val)) {
+    } else if (/^(\d+\.?\d{0,2})?$/.test(val)) {
       setUsdAmount(val);
       setCoinAmount(
         (parseFloat(val) / coinDataQuery.data.current_price).toFixed(8),
@@ -197,7 +198,7 @@ export default function NewTradeCardRight({
     if (val === "") {
       setCoinAmount("");
       setUsdAmount("");
-    } else if (/^\d*\.?\d{0,8}$/.test(val)) {
+    } else if (/^(\d+\.?\d{0,8})?$/.test(val)) {
       const usdValue = parseFloat(val) * coinDataQuery.data.current_price;
       setCoinAmount(val);
       setUsdAmount(String(usdValue.toFixed(2)));
@@ -243,7 +244,7 @@ export default function NewTradeCardRight({
 
   function handleOrderPriceChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(val)) setOrderPrice(val);
+    if (/^(\d+\.?\d{0,2})?$/.test(val)) setOrderPrice(val);
   }
 
   return (

@@ -61,6 +61,7 @@ async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
     headers: {
       "Content-Type": "application/json",
     },
+    withCredentials: true,
   });
   return response.data;
 }

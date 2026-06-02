@@ -14,6 +14,15 @@ social feed.
 > (React 19 + TypeScript + Tailwind CSS v4) talking to the Flask backend as a
 > JSON API. See [Version history](#version-history) for the original version.
 
+## Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Environment variables](#environment-variables)
+- [Screenshots](#screenshots)
+- [Version history](#version-history)
+
 ## Features
 
 - **Trading simulator** — Place market, limit, and stop **buy/sell** orders at
@@ -175,8 +184,7 @@ localhost defaults when unset.
 
 ## Screenshots
 
-<details open>
-<summary><strong>v2 — current (React + Tailwind)</strong></summary>
+### v2 — current (React + Tailwind)
 
 **Dashboard** — trending coins, global/personal feed, and portfolio overview
 ![Dashboard](docs/screenshots-v2/dashboard.png)
@@ -200,8 +208,6 @@ localhost defaults when unset.
 **Login**
 ![Login](docs/screenshots-v2/login.png)
 
-</details>
-
 ## Version history
 
 CoinPulse was originally a **server-side-rendered** Flask application: vanilla
@@ -213,8 +219,7 @@ static hosting of the built bundle).
 The final commit of the original SSR version is
 [`ee6ed05`](https://github.com/muhammadAhmed2315/CoinPulse-CryptoTradingSimulator/commit/ee6ed0576f970bc816a0d2e44868ed181b0fccac).
 
-<details>
-<summary><strong>v1 — original (vanilla JS + Jinja templates)</strong></summary>
+### v1 — original (vanilla JS + Jinja templates)
 
 **Dashboard**
 ![Dashboard](docs/screenshots-v1/dashboard.png)
@@ -240,5 +245,3 @@ The final commit of the original SSR version is
 
 **Sign up**
 ![Sign up](docs/screenshots-v1/register.png)
-
-</details>

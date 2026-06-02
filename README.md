@@ -66,21 +66,21 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
 <summary>Screenshots</summary>
 
 - **Homepage**
-  ![Homepage Screenshot](docs/screenshots/dashboard.png)
+  ![Homepage Screenshot](docs/screenshots-old/dashboard.png)
 - **Trading Dashboard**
-  ![Trading Dashboard Screenshot](docs/screenshots/new-trade.png)
+  ![Trading Dashboard Screenshot](docs/screenshots-old/new-trade.png)
 - **Portfolio Analytics**
-  ![Portfolio Analytics Screenshot](docs/screenshots/portfolio-analytics.png)
+  ![Portfolio Analytics Screenshot](docs/screenshots-old/portfolio-analytics.png)
 - **Transactions Page**
-  ![Transactions Page Screenshot](docs/screenshots/my-trades.png)
+  ![Transactions Page Screenshot](docs/screenshots-old/my-trades.png)
 - **Coin Info Page**
-  ![Coin Info Screenshot](docs/screenshots/coin-info-one.png)
-  ![Coin Info Screenshot](docs/screenshots/coin-info-two.png)
+  ![Coin Info Screenshot](docs/screenshots-old/coin-info-one.png)
+  ![Coin Info Screenshot](docs/screenshots-old/coin-info-two.png)
 - **Top Coins Page**
-  ![Top Coins Screenshot](docs/screenshots/top-coins.png)
+  ![Top Coins Screenshot](docs/screenshots-old/top-coins.png)
 - **Login Page**
-  ![Login Page Screenshot](docs/screenshots/login.png)
+  ![Login Page Screenshot](docs/screenshots-old/login.png)
 - **Sign Up Page**
-  ![Sign Up Page Screenshot](docs/screenshots/register.png)
+  ![Sign Up Page Screenshot](docs/screenshots-old/register.png)
 
 </details>

@@ -271,7 +271,13 @@ def login():
 
     refresh_token = create_refresh_token(identity=user.id)
 
-    response = make_response({"message": "Login successful"}, 200)
+    response = make_response(
+        {
+            "message": "Login successful",
+            "user": {"email": user.email, "username": user.username},
+        },
+        200,
+    )
     set_access_cookies(response, access_token)
     set_refresh_cookies(response, refresh_token)
     return response

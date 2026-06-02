@@ -60,6 +60,14 @@ function isOnAuthRoute(): boolean {
 // redirect to /login. Guarded so concurrent 401s don't clear/redirect twice.
 let loggingOut = false;
 
+// Re-arm the logout guard after a successful (re)authentication. Without this,
+// the first 401 of a page session latches loggingOut=true forever, so a later
+// genuine session expiry would find forceLogout() a no-op. Called on login
+// success and after a successful token refresh.
+export function markAuthenticated(): void {
+  loggingOut = false;
+}
+
 function forceLogout(): void {
   if (loggingOut) return;
   loggingOut = true;
@@ -92,7 +100,10 @@ function refreshTokens(): Promise<void> {
   if (!refreshPromise) {
     refreshPromise = axios
       .post(REFRESH_URL, null, { withCredentials: true })
-      .then(() => undefined)
+      .then(() => {
+        // Session is alive again — re-arm the logout guard.
+        markAuthenticated();
+      })
       .finally(() => {
         refreshPromise = null;
       });

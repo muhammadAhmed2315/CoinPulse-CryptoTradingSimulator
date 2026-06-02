@@ -24,7 +24,7 @@ import { AlertCircleIcon } from "lucide-react";
 import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
 import { prefetchDashboard } from "@/pages/Dashboard";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, markAuthenticated } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function loginFunction(data: { email: string; password: string }) {
@@ -76,8 +76,14 @@ export default function Login() {
       return loginFunction(data);
     },
 
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    // Seed the auth cache from the login response so AuthContext flips to
+    // authenticated synchronously. Blocking on a second /auth/me round-trip
+    // here (the old invalidateQueries) kept the login button spinner stuck on
+    // slow/cold deployments — the cookies are already set by /login, so the
+    // extra fetch is unnecessary.
+    onSuccess: (data: { user: { username: string; email: string } }) => {
+      markAuthenticated();
+      queryClient.setQueryData(["auth", "me"], data.user);
       prefetchDashboard(queryClient);
       navigate("/dashboard");
     },
@@ -99,8 +105,9 @@ export default function Login() {
       });
     },
 
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    onSuccess: (data: { user: { username: string; email: string } }) => {
+      markAuthenticated();
+      queryClient.setQueryData(["auth", "me"], data.user);
       prefetchDashboard(queryClient);
       navigate("/dashboard");
     },

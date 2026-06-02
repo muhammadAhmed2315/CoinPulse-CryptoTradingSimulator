@@ -196,7 +196,7 @@ export default function NewTradeCard({ initialCoin }: NewTradeCardProps) {
       {/* ===== LEFT PANEL ===== */}
       <div className="flex-1 z-20 bg-muted border-r-border border-r rounded-l-md p-4">
         {/* ===== COIN SEARCH BAR ===== */}
-        <div className="mb-4">
+        <div className="mb-4 w-full max-w-sm rounded-md bg-card">
           {allCoinsQuery.isLoading ? (
             <CustomSkeleton className="h-9 w-full max-w-sm rounded-md" />
           ) : allCoinsQuery.isError ? (

@@ -9,7 +9,6 @@ import ErrorFallback from "../ErrorFallback";
 import SparklineGraph from "../SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
 import { fetchWithRefresh, API_BASE } from "@/lib/api";
-import { prefetchCoinInfo } from "@/pages/CoinInfo";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchCoinInfoCard(
@@ -130,7 +129,11 @@ export default function CoinInfoCard({
               setQuery={setQuery}
               debouncedQuery={debouncedQuery}
               setCurrCoin={setCurrCoin}
-              prefetchFn={prefetchCoinInfo}
+              prefetchFn={(queryClient, coin) =>
+                import("@/pages/CoinInfo").then((m) =>
+                  m.prefetchCoinInfo(queryClient, coin),
+                )
+              }
             />
           )}
         </div>

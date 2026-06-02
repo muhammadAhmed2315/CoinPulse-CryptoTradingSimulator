@@ -15,7 +15,6 @@ import CustomTooltip from "@/components/CustomTooltip";
 import PriceChangeBox from "@/components/PriceChangeBox";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
-import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
 
@@ -52,7 +51,12 @@ export default function TrendingCoinCard({
   const { onMouseEnter, onMouseLeave } = usePrefetchOnHover(
     data
       ? () =>
-          prefetchCoinInfo(queryClient, { id: data?.coin_id, name: data?.name })
+          import("@/pages/CoinInfo").then((m) =>
+            m.prefetchCoinInfo(queryClient, {
+              id: data?.coin_id,
+              name: data?.name,
+            }),
+          )
       : () => {},
   );
 

@@ -14,7 +14,7 @@ import { Spinner } from "../ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import NewUsername from "./NewUsername";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, AUTH_ME_QUERY_KEY } from "@/lib/api";
 
 export default function PickUsername() {
   // ===== STATE VARIABLES =====
@@ -32,7 +32,7 @@ export default function PickUsername() {
       }),
 
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      await queryClient.invalidateQueries({ queryKey: AUTH_ME_QUERY_KEY });
       navigate("/dashboard");
     },
 

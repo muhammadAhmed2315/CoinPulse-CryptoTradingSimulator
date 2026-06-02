@@ -24,13 +24,13 @@ import NewTradeButton from "./NewTrade/NewTradeButton";
 import CustomSkeleton from "./CustomSkeleton";
 import { numToMoney } from "@/utils";
 import ProfileAvatar from "./Dashboard/Feed/ProfileAvatar";
-import { prefetchTopCoins } from "@/pages/TopCoins";
-import { prefetchCoinInfo } from "@/pages/CoinInfo";
-import { prefetchDashboard } from "@/pages/Dashboard";
-import { prefetchMyTrades } from "@/pages/MyTrades";
-import { fetchWithRefresh, API_BASE } from "@/lib/api";
+import { fetchWithRefresh, API_BASE, clearCachedSession } from "@/lib/api";
 import ThemeToggle from "./ThemeToggle";
 import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
+// Dashboard is eagerly imported by App.tsx (it's the landing page, not a lazy
+// route), so a static prefetch import here adds no extra chunk — and avoids the
+// mixed static/dynamic-import warning. The lazy routes below use dynamic import.
+import { prefetchDashboard } from "@/pages/Dashboard";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
@@ -66,17 +66,23 @@ export default function NavBar() {
   const {
     onMouseEnter: myTradesOnMouseEnter,
     onMouseLeave: myTradesOnMouseLeave,
-  } = usePrefetchOnHover(() => prefetchMyTrades(queryClient));
+  } = usePrefetchOnHover(() =>
+    import("@/pages/MyTrades").then((m) => m.prefetchMyTrades(queryClient)),
+  );
 
   const {
     onMouseEnter: topCoinsOnMouseEnter,
     onMouseLeave: topCoinsOnMouseLeave,
-  } = usePrefetchOnHover(() => prefetchTopCoins(queryClient));
+  } = usePrefetchOnHover(() =>
+    import("@/pages/TopCoins").then((m) => m.prefetchTopCoins(queryClient)),
+  );
 
   const {
     onMouseEnter: coinInfoOnMouseEnter,
     onMouseLeave: coinInfoOnMouseLeave,
-  } = usePrefetchOnHover(() => prefetchCoinInfo(queryClient));
+  } = usePrefetchOnHover(() =>
+    import("@/pages/CoinInfo").then((m) => m.prefetchCoinInfo(queryClient)),
+  );
 
   // ===== REACT QUERY HOOKS =====
   const portfolioTotalValueQuery = useQuery({
@@ -90,8 +96,8 @@ export default function NavBar() {
         withCredentials: true,
       }),
 
-    onSuccess: () => {
-      queryClient.clear();
+    onSuccess: async () => {
+      await clearCachedSession();
       navigate("/login");
     },
   });

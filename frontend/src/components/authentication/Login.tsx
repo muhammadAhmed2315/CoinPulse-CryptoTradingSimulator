@@ -23,11 +23,18 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
+import { API_BASE, setCachedSessionUser, type AuthUser } from "@/lib/api";
 import { prefetchDashboard } from "@/pages/Dashboard";
-import { API_BASE, markAuthenticated } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
-async function loginFunction(data: { email: string; password: string }) {
+interface LoginResponse {
+  user: AuthUser;
+}
+
+async function loginFunction(data: {
+  email: string;
+  password: string;
+}): Promise<LoginResponse> {
   const response = await fetch(`${API_BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,6 +77,12 @@ export default function Login() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  async function completeLogin(data: LoginResponse): Promise<void> {
+    await setCachedSessionUser(data.user);
+    void prefetchDashboard(queryClient);
+    navigate("/dashboard");
+  }
+
   // ===== REACT QUERY HOOKS =====
   const loginMutation = useMutation({
     mutationFn: (data: { email: string; password: string }) => {
@@ -81,12 +94,7 @@ export default function Login() {
     // here (the old invalidateQueries) kept the login button spinner stuck on
     // slow/cold deployments — the cookies are already set by /login, so the
     // extra fetch is unnecessary.
-    onSuccess: (data: { user: { username: string; email: string } }) => {
-      markAuthenticated();
-      queryClient.setQueryData(["auth", "me"], data.user);
-      prefetchDashboard(queryClient);
-      navigate("/dashboard");
-    },
+    onSuccess: completeLogin,
 
     onError: (err: { status: number; error: string; description: string }) => {
       if (err.status === 403)
@@ -105,12 +113,7 @@ export default function Login() {
       });
     },
 
-    onSuccess: (data: { user: { username: string; email: string } }) => {
-      markAuthenticated();
-      queryClient.setQueryData(["auth", "me"], data.user);
-      prefetchDashboard(queryClient);
-      navigate("/dashboard");
-    },
+    onSuccess: completeLogin,
   });
 
   // ===== EVENT HANDLERS =====

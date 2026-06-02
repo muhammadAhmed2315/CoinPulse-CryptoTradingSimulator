@@ -2,6 +2,13 @@ import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { queryClient } from "./query-client";
 
+export interface AuthUser {
+  username: string;
+  email: string;
+}
+
+export const AUTH_ME_QUERY_KEY = ["auth", "me"] as const;
+
 export const API_BASE =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
 const REFRESH_URL = `${API_BASE}/refresh`;
@@ -68,14 +75,40 @@ export function markAuthenticated(): void {
   loggingOut = false;
 }
 
+function isPrivateQuery(queryKey: readonly unknown[]): boolean {
+  return queryKey[0] !== AUTH_ME_QUERY_KEY[0];
+}
+
+async function replaceCachedSessionUser(user: AuthUser | null): Promise<void> {
+  await queryClient.cancelQueries(
+    { queryKey: AUTH_ME_QUERY_KEY },
+    { revert: false },
+  );
+  queryClient.setQueryData(AUTH_ME_QUERY_KEY, user);
+
+  await queryClient.cancelQueries(
+    { predicate: (query) => isPrivateQuery(query.queryKey) },
+    { revert: false },
+  );
+  queryClient.removeQueries({
+    predicate: (query) => isPrivateQuery(query.queryKey),
+  });
+}
+
+export async function setCachedSessionUser(user: AuthUser): Promise<void> {
+  markAuthenticated();
+  await replaceCachedSessionUser(user);
+}
+
+export async function clearCachedSession(): Promise<void> {
+  await replaceCachedSessionUser(null);
+}
+
 function forceLogout(): void {
   if (loggingOut) return;
   loggingOut = true;
 
-  // Purge all cached private data, then explicitly mark the auth query as
-  // logged-out so AuthContext flips immediately without awaiting a refetch.
-  queryClient.clear();
-  queryClient.setQueryData(["auth", "me"], null);
+  void clearCachedSession();
 
   if (!isOnAuthRoute()) {
     window.location.assign("/login");
@@ -149,7 +182,7 @@ axios.interceptors.response.use(
     try {
       await refreshTokens();
     } catch {
-      forceLogout();
+      if (!original.signal?.aborted) forceLogout();
       return Promise.reject(error);
     }
 
@@ -193,7 +226,7 @@ export async function fetchWithRefresh(
   try {
     await refreshTokens();
   } catch {
-    forceLogout();
+    if (!init.signal?.aborted) forceLogout();
     return response;
   }
 

@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type ApiSorts } from "@/pages/TopCoins";
+import type { ApiSorts } from "@/pages/TopCoins";
 
 import UpArrowIcon from "@/assets/icons/arrow-up.svg";
 import DownArrowIcon from "@/assets/icons/arrow-down.svg";

@@ -1,16 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { getStrictContext } from "@/lib/get-strict-context";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, AUTH_ME_QUERY_KEY, type AuthUser } from "@/lib/api";
 
 // ===== TYPES =====
-interface User {
-  username: string;
-  email: string;
-}
-
 interface AuthContextValue {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -21,12 +16,13 @@ const [AuthProvider, useAuth] =
 
 function AuthContextProvider({ children }: { children: React.ReactNode }) {
   // ===== REACT QUERY HOOKS =====
-  const { data: user = null, isLoading } = useQuery<User | null>({
-    queryKey: ["auth", "me"],
-    queryFn: async () => {
+  const { data: user = null, isLoading } = useQuery<AuthUser | null>({
+    queryKey: AUTH_ME_QUERY_KEY,
+    queryFn: async ({ signal }) => {
       try {
         const res = await axios.get(`${API_BASE}/auth/me`, {
           withCredentials: true,
+          signal,
         });
         return res.data;
       } catch (err) {

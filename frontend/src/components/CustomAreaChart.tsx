@@ -114,7 +114,42 @@ export default function CustomAreaChart({
             { type: "all", text: "ALL" },
           ],
         },
-        navigator: { enabled: false },
+        navigator: {
+          enabled: true,
+          height: 36,
+          margin: 12,
+          maskFill:
+            resolvedTheme === "dark"
+              ? "rgba(212, 212, 216, 0.08)"
+              : "rgba(113, 113, 122, 0.10)",
+          outlineColor: palette.border,
+          outlineWidth: 1,
+          series: {
+            type: "areaspline",
+            color: lineColor,
+            lineColor: lineColor,
+            lineWidth: 1,
+            fillColor: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: fillStops,
+            },
+          },
+          handles: {
+            backgroundColor: palette.selectFill,
+            borderColor: palette.muted,
+          },
+          xAxis: {
+            gridLineColor: palette.grid,
+            labels: {
+              style: {
+                color: palette.muted,
+                fontFamily: "IBM Plex Mono, monospace",
+                fontSize: "9px",
+                letterSpacing: "0.04em",
+              },
+            },
+          },
+        },
         scrollbar: { enabled: false },
         legend: { enabled: false },
         xAxis: {

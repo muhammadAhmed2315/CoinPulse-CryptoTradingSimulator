@@ -1,3 +1,4 @@
+import "@/lib/ag-grid-setup";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useCallback, useMemo, useState } from "react";

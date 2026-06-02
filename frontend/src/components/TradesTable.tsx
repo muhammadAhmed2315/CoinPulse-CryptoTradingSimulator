@@ -1,3 +1,4 @@
+import "@/lib/ag-grid-setup";
 import { Card } from "@/components/ui/card";
 import { type ICellRendererParams, type ColDef } from "ag-grid-community";
 import type {

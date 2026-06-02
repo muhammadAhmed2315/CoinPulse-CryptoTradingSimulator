@@ -2,7 +2,8 @@ import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { queryClient } from "./query-client";
 
-const API_BASE = "http://localhost:5000";
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
 const REFRESH_URL = `${API_BASE}/refresh`;
 
 // Flask-JWT-Extended double-submit CSRF: the backend mints non-httpOnly cookies

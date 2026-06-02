@@ -24,10 +24,11 @@ import { AlertCircleIcon } from "lucide-react";
 import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
 import { prefetchDashboard } from "@/pages/Dashboard";
+import { API_BASE } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function loginFunction(data: { email: string; password: string }) {
-  const response = await fetch("http://localhost:5000/login", {
+  const response = await fetch(`${API_BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -214,7 +215,7 @@ export default function Login() {
             variant="outline"
             type="button"
             onClick={() => {
-              window.location.href = "http://localhost:5000/login_discord";
+              window.location.href = `${API_BASE}/login_discord`;
             }}
           >
             <img
@@ -231,7 +232,7 @@ export default function Login() {
             variant="outline"
             type="button"
             onClick={() => {
-              window.location.href = "http://localhost:5000/login_google";
+              window.location.href = `${API_BASE}/login_google`;
             }}
           >
             <img

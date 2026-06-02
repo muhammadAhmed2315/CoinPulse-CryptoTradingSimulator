@@ -5,10 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import LoadingSpinner from "../LoadingSpinner";
 import { useEffect, useRef } from "react";
+import { API_BASE } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function sendVerificationRequest(token: string) {
-  const response = await fetch(`http://localhost:5000/verify_email/${token}`, {
+  const response = await fetch(`${API_BASE}/verify_email/${token}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

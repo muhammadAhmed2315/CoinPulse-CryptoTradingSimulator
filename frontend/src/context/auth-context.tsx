@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { getStrictContext } from "@/lib/get-strict-context";
+import { API_BASE } from "@/lib/api";
 
 // ===== TYPES =====
 interface User {
@@ -24,7 +25,7 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
     queryKey: ["auth", "me"],
     queryFn: async () => {
       try {
-        const res = await axios.get("http://localhost:5000/auth/me", {
+        const res = await axios.get(`${API_BASE}/auth/me`, {
           withCredentials: true,
         });
         return res.data;

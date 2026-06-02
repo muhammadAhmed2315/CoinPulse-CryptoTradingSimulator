@@ -11,7 +11,7 @@ import {
 import InfiniteScroll from "react-infinite-scroll-component";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoTradesFallback from "./NoTradesFallback";
@@ -40,7 +40,7 @@ export function prefetchFeedPosts(queryClient: QueryClient) {
 // ===== API FUNCTIONS =====
 async function fetchPosts(type: string, page: number = 0) {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_feedposts",
+    `${API_BASE}/get_feedposts`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

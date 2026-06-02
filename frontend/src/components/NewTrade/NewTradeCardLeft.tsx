@@ -48,7 +48,7 @@ export default function NewTradeCardLeft({
   return (
     <div>
       {/* ===== CURRENT COIN ===== */}
-      <div className="flex flex-row gap-2 bg-background px-2 py-1 border border-border rounded-sm mb-2">
+      <div className="flex flex-row items-center gap-2 bg-background px-2 py-1 border border-border rounded-sm mb-2">
         <img
           src={currCoin.imgUrl ? currCoin.imgUrl : coinDataQuery.data?.image}
           className="rounded-3xl size-12"

@@ -13,11 +13,11 @@ import LikeButton from "./LikeButton";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function updateLikes(transactionID: string, isIncrement: boolean) {
-  const response = await fetchWithRefresh("http://localhost:5000/update_likes", {
+  const response = await fetchWithRefresh(`${API_BASE}/update_likes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ transactionID, isIncrement }),
@@ -124,7 +124,7 @@ export default function FeedPost({
               {transaction_type && (
                 <TradePill
                   side={transaction_type.toUpperCase() as "BUY" | "SELL"}
-                  type={order_type}
+                  type={order_type.toUpperCase() as "MARKET" | "LIMIT" | "STOP"}
                 />
               )}
               <p

@@ -3,7 +3,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
 import RedditPost from "./RedditPost";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
 import ErrorFallback from "../ErrorFallback";
 import EmptyFallback from "../EmptyFallback";
@@ -63,7 +63,7 @@ export type RedditPost = {
 // ===== API FUNCTIONS =====
 async function getRedditPosts(coinName: string, after: string) {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_reddit_posts",
+    `${API_BASE}/get_reddit_posts`,
     {
       method: "post",
       headers: { "Content-Type": "application/json" },

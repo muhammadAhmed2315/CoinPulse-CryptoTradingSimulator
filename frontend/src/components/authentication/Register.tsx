@@ -25,6 +25,7 @@ import { validateEmail, validatePassword } from "@/utils";
 import { Spinner } from "../ui/spinner";
 import NewPassword from "./NewPassword";
 import NewUsername from "./NewUsername";
+import { API_BASE } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function createAccountFunction(data: {
@@ -33,7 +34,7 @@ async function createAccountFunction(data: {
   password: string;
   confirmPassword: string;
 }) {
-  const response = await fetch("http://localhost:5000/create_account", {
+  const response = await fetch(`${API_BASE}/create_account`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -195,7 +196,7 @@ export default function CreateAccount() {
             type="button"
             variant="outline"
             onClick={() => {
-              window.location.href = "http://localhost:5000/login_discord";
+              window.location.href = `${API_BASE}/login_discord`;
             }}
           >
             <img
@@ -212,7 +213,7 @@ export default function CreateAccount() {
             type="button"
             variant="outline"
             onClick={() => {
-              window.location.href = "http://localhost:5000/login_google";
+              window.location.href = `${API_BASE}/login_google`;
             }}
           >
             <img

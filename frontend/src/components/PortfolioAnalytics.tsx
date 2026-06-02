@@ -10,7 +10,7 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { numToMoney } from "@/utils";
 import PortfolioChartPanel from "./PortfolioChartPanel";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import CustomSkeleton from "./CustomSkeleton";
 import { Separator } from "./ui/separator";
 import ErrorFallback from "./ErrorFallback";
@@ -67,7 +67,7 @@ export function prefetchPortfolioAnalytics(queryClient: QueryClient) {
 // ===== API FUNCTIONS =====
 async function fetchPortfolioHistory() {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_wallet_history",
+    `${API_BASE}/get_wallet_history`,
     {
       method: "get",
       credentials: "include",

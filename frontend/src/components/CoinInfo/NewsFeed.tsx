@@ -3,7 +3,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "../ui/spinner";
 import { QueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import NewsItem from "./NewsItem";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
 import ErrorFallback from "../ErrorFallback";
 import EmptyFallback from "../EmptyFallback";
@@ -35,7 +35,7 @@ export function prefetchNewsFeed(
     queryClient.prefetchInfiniteQuery({
       queryKey: ["newsArticles", coinName],
       queryFn: ({ pageParam }) => getNewsArticles(coinName, pageParam),
-      getNextPageParam: (lastPage) => lastPage.nextPage,
+      getNextPageParam: (lastPage: NewsArticlesPage) => lastPage.nextPage,
       initialPageParam: "",
     }),
   ]);
@@ -58,10 +58,19 @@ export type NewsArticle = {
   description: string;
 };
 
+type NewsArticlesPage = {
+  results: NewsArticle[];
+  nextPage: string | null;
+  totalResults: number;
+};
+
 // ===== API FUNCTIONS =====
-async function getNewsArticles(coinName: string, nextPage: string) {
+async function getNewsArticles(
+  coinName: string,
+  nextPage: string,
+): Promise<NewsArticlesPage> {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_news_articles",
+    `${API_BASE}/get_news_articles`,
     {
       method: "post",
       headers: { "Content-Type": "application/json" },

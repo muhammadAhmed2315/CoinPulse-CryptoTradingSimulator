@@ -14,6 +14,7 @@ import SparklineGraph from "@/components/SparklineGraph";
 import formatCompactValue, { numToMoney } from "@/utils";
 import type { GridApi, GridReadyEvent } from "ag-grid-community";
 import { useNavigate } from "react-router";
+import { API_BASE } from "@/lib/api";
 
 const maxPages = 10;
 
@@ -53,7 +54,7 @@ export type ApiSorts =
 
 // ===== API FUNCTIONS =====
 async function fetchTopCoins(sort_coins_by: string): Promise<Coin[]> {
-  const URL = "http://localhost:5000/get_top_coins";
+  const URL = `${API_BASE}/get_top_coins`;
   const body = {
     sort_coins_by: sort_coins_by,
   };

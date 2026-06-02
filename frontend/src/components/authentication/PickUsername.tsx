@@ -14,6 +14,7 @@ import { Spinner } from "../ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import NewUsername from "./NewUsername";
+import { API_BASE } from "@/lib/api";
 
 export default function PickUsername() {
   // ===== STATE VARIABLES =====
@@ -26,7 +27,7 @@ export default function PickUsername() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data: { username: string }) =>
-      axios.post("http://localhost:5000/pick_username", data, {
+      axios.post(`${API_BASE}/pick_username`, data, {
         withCredentials: true,
       }),
 

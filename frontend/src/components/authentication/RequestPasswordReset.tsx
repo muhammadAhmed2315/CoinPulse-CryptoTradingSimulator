@@ -20,6 +20,7 @@ import {
   RippleButtonRipples,
 } from "@/components/animate-ui/components/buttons/ripple";
 import { validateEmail } from "@/utils";
+import { API_BASE } from "@/lib/api";
 
 // TODO:
 // - Add comments
@@ -28,7 +29,7 @@ import { validateEmail } from "@/utils";
 async function sendPasswordResetEmail(
   email: string,
 ): Promise<{ error: string } | { success: string }> {
-  const response = await fetch("http://localhost:5000/request_password_reset", {
+  const response = await fetch(`${API_BASE}/request_password_reset`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: email }),

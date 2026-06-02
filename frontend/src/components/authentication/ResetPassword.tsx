@@ -21,6 +21,7 @@ import NewPassword from "./NewPassword";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Spinner } from "../ui/spinner";
+import { API_BASE } from "@/lib/api";
 
 // TODO: - Have a quick "✓ Password updated, go sign in" for 2-3 seconds and then
 //         re-direct to the sign in page
@@ -34,7 +35,7 @@ async function resetPassword(data: {
   confirmPassword: string;
   token: string;
 }) {
-  const response = await fetch("http://localhost:5000/reset_password", {
+  const response = await fetch(`${API_BASE}/reset_password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

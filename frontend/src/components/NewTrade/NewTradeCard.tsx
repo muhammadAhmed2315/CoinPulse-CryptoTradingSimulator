@@ -11,7 +11,7 @@ import NewTradeCardRight from "./NewTradeCardRight";
 import CoinSearchBar from "../CoinSearchBar";
 import CustomSkeleton from "../CustomSkeleton";
 import BitcoinLogo from "../../assets/logos/bitcoin.png";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import ErrorFallback from "../ErrorFallback";
 
 // ===== NAVBAR PREFETCH =====
@@ -66,7 +66,7 @@ type NewTradeCardProps = {
  */
 async function getCoinInfo(coinId: string) {
   const response = await fetchWithRefresh(
-    `http://localhost:5000/get_coin_data/${coinId}`,
+    `${API_BASE}/get_coin_data/${coinId}`,
     {
       method: "GET",
       credentials: "include",
@@ -85,7 +85,7 @@ async function getCoinInfo(coinId: string) {
  */
 async function getCoinSparkline(coinId: string) {
   const response = await fetchWithRefresh(
-    `http://localhost:5000/get_coin_sparkline/${coinId}`,
+    `${API_BASE}/get_coin_sparkline/${coinId}`,
     {
       method: "GET",
       credentials: "include",
@@ -103,7 +103,7 @@ async function getCoinSparkline(coinId: string) {
  */
 async function getUserBalance() {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_user_balance",
+    `${API_BASE}/get_user_balance`,
     {
       method: "GET",
       credentials: "include",
@@ -121,7 +121,7 @@ async function getUserBalance() {
  */
 async function getCoinBalance(coinId: string) {
   const response = await fetchWithRefresh(
-    `http://localhost:5000/get_coin_balance/${coinId}`,
+    `${API_BASE}/get_coin_balance/${coinId}`,
     {
       method: "GET",
       credentials: "include",

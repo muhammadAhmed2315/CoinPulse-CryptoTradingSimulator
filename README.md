@@ -54,6 +54,26 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
    ```
 8. **Access the Website:** Go to `http://127.0.0.1:5000` in your browser.
 
+## URL Configuration (Deployment)
+
+By default the app is wired for local development, but the URLs that couple the
+frontend and backend are configurable via environment variables. All are
+optional and fall back to their localhost defaults when unset.
+
+**Frontend** (set in `frontend/.env`; see `frontend/.env.example`):
+
+- `VITE_API_BASE_URL` — base URL of the Flask backend. Defaults to
+  `http://localhost:5000`.
+
+**Backend** (set in the root `.env`):
+
+- `DISCORD_OAUTH2_REDIRECT_URI` — Discord OAuth callback URL. Defaults to
+  `http://localhost:5000/callback_discord`.
+- `GOOGLE_REDIRECT_URI` — Google OAuth callback URL. Defaults to
+  `http://localhost:5000/callback_google`.
+- `CORS_ORIGINS` — comma-separated list of allowed frontend origins. Defaults to
+  `http://localhost:5173,http://127.0.0.1:5173`.
+
 ## Technologies Used
 
 - **Backend:** Flask, Flask-SQLAlchemy, Flask-RESTful, Flask-Session, Flask-Login
@@ -66,21 +86,21 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
 <summary>Screenshots</summary>
 
 - **Homepage**
-  ![Homepage Screenshot](docs/screenshots-old/dashboard.png)
+  ![Homepage Screenshot](docs/screenshots-v1/dashboard.png)
 - **Trading Dashboard**
-  ![Trading Dashboard Screenshot](docs/screenshots-old/new-trade.png)
+  ![Trading Dashboard Screenshot](docs/screenshots-v1/new-trade.png)
 - **Portfolio Analytics**
-  ![Portfolio Analytics Screenshot](docs/screenshots-old/portfolio-analytics.png)
+  ![Portfolio Analytics Screenshot](docs/screenshots-v1/portfolio-analytics.png)
 - **Transactions Page**
-  ![Transactions Page Screenshot](docs/screenshots-old/my-trades.png)
+  ![Transactions Page Screenshot](docs/screenshots-v1/my-trades.png)
 - **Coin Info Page**
-  ![Coin Info Screenshot](docs/screenshots-old/coin-info-one.png)
-  ![Coin Info Screenshot](docs/screenshots-old/coin-info-two.png)
+  ![Coin Info Screenshot](docs/screenshots-v1/coin-info-one.png)
+  ![Coin Info Screenshot](docs/screenshots-v1/coin-info-two.png)
 - **Top Coins Page**
-  ![Top Coins Screenshot](docs/screenshots-old/top-coins.png)
+  ![Top Coins Screenshot](docs/screenshots-v1/top-coins.png)
 - **Login Page**
-  ![Login Page Screenshot](docs/screenshots-old/login.png)
+  ![Login Page Screenshot](docs/screenshots-v1/login.png)
 - **Sign Up Page**
-  ![Sign Up Page Screenshot](docs/screenshots-old/register.png)
+  ![Sign Up Page Screenshot](docs/screenshots-v1/register.png)
 
 </details>

@@ -6,13 +6,17 @@ DISCORD_API_BASE_URL = os.environ.get("API_BASE_URL", "https://discordapp.com/ap
 DISCORD_AUTHORIZATION_BASE_URL = DISCORD_API_BASE_URL + "/oauth2/authorize"
 DISCORD_TOKEN_URL = DISCORD_API_BASE_URL + "/oauth2/token"
 # DISCORD_OAUTH2_REDIRECT_URI = ("https://coin-pulse-ffda7bc3f791.herokuapp.com/callback_discord")
-DISCORD_OAUTH2_REDIRECT_URI = "http://localhost:5000/callback_discord"
+DISCORD_OAUTH2_REDIRECT_URI = os.getenv(
+    "DISCORD_OAUTH2_REDIRECT_URI", "http://localhost:5000/callback_discord"
+)
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_AUTHORIZATION_BASE_URL = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-GOOGLE_REDIRECT_URI = "http://localhost:5000/callback_google"
+GOOGLE_REDIRECT_URI = os.getenv(
+    "GOOGLE_REDIRECT_URI", "http://localhost:5000/callback_google"
+)
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
 GOOGLE_SCOPE = ["profile", "email"]
 

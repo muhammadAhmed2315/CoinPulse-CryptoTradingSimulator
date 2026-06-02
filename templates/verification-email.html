@@ -5,7 +5,7 @@
 </p>
 <p>
   <strong>
-    <a href="http://localhost:5173/verify_email/{{ token }}"
+    <a href="{{ frontend_url }}/verify_email/{{ token }}"
       >VERIFY EMAIL</a
     ></strong
   >
@@ -14,7 +14,7 @@
   If the link doesn't work, you can also copy and paste the following link into
   your browser:
 </p>
-<p>http://localhost:5173/verify_email/{{ token }}</p>
+<p>{{ frontend_url }}/verify_email/{{ token }}</p>
 <p>
   This link will expire in 60 minutes. If you did not create an account with us,
   please ignore this email.

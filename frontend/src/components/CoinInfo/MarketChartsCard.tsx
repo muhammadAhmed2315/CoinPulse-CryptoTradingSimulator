@@ -15,13 +15,21 @@ import { useState } from "react";
 import CustomAreaChart from "../CustomAreaChart";
 import { numToMoney } from "@/utils";
 import { useInView } from "react-intersection-observer";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import CustomSkeleton from "../CustomSkeleton";
 import ErrorFallback from "../ErrorFallback";
 import { useTheme } from "@/context/theme-context";
 import { buildChartPalette, type ChartPalette } from "@/lib/chart-theme";
 import { useMemo } from "react";
 import NewTradeButton from "../NewTrade/NewTradeButton";
+
+// OHLC values exposed on each point of the Highcharts candlestick tooltip context.
+type CandlestickPoint = {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+};
 
 // ===== CHART SKELETON =====
 function ChartSkeleton() {
@@ -103,7 +111,7 @@ type MarketChartsCardProps = {
 // ===== API FUNCTIONS =====
 async function getOhlcChart(coin_id: string) {
   const response = await fetchWithRefresh(
-    `http://localhost:5000/get_coin_OHLC_data/${coin_id}`,
+    `${API_BASE}/get_coin_OHLC_data/${coin_id}`,
     {
       method: "get",
       credentials: "include",
@@ -117,7 +125,7 @@ async function getOhlcChart(coin_id: string) {
 
 async function getCoinCharts(coin_id: string) {
   const response = await fetchWithRefresh(
-    `http://localhost:5000/get_coin_historical_data/${coin_id}`,
+    `${API_BASE}/get_coin_historical_data/${coin_id}`,
     {
       method: "get",
       credentials: "include",
@@ -318,7 +326,11 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                       },
                       useHTML: true,
                       formatter: function () {
-                        const p = this.points?.[0]?.point ?? this.point;
+                        const ctx = this as unknown as {
+                          points?: { point: CandlestickPoint }[];
+                          point: CandlestickPoint;
+                        };
+                        const p = ctx.points?.[0]?.point ?? ctx.point;
                         return `
                           <div style="font-weight:700;margin-bottom:6px">${currCoin.ticker.toUpperCase()}</div>
                           <div>Open:&nbsp;&nbsp;<b>$${numToMoney(p.open)}</b></div>

@@ -11,11 +11,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Spinner } from "../ui/spinner";
 import { formatTime } from "@/utils";
+import { API_BASE } from "@/lib/api";
 
 // ===== API FUNCTIONS =====
 async function resendEmail(token: string) {
   const response = await fetch(
-    "http://localhost:5000/retry_verification_from_token",
+    `${API_BASE}/retry_verification_from_token`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

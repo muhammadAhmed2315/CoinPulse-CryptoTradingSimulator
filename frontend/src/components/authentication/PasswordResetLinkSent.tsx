@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Spinner } from "../ui/spinner";
 import { formatTime } from "@/utils";
+import { API_BASE } from "@/lib/api";
 
 // TODO:
 // - Clicking contact support should open an email client
@@ -18,7 +19,7 @@ import { formatTime } from "@/utils";
 async function sendPasswordResetEmail(
   email: string,
 ): Promise<{ error: string } | { success: string }> {
-  const response = await fetch("http://localhost:5000/request_password_reset", {
+  const response = await fetch(`${API_BASE}/request_password_reset`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: email }),

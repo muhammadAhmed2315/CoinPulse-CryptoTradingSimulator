@@ -28,14 +28,14 @@ import { prefetchTopCoins } from "@/pages/TopCoins";
 import { prefetchCoinInfo } from "@/pages/CoinInfo";
 import { prefetchDashboard } from "@/pages/Dashboard";
 import { prefetchMyTrades } from "@/pages/MyTrades";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import ThemeToggle from "./ThemeToggle";
 import { usePrefetchOnHover } from "@/hooks/use-prefetch-on-hover";
 
 // ===== API FUNCTIONS =====
 async function fetchTotalPortfolioValue() {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_wallet_total_current_value",
+    `${API_BASE}/get_wallet_total_current_value`,
     {
       method: "GET",
       credentials: "include",
@@ -86,7 +86,7 @@ export default function NavBar() {
 
   const logoutMutation = useMutation({
     mutationFn: () =>
-      axios.get("http://localhost:5000/logout", {
+      axios.get(`${API_BASE}/logout`, {
         withCredentials: true,
       }),
 

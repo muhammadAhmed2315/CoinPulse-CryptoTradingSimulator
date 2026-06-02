@@ -12,7 +12,7 @@ import { numToMoney } from "@/utils";
 import HoldingsBreakdownBar from "./HoldingsBreakdownBar";
 import { Separator } from "@/components/ui/separator";
 import OpenOrderRow from "./OpenOrderRow";
-import { fetchWithRefresh } from "@/lib/api";
+import { fetchWithRefresh, API_BASE } from "@/lib/api";
 import ErrorFallback from "@/components/ErrorFallback";
 
 // ===== NAVBAR PREFETCH =====
@@ -28,7 +28,7 @@ export function prefetchOpenPositions(queryClient: QueryClient) {
 // ===== API FUNCTIONS =====
 async function getOpenTrades() {
   const response = await fetchWithRefresh(
-    "http://localhost:5000/get_open_trades",
+    `${API_BASE}/get_open_trades`,
     {
       method: "get",
       credentials: "include",
@@ -47,7 +47,7 @@ function filterOrdersByType(
   transactionType: string,
 ) {
   return tradesData.filter(
-    (order) =>
+    (order: any) =>
       order.order_type === orderType &&
       order.transaction_type === transactionType,
   );
@@ -55,7 +55,7 @@ function filterOrdersByType(
 
 function sumOrderValues(trades: any) {
   return trades.reduce(
-    (acc: number, order) => acc + order.current_price * order.quantity,
+    (acc: number, order: any) => acc + order.current_price * order.quantity,
     0,
   );
 }
@@ -70,7 +70,7 @@ export default function OpenPositions() {
   // ===== DERIVED STATE =====
   const reservedValue = openTradesQuery.data
     ? openTradesQuery.data.reduce(
-        (acc: number, order) => acc + order.current_price * order.quantity,
+        (acc: number, order: any) => acc + order.current_price * order.quantity,
         0,
       )
     : 0;
@@ -177,7 +177,7 @@ export default function OpenPositions() {
                       {orders.id} Orders
                     </span>
                     <span className="font-mono text-[13px] text-muted-foreground pt-0.5">
-                      {openOrdersByType[orders.id].length} ORDERS
+                      {openOrdersByType[orders.id as keyof typeof openOrdersByType].length} ORDERS
                     </span>
                   </div>
                 </AccordionTrigger>
@@ -185,8 +185,9 @@ export default function OpenPositions() {
                 {/* ===== CONTENT ===== */}
                 <AccordionPanel className="flex-col">
                   {/* ===== ORDERS EXIST ===== */}
-                  {openOrdersByType[orders.id].length > 0 &&
-                    openOrdersByType[orders.id].map((order) => (
+                  {openOrdersByType[orders.id as keyof typeof openOrdersByType].length > 0 &&
+                    openOrdersByType[orders.id as keyof typeof openOrdersByType].map(
+                      (order: any) => (
                       <OpenOrderRow
                         key={order.id}
                         order={order}
@@ -195,7 +196,7 @@ export default function OpenPositions() {
                     ))}
 
                   {/* ===== NO ORDERS ===== */}
-                  {openOrdersByType[orders.id].length === 0 && (
+                  {openOrdersByType[orders.id as keyof typeof openOrdersByType].length === 0 && (
                     <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg mb-1.5">
                       <p className="font-mono text-base text-muted-foreground/70 w-7 h-7 flex items-center justify-center bg-background border border-border rounded-full shrink-0">
                         0

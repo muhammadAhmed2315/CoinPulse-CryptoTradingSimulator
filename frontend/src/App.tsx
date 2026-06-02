@@ -1,12 +1,20 @@
 import AuthenticationBase from "./pages/AuthenticationBase";
 import { Route, BrowserRouter, Routes } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import HomeRedirect from "./components/HomeRedirect";
 import Dashboard from "./pages/Dashboard";
+import LoadingSpinner from "./components/LoadingSpinner";
 
-// Lazy-loaded route components that pull in heavy libs (AG Grid / Highcharts)
-const MyTrades = lazy(() => import("./pages/MyTrades"));
-const TopCoins = lazy(() => import("./pages/TopCoins"));
+// Lazy-loaded route components that pull in heavy libs (AG Grid / Highcharts).
+// The import functions are kept around so we can prefetch the chunks during
+// idle time (see prefetchRouteChunks below) and avoid a loading flash on
+// first navigation.
+const importMyTrades = () => import("./pages/MyTrades");
+const importTopCoins = () => import("./pages/TopCoins");
+const importCoinInfo = () => import("./pages/CoinInfo.tsx");
+
+const MyTrades = lazy(importMyTrades);
+const TopCoins = lazy(importTopCoins);
 import Login from "./components/authentication/Login";
 import RequestPasswordReset from "./components/authentication/RequestPasswordReset";
 import ResetPassword from "./components/authentication/ResetPassword";
@@ -28,7 +36,23 @@ import EmailAlreadyVerified from "./components/authentication/EmailAlreadyVerifi
 import AuthenticationPageNotFound from "./components/authentication/AuthenticationPageNotFound.tsx";
 import AuthenticatedPageNotFound from "./components/AuthenticatedPageNotFound.tsx";
 import NavBar from "./components/NavBar";
-const CoinInfo = lazy(() => import("./pages/CoinInfo.tsx"));
+const CoinInfo = lazy(importCoinInfo);
+
+// Warm the lazy route chunks in the background once the app is idle so that
+// navigating to these pages doesn't trigger a visible Suspense fallback.
+function prefetchRouteChunks() {
+  const prefetch = () => {
+    importMyTrades();
+    importTopCoins();
+    importCoinInfo();
+  };
+
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    window.requestIdleCallback(prefetch);
+  } else {
+    setTimeout(prefetch, 1500);
+  }
+}
 
 function NotFoundHandler() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -48,11 +72,15 @@ function NotFoundHandler() {
 }
 
 function App() {
+  useEffect(() => {
+    prefetchRouteChunks();
+  }, []);
+
   return (
     <ThemeContextProvider>
       <AuthContextProvider>
         <BrowserRouter>
-        <Suspense fallback={<div>Loading…</div>}>
+        <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* ===== HOME REDIRECT ===== */}
           <Route path="/" element={<HomeRedirect />} />

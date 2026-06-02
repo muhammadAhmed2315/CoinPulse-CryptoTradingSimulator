@@ -1183,6 +1183,14 @@ def update_open_trades_in_background():
                         db.session.rollback()
                         continue
 
+                    # Re-check status under the lock: another executor may have
+                    # filled or cancelled this order between the initial query and
+                    # acquiring the wallet lock. Refresh forces a fresh read so we
+                    # see the committed status and skip it (prevents double-execution).
+                    db.session.refresh(transaction)
+                    if transaction.status != "open":
+                        continue
+
                     if transaction.orderType == "limit":
                         if (
                             transaction.transactionType == "buy"

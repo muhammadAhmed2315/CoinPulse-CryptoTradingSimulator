@@ -62,7 +62,8 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
 - **APIs:** CoinGecko API for live cryptocurrency data, Reddit API for Reddit posts about a specific coin
 - **Authentication:** OAuth (Discord, Google), JWT for API access
 
-## Screenshots
+<details>
+<summary>Screenshots</summary>
 
 - **Homepage**
   ![Homepage Screenshot](docs/screenshots/dashboard.png)
@@ -81,3 +82,5 @@ A Flask-based web application that allows users to simulate cryptocurrency tradi
   ![Login Page Screenshot](docs/screenshots/login.png)
 - **Sign Up Page**
   ![Sign Up Page Screenshot](docs/screenshots/register.png)
+
+</details>

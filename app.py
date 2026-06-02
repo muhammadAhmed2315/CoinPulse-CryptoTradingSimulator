@@ -120,17 +120,21 @@ if __name__ == "__main__":
         update_open_trades_in_background,
         update_user_wallet_value_in_background,
     )
+    from background_supervisor import supervise_threads
 
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        # Run thread to continuously update user wallet value in the background
-        threadOne = threading.Thread(target=update_user_wallet_value_in_background)
-        threadOne.daemon = True
-        threadOne.start()
-
-        # Run thread to continuously monitor and execute open trades in the background
-        threadTwo = threading.Thread(target=update_open_trades_in_background)
-        threadTwo.daemon = True
-        threadTwo.start()
+        # Supervise the background tasks in a daemon thread (app.run() owns the main
+        # thread). supervise_threads starts each task and restarts any that die.
+        threading.Thread(
+            target=supervise_threads,
+            args=(
+                [
+                    ("wallet-value-updater", update_user_wallet_value_in_background),
+                    ("open-trade-executor", update_open_trades_in_background),
+                ],
+            ),
+            daemon=True,
+        ).start()
 
     # NOTE: debug=True is only for development purposes. Do not use in production, else
     # the background threads will run twice.

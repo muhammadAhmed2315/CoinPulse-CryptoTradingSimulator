@@ -6,8 +6,11 @@ import { Card } from "@/components/ui/card";
 import WarningIcon from "@/assets/icons/warning.svg";
 import { Separator } from "../ui/separator";
 import { useNavigate } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function PasswordResetLinkInvalid() {
+  useDocumentTitle("Invalid Reset Link | CoinPulse");
+
   const navigate = useNavigate();
 
   // ===== EVENT HANDLERS =====

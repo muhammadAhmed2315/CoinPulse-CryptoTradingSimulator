@@ -16,6 +16,7 @@ import formatCompactValue, { numToMoney } from "@/utils";
 import type { GridApi, GridReadyEvent } from "ag-grid-community";
 import { useNavigate } from "react-router";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const maxPages = 10;
 
@@ -156,6 +157,8 @@ const SKELETON_COLS: { cls: string; head: string }[] = [
 const SKELETON_ROWS = Array.from({ length: 10 }, (_, i) => i);
 
 export default function TopCoins() {
+  useDocumentTitle("Top Coins | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [currPage, setCurrPage] = useState(1);

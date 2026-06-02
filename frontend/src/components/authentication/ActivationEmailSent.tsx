@@ -12,6 +12,7 @@ import { Spinner } from "../ui/spinner";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/utils";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 async function resendActivationEmail(email: string) {
@@ -31,6 +32,8 @@ async function resendActivationEmail(email: string) {
 }
 
 export default function ActivationEmailSent() {
+  useDocumentTitle("Check Your Email | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const email = useLocation().state?.email;

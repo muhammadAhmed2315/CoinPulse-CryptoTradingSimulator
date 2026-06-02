@@ -7,6 +7,7 @@ import PortfolioPanel from "@/components/Dashboard/PortfolioPanel/PortfolioPanel
 import TrendingCoins from "@/components/Dashboard/TrendingCoins/TrendingCoins";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { fetchWithRefresh, API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchDashboard(queryClient: QueryClient) {
@@ -37,6 +38,8 @@ async function getTrendingCoins() {
 }
 
 export default function Dashboard() {
+  useDocumentTitle("Dashboard | CoinPulse");
+
   // ===== REACT QUERY HOOKS =====
   const trendingCoinsQuery = useQuery({
     queryKey: ["trendingCoins"],

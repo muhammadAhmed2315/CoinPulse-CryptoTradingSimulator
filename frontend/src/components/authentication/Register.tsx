@@ -26,6 +26,7 @@ import { Spinner } from "../ui/spinner";
 import NewPassword from "./NewPassword";
 import NewUsername from "./NewUsername";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 async function createAccountFunction(data: {
@@ -47,6 +48,8 @@ async function createAccountFunction(data: {
 }
 
 export default function CreateAccount() {
+  useDocumentTitle("Create Account | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");

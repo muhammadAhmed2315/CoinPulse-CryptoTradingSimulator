@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import FlickeringGrid from "@/components/authentication/FlickeringGrid";
 import Terminal from "@/components/Terminal";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function AuthenticatedPageNotFound() {
+  useDocumentTitle("Page Not Found | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const location = useLocation();

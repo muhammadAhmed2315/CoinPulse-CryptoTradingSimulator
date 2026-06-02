@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "../ui/spinner";
 import { formatTime } from "@/utils";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 async function resendEmail(token: string) {
@@ -31,6 +32,8 @@ async function resendEmail(token: string) {
 }
 
 export default function EmailVerificationUnsuccessful() {
+  useDocumentTitle("Verification Failed | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const token = useLocation().state?.token;

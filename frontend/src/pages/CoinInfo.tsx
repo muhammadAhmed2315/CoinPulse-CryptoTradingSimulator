@@ -14,6 +14,7 @@ import { useState } from "react";
 import type { Coin } from "@/loadAllCoinsList";
 import { useLocation } from "react-router-dom";
 import { QueryClient } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== NAVBAR PREFETCH =====
 export function prefetchCoinInfo(
@@ -42,6 +43,8 @@ export default function CoinInfo() {
           imgUrl: BitcoinLogo,
         },
   );
+
+  useDocumentTitle(`${currCoin.name} | CoinPulse`);
 
   return (
     <div className="w-full flex flex-col gap-4 px-4">

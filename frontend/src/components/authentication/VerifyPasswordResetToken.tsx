@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import LoadingSpinner from "../LoadingSpinner";
 import { useEffect, useRef } from "react";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 async function sendVerificationRequest(token: string) {
@@ -24,6 +25,8 @@ async function sendVerificationRequest(token: string) {
 }
 
 export default function VerifyPasswordResetToken() {
+  useDocumentTitle("Verifying Reset Link | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const { token = "" } = useParams();
   const navigate = useNavigate();

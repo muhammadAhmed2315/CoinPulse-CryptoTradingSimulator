@@ -7,8 +7,11 @@ import TickIcon from "@/assets/icons/tick.svg";
 import { Separator } from "../ui/separator";
 import DotGreen from "@/assets/dot-green.svg";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function EmailVerificationSuccessful() {
+  useDocumentTitle("Verification Successful | CoinPulse");
+
   const navigate = useNavigate();
   const email = useLocation().state?.email;
 

@@ -11,6 +11,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Spinner } from "../ui/spinner";
 import { formatTime } from "@/utils";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // TODO:
 // - Clicking contact support should open an email client
@@ -33,6 +34,8 @@ async function sendPasswordResetEmail(
 }
 
 export default function PasswordResetLinkSent() {
+  useDocumentTitle("Password Reset Link Sent | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const navigate = useNavigate();
   const email = useLocation().state?.email;

@@ -3,6 +3,7 @@ import PortfolioAnalytics, {
   prefetchPortfolioAnalytics,
 } from "../components/PortfolioAnalytics";
 import type { QueryClient } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 export function prefetchMyTrades(queryClient: QueryClient) {
@@ -13,6 +14,8 @@ export function prefetchMyTrades(queryClient: QueryClient) {
 }
 
 export default function MyTrades() {
+  useDocumentTitle("My Trades | CoinPulse");
+
   return (
     <div>
       {/* ===== PORTFOLIO ANALYTICS ===== */}

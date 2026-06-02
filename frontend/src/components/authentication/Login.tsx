@@ -25,6 +25,7 @@ import { validateEmail } from "@/utils";
 import { Spinner } from "../ui/spinner";
 import { API_BASE, setCachedSessionUser, type AuthUser } from "@/lib/api";
 import { prefetchDashboard } from "@/pages/Dashboard";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 interface LoginResponse {
@@ -51,6 +52,8 @@ async function loginFunction(data: {
 }
 
 export default function Login() {
+  useDocumentTitle("Login | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const prefillEmail: string = useLocation().state?.prefillEmail ?? "";
   const [email, setEmail] = useState(prefillEmail);

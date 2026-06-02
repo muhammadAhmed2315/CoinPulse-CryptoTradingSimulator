@@ -22,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Spinner } from "../ui/spinner";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // TODO: - Have a quick "✓ Password updated, go sign in" for 2-3 seconds and then
 //         re-direct to the sign in page
@@ -59,6 +60,8 @@ export default function ResetPassword() {
   const email = useLocation().state?.email;
   const token = useLocation().state?.token;
   const navigate = useNavigate();
+
+  useDocumentTitle("Reset Password | CoinPulse");
 
   // ===== EFFECTS =====
   // Redirect if page was accessed directly without the required state (e.g. bookmark, refresh)
@@ -126,67 +129,71 @@ export default function ResetPassword() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold tracking-tight">Set a new password</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">
+          Set a new password
+        </CardTitle>
         <CardDescription>
           Choose something strong. You won't be able to reuse your previous
           password.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <CardContent className="flex flex-col gap-4">
-        {/* ===== PASSWORD FIELD ===== */}
-        <NewPassword password={password} setPassword={setPassword} />
-        {/* ===== CONFIRM PASSWORD FIELD ===== */}
-        <Field>
-          <FieldLabel htmlFor="input-confirm-password">
-            Confirm password
-          </FieldLabel>
-          <Input
-            id="input-confirm-password"
-            type="password"
-            placeholder="Re-enter password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </Field>
-        {/* ===== ERROR ALERT ===== */}
-        {error.at(0) !== "" && error.at(1) !== "" && (
-          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircle className="text-red-600 dark:text-red-400" />
-            <AlertTitle>{error.at(0)}</AlertTitle>
-            <AlertDescription>{error.at(1)}</AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col gap-2.5">
-        {/* ===== SUBMIT BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          type="submit"
-          disabled={successTimer > 0}
-        >
-          {resetPasswordMutation.isPending ? (
-            <Spinner />
-          ) : successTimer > 2 ? (
-            "✓ Password successfully updated"
-          ) : successTimer > 0 ? (
-            "Taking you back to log in..."
-          ) : (
-            "Set new password"
+        <CardContent className="flex flex-col gap-4">
+          {/* ===== PASSWORD FIELD ===== */}
+          <NewPassword password={password} setPassword={setPassword} />
+          {/* ===== CONFIRM PASSWORD FIELD ===== */}
+          <Field>
+            <FieldLabel htmlFor="input-confirm-password">
+              Confirm password
+            </FieldLabel>
+            <Input
+              id="input-confirm-password"
+              type="password"
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Field>
+          {/* ===== ERROR ALERT ===== */}
+          {error.at(0) !== "" && error.at(1) !== "" && (
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircle className="text-red-600 dark:text-red-400" />
+              <AlertTitle>{error.at(0)}</AlertTitle>
+              <AlertDescription>{error.at(1)}</AlertDescription>
+            </Alert>
           )}
-          <RippleButtonRipples />
-        </RippleButton>
-        {/* ===== BACK BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          variant="outline"
-          type="button"
-          onClick={() => navigate("/login", { state: { prefillEmail: email } })}
-        >
-          ← Back to login
-          <RippleButtonRipples />
-        </RippleButton>
-      </CardFooter>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-2.5">
+          {/* ===== SUBMIT BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            type="submit"
+            disabled={successTimer > 0}
+          >
+            {resetPasswordMutation.isPending ? (
+              <Spinner />
+            ) : successTimer > 2 ? (
+              "✓ Password successfully updated"
+            ) : successTimer > 0 ? (
+              "Taking you back to log in..."
+            ) : (
+              "Set new password"
+            )}
+            <RippleButtonRipples />
+          </RippleButton>
+          {/* ===== BACK BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            variant="outline"
+            type="button"
+            onClick={() =>
+              navigate("/login", { state: { prefillEmail: email } })
+            }
+          >
+            ← Back to login
+            <RippleButtonRipples />
+          </RippleButton>
+        </CardFooter>
       </form>
     </Card>
   );

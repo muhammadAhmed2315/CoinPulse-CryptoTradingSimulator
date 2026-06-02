@@ -21,6 +21,7 @@ import { validateEmail } from "@/utils";
 import { AlertCircleIcon } from "lucide-react";
 import { Spinner } from "../ui/spinner";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 async function requestVerificationEmail(email: string) {
@@ -40,6 +41,8 @@ async function requestVerificationEmail(email: string) {
 }
 
 export default function EmailVerificationForm() {
+  useDocumentTitle("Verify Your Email | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const [email, setEmail] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);

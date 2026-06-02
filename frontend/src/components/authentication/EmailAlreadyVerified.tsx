@@ -7,8 +7,11 @@ import ClockIcon from "@/assets/icons/clock.svg";
 import { Separator } from "../ui/separator";
 import DotBlue from "@/assets/dot-blue.svg";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function EmailAlreadyVerified() {
+  useDocumentTitle("Email Already Verified | CoinPulse");
+
   const navigate = useNavigate();
   const email = useLocation().state?.email;
 

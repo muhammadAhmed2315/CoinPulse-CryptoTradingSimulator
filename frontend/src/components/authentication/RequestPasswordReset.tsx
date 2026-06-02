@@ -21,6 +21,7 @@ import {
 } from "@/components/animate-ui/components/buttons/ripple";
 import { validateEmail } from "@/utils";
 import { API_BASE } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // TODO:
 // - Add comments
@@ -41,6 +42,8 @@ async function sendPasswordResetEmail(
 }
 
 export default function RequestPasswordReset() {
+  useDocumentTitle("Forgot Password | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const [email, setEmail] = useState(useLocation().state?.email);
   const [invalidEmail, setInvalidEmail] = useState(false);

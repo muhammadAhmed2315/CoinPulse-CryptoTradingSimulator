@@ -15,8 +15,11 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import NewUsername from "./NewUsername";
 import { API_BASE, AUTH_ME_QUERY_KEY } from "@/lib/api";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function PickUsername() {
+  useDocumentTitle("Pick Username | CoinPulse");
+
   // ===== STATE VARIABLES =====
   const { user, isLoading, isAuthenticated } = useAuth();
   const [username, setUsername] = useState("");

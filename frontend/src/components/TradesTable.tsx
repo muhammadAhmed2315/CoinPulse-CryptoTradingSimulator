@@ -17,7 +17,7 @@ import DotGreen from "@/assets/dot-green.svg";
 import DotAmber from "@/assets/dot-amber.svg";
 import DotRed from "@/assets/dot-red.svg";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AgGridReact } from "ag-grid-react";
 import { formatRelativeOrAbsoluteDate, numToMoney } from "@/utils";
@@ -174,7 +174,7 @@ const coinRenderer = (params: ICellRendererParams) => {
 const quantityRenderer = (params: ICellRendererParams) => {
   const isBuy = params.data.transactionType === "buy";
   return (
-    <div className="flex items-baseline gap-1.5 font-mono">
+    <div className="flex h-full items-center gap-1.5 font-mono">
       <span
         className={`text-[13px] font-semibold ${isBuy ? "text-[#10b981]" : "text-[#f43f5e]"}`}
       >
@@ -285,24 +285,23 @@ export default function TradesTable() {
       {
         headerName: "#",
         valueGetter: (params) => (params.node?.rowIndex ?? -1) + 1,
-        width: 110,
+        width: 70,
         cellRenderer: idCellRenderer,
       },
-      { field: "status", cellRenderer: statusRenderer, width: 145 },
-      { field: "orderType", cellRenderer: orderTypeRenderer, width: 110 },
+      { field: "status", cellRenderer: statusRenderer, width: 118 },
+      { field: "orderType", cellRenderer: orderTypeRenderer, width: 120 },
       {
         field: "transactionType",
         headerName: "Buy / Sell",
         cellRenderer: transactionTypeRenderer,
-        width: 110,
+        width: 120,
       },
       {
         field: "coin_id",
         headerName: "Coin",
         cellRenderer: coinRenderer,
-        width: 110,
       },
-      { field: "quantity", cellRenderer: quantityRenderer, width: 140 },
+      { field: "quantity", cellRenderer: quantityRenderer },
       {
         field: "price_per_unit",
         headerName: "Price",
@@ -319,12 +318,11 @@ export default function TradesTable() {
         field: "timestamp",
         headerName: "Time Placed",
         cellRenderer: timestampRenderer,
-        width: 180,
+        width: 185,
       },
       {
         field: "action",
         cellRenderer: actionCellRenderer,
-        width: 80,
       },
       {
         field: "comment",
@@ -335,6 +333,12 @@ export default function TradesTable() {
     ],
     [actionCellRenderer],
   );
+
+  // ===== AUTO-SIZE DYNAMIC-WIDTH COLUMNS TO THEIR CONTENT =====
+  const gridRef = useRef<AgGridReact>(null);
+  const autoSizeDynamicCols = useCallback(() => {
+    gridRef.current?.api?.autoSizeColumns(["coin_id", "quantity", "action"]);
+  }, []);
 
   // ===== EVENT HANDLERS =====
   function handlePrevBtnClick() {
@@ -423,6 +427,7 @@ export default function TradesTable() {
   ) : (
     <div className={`${gridClassName} px-6`}>
       <AgGridReact
+        ref={gridRef}
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={{
@@ -431,6 +436,8 @@ export default function TradesTable() {
         pagination={false}
         suppressCellFocus
         domLayout="autoHeight"
+        onFirstDataRendered={autoSizeDynamicCols}
+        onRowDataUpdated={autoSizeDynamicCols}
       />
     </div>
   );
@@ -515,7 +522,9 @@ export default function TradesTable() {
         </div>
 
         {/* ===== AGGRID PANELS ===== */}
-        <TabsContents className="pb-4">
+        {/* min-h reserves a full page (38px header + 10 × 60px rows) so the
+            card height stays fixed when switching between tabs of different sizes */}
+        <TabsContents className="min-h-159.5 pb-4">
           <TabsContent value="all">{filter === "all" && grid}</TabsContent>
           <TabsContent value="open">{filter === "open" && grid}</TabsContent>
           <TabsContent value="finished">

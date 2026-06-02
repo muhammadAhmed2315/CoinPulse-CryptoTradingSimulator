@@ -116,7 +116,7 @@ export default function CustomAreaChart({
         },
         navigator: {
           enabled: true,
-          height: 36,
+          height: 62,
           margin: 12,
           maskFill:
             resolvedTheme === "dark"
@@ -149,6 +149,9 @@ export default function CustomAreaChart({
               },
             },
           },
+          // Scale the navigator y-axis by 1.5x so the series only fills
+          // ~2/3 of the navigator's height instead of reaching the top.
+          yAxis: { maxPadding: 0.5 },
         },
         scrollbar: { enabled: false },
         legend: { enabled: false },

@@ -15,6 +15,7 @@ from constants import (
     MAIL_PASSWORD,
     MAIL_USERNAME,
     FLASK_APP_SECRET_KEY,
+    FLASK_ENV,
 )
 from extensions import db, jwt, login_manager
 from models import User
@@ -37,6 +38,7 @@ def create_app():
         app,
         supports_credentials=True,
         origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_headers=["Content-Type", "X-CSRF-TOKEN"],
     )
 
     # Configure app
@@ -64,7 +66,9 @@ def create_app():
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     app.config["JWT_COOKIE_HTTPONLY"] = True
     app.config["JWT_COOKIE_SAMESITE"] = "Lax"
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+    # Secure cookies in production only; browsers drop Secure cookies over http://localhost.
+    app.config["JWT_COOKIE_SECURE"] = FLASK_ENV == "production"
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = True
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         hours=JWT_ACCESS_TOKEN_EXPIRES_HOURS
     )

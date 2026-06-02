@@ -5,6 +5,28 @@ import { queryClient } from "./query-client";
 const API_BASE = "http://localhost:5000";
 const REFRESH_URL = `${API_BASE}/refresh`;
 
+// Flask-JWT-Extended double-submit CSRF: the backend mints non-httpOnly cookies
+// holding the CSRF token, which we must echo back in the X-CSRF-TOKEN header on
+// every state-changing request. Access-token-protected routes use
+// csrf_access_token; the refresh route (jwt_required(refresh=True)) uses
+// csrf_refresh_token.
+const CSRF_ACCESS_COOKIE = "csrf_access_token";
+const CSRF_REFRESH_COOKIE = "csrf_refresh_token";
+const CSRF_HEADER = "X-CSRF-TOKEN";
+const MUTATING_METHODS = new Set(["post", "put", "patch", "delete"]);
+
+function getCookie(name: string): string | undefined {
+  const match = document.cookie.match(
+    new RegExp(`(?:^|;\\s*)${name}=([^;]*)`),
+  );
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+function isRefreshUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  return url === REFRESH_URL || url.endsWith("/refresh");
+}
+
 // Unauthenticated route paths (see AuthenticationBase group in App.tsx). When
 // a refresh fails we redirect to /login, but never if we're already on one of
 // these — that would cause a redirect loop.
@@ -79,6 +101,23 @@ function refreshTokens(): Promise<void> {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
 
+// Attach the CSRF token to every mutating axios request. The /refresh call is
+// protected by the refresh token, so it needs csrf_refresh_token; everything
+// else uses csrf_access_token. Reading the cookie lazily here means the retry
+// (axios(original) below) re-runs this interceptor and picks up the rotated
+// token after a refresh.
+axios.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const method = (config.method ?? "get").toLowerCase();
+  if (!MUTATING_METHODS.has(method)) return config;
+
+  const token = getCookie(
+    isRefreshUrl(config.url) ? CSRF_REFRESH_COOKIE : CSRF_ACCESS_COOKIE,
+  );
+  if (token) config.headers.set(CSRF_HEADER, token);
+
+  return config;
+});
+
 axios.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -113,8 +152,21 @@ export async function fetchWithRefresh(
   input: RequestInfo | URL,
   init: RequestInit = {},
 ): Promise<Response> {
-  const merged: RequestInit = { credentials: "include", ...init };
-  const response = await fetch(input, merged);
+  const method = (init.method ?? "GET").toLowerCase();
+  const isMutating = MUTATING_METHODS.has(method);
+
+  // Rebuilt per attempt so the post-refresh retry picks up the rotated
+  // csrf_access_token cookie. All callers hit access-token-protected routes.
+  const buildInit = (): RequestInit => {
+    const headers = new Headers(init.headers);
+    if (isMutating) {
+      const token = getCookie(CSRF_ACCESS_COOKIE);
+      if (token) headers.set(CSRF_HEADER, token);
+    }
+    return { credentials: "include", ...init, headers };
+  };
+
+  const response = await fetch(input, buildInit());
 
   if (response.status !== 401) return response;
 
@@ -133,5 +185,5 @@ export async function fetchWithRefresh(
     return response;
   }
 
-  return fetch(input, merged);
+  return fetch(input, buildInit());
 }

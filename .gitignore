@@ -60,9 +60,10 @@ Thumbs.db
 *.sln
 *.sw?
 
-# ---- Claude Code ----
-.claude/settings.local.json
-.claude/worktrees/
+# ---- Claude Code / AI ----
+.claude/
+CLAUDE.md
+AGENTS.md
 
 # ---- Project-specific scratch ----
 bruh.json

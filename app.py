@@ -3,7 +3,7 @@ import threading
 import uuid
 from datetime import timedelta
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_mail import Mail
 from flask_migrate import Migrate
@@ -110,6 +110,22 @@ def create_app():
     # Register blueprints
     app.register_blueprint(user_authentication)
     app.register_blueprint(core)
+
+    # Serve the built React frontend (single-app Heroku deploy). The Vite build
+    # output lives in frontend/dist. Registered blueprint/API rules are static and
+    # take routing precedence; any remaining path serves an existing asset, or
+    # falls back to index.html so client-side (react-router) routes resolve.
+    frontend_dist = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "frontend", "dist"
+    )
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_frontend(path):
+        asset = os.path.join(frontend_dist, path)
+        if path and os.path.isfile(asset):
+            return send_from_directory(frontend_dist, path)
+        return send_from_directory(frontend_dist, "index.html")
 
     # Create database tables
     with app.app_context():

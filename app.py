@@ -4,6 +4,7 @@ import uuid
 from datetime import timedelta
 
 from flask import Flask, send_from_directory
+from flask_compress import Compress
 from flask_cors import CORS
 from flask_mail import Mail
 from flask_migrate import Migrate
@@ -42,6 +43,11 @@ def create_app():
         ).split(","),
         allow_headers=["Content-Type", "X-CSRF-TOKEN"],
     )
+
+    # Compress responses (brotli preferred, gzip fallback) over the wire. This
+    # wraps every response, including the static React assets served by
+    # serve_frontend via send_from_directory.
+    Compress(app)
 
     # Configure app
     database_url = os.environ.get("DATABASE_URL")
@@ -124,7 +130,21 @@ def create_app():
     def serve_frontend(path):
         asset = os.path.join(frontend_dist, path)
         if path and os.path.isfile(asset):
-            return send_from_directory(frontend_dist, path)
+            resp = send_from_directory(frontend_dist, path)
+            # Vite emits content-hashed filenames under assets/ (e.g.
+            # index-<hash>.js). A content change yields a new filename, so these
+            # can be cached forever and never revalidated.
+            if path.startswith("assets/"):
+                # send_from_directory defaults to "no-cache" (revalidate every
+                # use); clear it so the immutable long-lived caching below is
+                # not contradicted.
+                resp.cache_control.no_cache = None
+                resp.cache_control.public = True
+                resp.cache_control.max_age = 31536000
+                resp.cache_control.immutable = True
+            return resp
+        # index.html (the SPA fallback) references the hashed asset filenames and
+        # must always be revalidated, so it keeps Flask's default caching.
         return send_from_directory(frontend_dist, "index.html")
 
     # Create database tables

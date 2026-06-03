@@ -147,10 +147,6 @@ def create_app():
         # must always be revalidated, so it keeps Flask's default caching.
         return send_from_directory(frontend_dist, "index.html")
 
-    # Create database tables
-    with app.app_context():
-        db.create_all()
-
     return app, mail_server
 
 

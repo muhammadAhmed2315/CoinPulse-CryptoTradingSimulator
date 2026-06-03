@@ -31,7 +31,7 @@ from jwt.exceptions import (
     PyJWTError,
 )
 from requests_oauthlib import OAuth2Session
-from validate_email_address import validate_email
+from email_validator import EmailNotValidError, validate_email
 
 from constants import (
     DISCORD_API_BASE_URL,
@@ -142,35 +142,43 @@ def callback_discord():
     an access token, retrieves user info, creates the user if they don't exist,
     sets JWT cookies, and redirects to the frontend.
     """
-    if request.values.get("error"):
-        return redirect(f"{FRONTEND_URL}/login?error=oauth_denied")
+    try:
+        if request.values.get("error"):
+            return redirect(f"{FRONTEND_URL}/login?error=oauth_denied")
 
-    discord = make_session(state=session.get("oauth2_state"))
-    token = discord.fetch_token(
-        DISCORD_TOKEN_URL,
-        client_secret=DISCORD_OAUTH2_CLIENT_SECRET,
-        authorization_response=request.url,
-    )
-    session["oauth2_token"] = token
+        discord = make_session(state=session.get("oauth2_state"))
+        token = discord.fetch_token(
+            DISCORD_TOKEN_URL,
+            client_secret=DISCORD_OAUTH2_CLIENT_SECRET,
+            authorization_response=request.url,
+        )
+        session["oauth2_token"] = token
 
-    discord = make_session(token=session.get("oauth2_token"))
-    user_info = discord.get(DISCORD_API_BASE_URL + "/users/@me").json()
-    user_email = user_info.get("email")
-    user_id = user_info.get("id")
-    email_verified = user_info.get("verified", False)
+        discord = make_session(token=session.get("oauth2_token"))
+        userinfo_response = discord.get(DISCORD_API_BASE_URL + "/users/@me")
 
-    user, error = resolve_oauth_user("discord", user_id, user_email, email_verified)
-    if error:
-        return redirect(f"{FRONTEND_URL}/login?error={error}")
+        if not userinfo_response.ok:
+            return redirect(f"{FRONTEND_URL}/login?error=oauth_failed")
 
-    access_token = create_access_token(identity=user.id)
-    refresh_token = create_refresh_token(identity=user.id)
+        user_info = userinfo_response.json()
+        user_email = user_info.get("email")
+        user_id = user_info.get("id")
+        email_verified = user_info.get("verified", False)
 
-    redirect_path = "/pick_username" if not user.username else "/dashboard"
-    response = make_response(redirect(f"{FRONTEND_URL}{redirect_path}"), 302)
-    set_access_cookies(response, access_token)
-    set_refresh_cookies(response, refresh_token)
-    return response
+        user, error = resolve_oauth_user("discord", user_id, user_email, email_verified)
+        if error:
+            return redirect(f"{FRONTEND_URL}/login?error={error}")
+
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+
+        redirect_path = "/pick_username" if not user.username else "/dashboard"
+        response = make_response(redirect(f"{FRONTEND_URL}{redirect_path}"), 302)
+        set_access_cookies(response, access_token)
+        set_refresh_cookies(response, refresh_token)
+        return response
+    except Exception:
+        return redirect(f"{FRONTEND_URL}/login?error=oauth_failed")
 
 
 # #################### GOOGLE OAUTH AUTHENTICATION ####################
@@ -202,39 +210,46 @@ def callback_google():
     an access token, retrieves user info, creates the user if they don't exist,
     sets JWT cookies, and redirects to the frontend.
     """
-    if request.values.get("error"):
-        return redirect(f"{FRONTEND_URL}/login?error=oauth_denied")
+    try:
+        if request.values.get("error"):
+            return redirect(f"{FRONTEND_URL}/login?error=oauth_denied")
 
-    google = OAuth2Session(
-        GOOGLE_CLIENT_ID,
-        state=session.get("oauth_state"),
-        redirect_uri=GOOGLE_REDIRECT_URI,
-    )
-    token = google.fetch_token(
-        GOOGLE_TOKEN_URL,
-        client_secret=GOOGLE_CLIENT_SECRET,
-        authorization_response=request.url,
-    )
-    session["google_token"] = token
+        google = OAuth2Session(
+            GOOGLE_CLIENT_ID,
+            state=session.get("oauth_state"),
+            redirect_uri=GOOGLE_REDIRECT_URI,
+        )
+        token = google.fetch_token(
+            GOOGLE_TOKEN_URL,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            authorization_response=request.url,
+        )
+        session["google_token"] = token
 
-    userinfo_response = google.get(GOOGLE_USERINFO_URL)
-    userinfo = userinfo_response.json()
-    user_email = userinfo.get("email")
-    user_id = userinfo.get("id")
-    email_verified = userinfo.get("verified_email", False)
+        userinfo_response = google.get(GOOGLE_USERINFO_URL)
 
-    user, error = resolve_oauth_user("google", user_id, user_email, email_verified)
-    if error:
-        return redirect(f"{FRONTEND_URL}/login?error={error}")
+        if not userinfo_response.ok:
+            return redirect(f"{FRONTEND_URL}/login?error=oauth_failed")
 
-    access_token = create_access_token(identity=user.id)
-    refresh_token = create_refresh_token(identity=user.id)
+        userinfo = userinfo_response.json()
+        user_email = userinfo.get("email")
+        user_id = userinfo.get("id")
+        email_verified = userinfo.get("verified_email", False)
 
-    redirect_path = "/pick_username" if not user.username else "/dashboard"
-    response = make_response(redirect(f"{FRONTEND_URL}{redirect_path}"), 302)
-    set_access_cookies(response, access_token)
-    set_refresh_cookies(response, refresh_token)
-    return response
+        user, error = resolve_oauth_user("google", user_id, user_email, email_verified)
+        if error:
+            return redirect(f"{FRONTEND_URL}/login?error={error}")
+
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+
+        redirect_path = "/pick_username" if not user.username else "/dashboard"
+        response = make_response(redirect(f"{FRONTEND_URL}{redirect_path}"), 302)
+        set_access_cookies(response, access_token)
+        set_refresh_cookies(response, refresh_token)
+        return response
+    except Exception:
+        return redirect(f"{FRONTEND_URL}/login?error=oauth_failed")
 
 
 # #################### DEFAULT AUTHENTICATION ####################
@@ -319,7 +334,9 @@ def create_account():
     password: str = data["password"]
     confirm_password: str = data["confirmPassword"]
 
-    if not validate_email(email):
+    try:
+        validate_email(email)
+    except EmailNotValidError:
         return {
             "error": "Invalid email address",
             "description": "Please enter a valid email address (e.g., john.doe@gmail.com)",
@@ -730,7 +747,9 @@ def reset_password():
     email, token = data["email"], data["token"]
     password, confirm_password = data["password"], data["confirmPassword"]
 
-    if not validate_email(email):
+    try:
+        validate_email(email)
+    except EmailNotValidError:
         return {
             "error": "Invalid email address",
             "description": "Please enter a valid email address (e.g., john.doe@gmail.com)",
@@ -837,7 +856,9 @@ def request_password_reset():
     data = request.get_json()
     email = data["email"]
 
-    if not validate_email(email):
+    try:
+        validate_email(email)
+    except EmailNotValidError:
         return {
             "error": "Invalid email",
             "description": "Please enter a valid email address.",
@@ -951,7 +972,6 @@ def send_password_reset_email(user_email: str, token: str, username: str) -> Non
     )
     msg = Message(
         subject="Reset your CoinPulse password",
-        sender="MAIL_DEFAULT_SENDER",
         recipients=[user_email],
         html=html_body,
     )
@@ -980,7 +1000,6 @@ def send_activation_email(user_email: str, token: str, username: str) -> None:
     )
     msg = Message(
         subject="Verify Your CoinPulse Account",
-        sender="MAIL_DEFAULT_SENDER",
         recipients=[user_email],
         html=html_body,
     )

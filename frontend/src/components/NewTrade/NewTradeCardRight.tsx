@@ -46,15 +46,12 @@ async function placeOrder(
     price_per_unit: pricePerUnit,
   };
 
-  const response = await fetchWithRefresh(
-    `${API_BASE}/process_order`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-      credentials: "include",
-    },
-  );
+  const response = await fetchWithRefresh(`${API_BASE}/process_order`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
 
   if (!response.ok) throw await response.json();
 

@@ -3,7 +3,7 @@ import threading
 import uuid
 from datetime import timedelta
 
-from flask import Flask, send_from_directory
+from flask import Flask, jsonify, send_from_directory
 from flask_compress import Compress
 from flask_cors import CORS
 from flask_mail import Mail
@@ -18,7 +18,7 @@ from constants import (
     FLASK_APP_SECRET_KEY,
     FLASK_ENV,
 )
-from extensions import db, jwt, login_manager
+from extensions import db, jwt, login_manager, limiter
 from models import User
 
 
@@ -43,6 +43,9 @@ def create_app():
         ).split(","),
         allow_headers=["Content-Type", "X-CSRF-TOKEN"],
     )
+
+    # Configure Flask-Limiter
+    limiter.init_app(app)
 
     # Compress responses (brotli preferred, gzip fallback) over the wire. This
     # wraps every response, including the static React assets served by
@@ -86,6 +89,25 @@ def create_app():
 
     # Initialize JWTManager with the app
     jwt.init_app(app)
+
+    @jwt.token_verification_loader
+    def reject_purpose_tokens(jwt_header, jwt_payload):
+        """
+        Email verification / password-reset tokens are minted as ACCESS tokens that
+        carry a "purpose" claim (see login/app.py). They must never authenticate the
+        API, so any token bearing a purpose claim is rejected by @jwt_required()
+        endpoints. The reset/verify routes decode these tokens with decode_token()
+        directly, which does NOT invoke this loader, so those flows are unaffected.
+        """
+        return "purpose" not in jwt_payload
+
+    @jwt.token_verification_failed_loader
+    def purpose_token_rejected(jwt_header, jwt_payload):
+        """
+        Without this, a token rejected by the verification loader returns the default
+        400 "User claims verification failed". Return a clean 401 instead.
+        """
+        return jsonify({"error": "Unauthorised", "message": "Invalid token"}), 401
 
     # Initialize database
     db.init_app(app)

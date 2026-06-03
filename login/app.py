@@ -1,3 +1,7 @@
+from werkzeug.security import check_password_hash
+from extensions import limiter
+import hashlib
+import hmac
 import os
 import time
 from datetime import timedelta
@@ -44,6 +48,7 @@ from constants import (
     GOOGLE_SCOPE,
     GOOGLE_TOKEN_URL,
     GOOGLE_USERINFO_URL,
+    JWT_SECRET_KEY,
     PASSWORD_ALLOWED_SPECIAL_CHARS,
     FLASK_ENV,
 )
@@ -51,6 +56,8 @@ from extensions import db
 from models import User, ValueHistory, Wallet
 
 user_authentication = Blueprint("user_authentication", __name__)
+
+_DUMMY_HASH = "scrypt:32768:8:1$T1JkgtzXajcfhA6j$fe2b30a72d13a57a8fe93c8d83671e43b9a98372c3281e2a03b581c1a96c6bad2f6431c018c990b5a0805267dc3f6e9ab82555bcfb2c329689ef04d1e3652091"
 
 
 # #################### DISCORD OAUTH AUTHENTICATION ####################
@@ -66,7 +73,7 @@ def make_session(token=None, state=None, scope=None):
         token=token,
         state=state,
         scope=scope,
-        redirect_uri=DISCORD_OAUTH2_REDIRECT_URI,
+        # redirect_uri=DISCORD_OAUTH2_REDIRECT_URI,
         auto_refresh_kwargs={
             "client_id": DISCORD_OAUTH2_CLIENT_ID,
             "client_secret": DISCORD_OAUTH2_CLIENT_SECRET,
@@ -232,6 +239,7 @@ def callback_google():
 
 # #################### DEFAULT AUTHENTICATION ####################
 @user_authentication.route("/login", methods=["post"])
+@limiter.limit("10 per minute")
 def login():
     """
     Endpoint to handle login requests. Redirects users who are already logged in to the
@@ -245,6 +253,8 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if not user:
+        # Constant-time dummy to prevent timing-based enumeration
+        check_password_hash(_DUMMY_HASH, password)
         return {
             "error": "Invalid email or password",
             "description": "Please check your credentials and try again",
@@ -294,6 +304,7 @@ def refresh():
 
 
 @user_authentication.route("/create_account", methods=["post"])
+@limiter.limit("5 per hour")
 def create_account():
     """
     Endpoint to handle registration requests. Redirects users who are already logged in
@@ -478,6 +489,7 @@ def logout():
 
 # #################### VERIFY USER'S EMAIL ####################
 @user_authentication.route("/retry_verification_from_email", methods=["post"])
+@limiter.limit("5 per hour")
 def retry_verification_from_email():
     """
     Endpoint to handle the process of sending a verification email to a user.
@@ -502,6 +514,7 @@ def retry_verification_from_email():
 
 
 @user_authentication.route("/verify_email/<token>", methods=["get"])
+@limiter.limit("10 per hour")
 def verify_email(token):
     """
     Endpoint to verify a user's email address using a provided token.
@@ -695,6 +708,16 @@ def verify_password_reset_token(token: str):
             "description": "This password reset link has already been used.",
         }, 401
 
+    # Reject tokens whose password fingerprint no longer matches the live user row.
+    # update_password() rotates user.password_hash, so any reset token minted before the
+    # most recent password change fails here — closing the multi-token replay gap that the
+    # single last_password_reset_token slot cannot cover (otherwise T1/T2 survive a T3 reset).
+    if data.get("pwd") != _password_reset_fingerprint(user):
+        return {
+            "error": "Invalid token",
+            "description": "This password reset link has already been used.",
+        }, 401
+
     return {
         "message": "Account verification successful",
         "email": user.email,
@@ -716,10 +739,11 @@ def reset_password():
     user = User.query.filter_by(email=email).first()
 
     if user is None:
+        # Give vague response to prevent user enumeration
         return {
-            "error": "User not found",
-            "description": "No account exists with this email address.",
-        }, 404
+            "error": "Invalid token",
+            "description": "This password reset link is invalid.",
+        }, 400
 
     # Decode the user's provided token
     try:
@@ -750,6 +774,16 @@ def reset_password():
             "description": "This password reset link has already been used.",
         }, 401
 
+    # Reject tokens whose password fingerprint no longer matches the live user row (see
+    # verify_password_reset_token). A completed reset rotates user.password_hash, so every
+    # reset token minted beforehand — T1, T2, ... — fails this check, not just the one
+    # recorded in last_password_reset_token.
+    if decoded_token.get("pwd") != _password_reset_fingerprint(user):
+        return {
+            "error": "Invalid token",
+            "description": "This password reset link has already been used.",
+        }, 401
+
     password_errors = " ".join(validate_password_format(password))
     if password_errors:
         return {
@@ -774,6 +808,7 @@ def reset_password():
 
 
 @user_authentication.route("/request_password_reset", methods=["post"])
+@limiter.limit("5 per hour")
 def request_password_reset():
     """
     Handles the password reset request process for users who have forgotten their
@@ -814,7 +849,10 @@ def request_password_reset():
         token = create_access_token(
             identity=user.id,
             expires_delta=timedelta(seconds=600),
-            additional_claims={"purpose": "reset"},
+            additional_claims={
+                "purpose": "reset",
+                "pwd": _password_reset_fingerprint(user),
+            },
         )
         send_password_reset_email(
             user_email=user.email, token=token, username=user.username
@@ -831,6 +869,23 @@ def authenticate_user():
 
 
 # #################### HELPER FUNCTIONS ####################
+def _password_reset_fingerprint(user: User) -> str:
+    """
+    Returns a short, stable HMAC fingerprint of the user's CURRENT password hash, keyed
+    by JWT_SECRET_KEY.
+
+    This fingerprint is embedded as the "pwd" claim when a reset token is minted and is
+    recomputed from the live user row on verification. Because User.update_password()
+    rotates user.password_hash, completing a reset changes this fingerprint, which
+    instantly invalidates EVERY reset token issued beforehand (not just the single token
+    remembered by last_password_reset_token).
+    """
+    password_hash = user.password_hash or ""  # guard against a None hash (no 500)
+    return hmac.new(
+        JWT_SECRET_KEY.encode(), password_hash.encode(), hashlib.sha256
+    ).hexdigest()
+
+
 def validate_password_format(input_password: str) -> list[str]:
     """
     Validates the format of a user's password based on several criteria.

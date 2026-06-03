@@ -450,7 +450,7 @@ def process_order():
             422,
         )
 
-    # Fetch current price for market orders
+    # Fetch current price for market orders; validate coin exists for limit/stop orders
     if data["orderType"] == "market":
         try:
             market_data = get_coins_data(data["coin_id"])
@@ -460,6 +460,13 @@ def process_order():
                 jsonify({"error": "Could not fetch current market price"}),
                 502,
             )
+    else:
+        try:
+            market_data = get_coins_data(data["coin_id"])
+            if not market_data:
+                return jsonify({"error": "Invalid coin"}), 422
+        except (requests.RequestException, KeyError, TypeError, ValueError):
+            return jsonify({"error": "Could not validate coin"}), 502
 
         # CoinGecko can return a null/zero price for unknown or delisted coins
         if not isinstance(current_price, (int, float)) or current_price <= 0:

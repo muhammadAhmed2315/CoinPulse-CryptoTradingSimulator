@@ -131,115 +131,118 @@ export default function CreateAccount() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold tracking-tight">Create an account</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">
+          Create an account
+        </CardTitle>
         <CardDescription>Join us. It only takes a moment.</CardDescription>
       </CardHeader>
       <form onSubmit={handleCreateAccount} className="flex flex-col gap-6">
-      <CardContent className="flex flex-col gap-4">
-        {/* ===== EMAIL FIELD ===== */}
-        <Field>
-          <FieldLabel htmlFor="input-email">Email</FieldLabel>
-          <Input
-            id="input-email"
-            type="email"
-            placeholder="john.doe@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Field>
-        {/* ===== USERNAME FIELD ===== */}
-        <NewUsername username={username} setUsername={setUsername} />
-        {/* ===== PASSWORD FIELD ===== */}
-        <NewPassword password={password} setPassword={setPassword} />
-        {/* ===== CONFIRM PASSWORD FIELD ===== */}
-        <Field>
-          <div className="flex items-center">
-            <Label htmlFor="input-confirm-password">Confirm password</Label>
+        <CardContent className="flex flex-col gap-4">
+          {/* ===== EMAIL FIELD ===== */}
+          <Field>
+            <FieldLabel htmlFor="input-email">Email</FieldLabel>
+            <Input
+              id="input-email"
+              type="email"
+              placeholder="john.doe@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
+          {/* ===== USERNAME FIELD ===== */}
+          <NewUsername username={username} setUsername={setUsername} />
+          {/* ===== PASSWORD FIELD ===== */}
+          <NewPassword password={password} setPassword={setPassword} />
+          {/* ===== CONFIRM PASSWORD FIELD ===== */}
+          <Field>
+            <div className="flex items-center">
+              <Label htmlFor="input-confirm-password">Confirm password</Label>
+            </div>
+            <Input
+              id="input-confirm-password"
+              type="password"
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Field>
+          {/* ===== ERROR ALERT ===== */}
+          {error.at(0) !== "" && error.at(1) !== "" && (
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>{error.at(0)}</AlertTitle>
+              <AlertDescription>{error.at(1)}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col gap-2.5">
+          {/* ===== SUBMIT BUTTON ===== */}
+          <RippleButton className="w-full cursor-pointer" type="submit">
+            {createAccountMutation.isPending ? (
+              <Spinner />
+            ) : (
+              <>Create account</>
+            )}
+            <RippleButtonRipples />
+          </RippleButton>
+
+          {/* ===== OAUTH DIVIDER ===== */}
+          <div className="flex w-full items-center">
+            <div className="flex-1 border-t border-border" />
+            <span className="mx-4 text-sm text-muted-foreground">
+              or sign up with
+            </span>
+            <div className="flex-1 border-t border-border" />
           </div>
-          <Input
-            id="input-confirm-password"
-            type="password"
-            placeholder="Re-enter password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </Field>
-        {/* ===== ERROR ALERT ===== */}
-        {error.at(0) !== "" && error.at(1) !== "" && (
-          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-            <AlertTitle>{error.at(0)}</AlertTitle>
-            <AlertDescription>{error.at(1)}</AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col gap-2.5">
-        {/* ===== SUBMIT BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          type="submit"
-        >
-          {createAccountMutation.isPending ? <Spinner /> : <>Create account</>}
-          <RippleButtonRipples />
-        </RippleButton>
 
-        {/* ===== OAUTH DIVIDER ===== */}
-        <div className="flex w-full items-center">
-          <div className="flex-1 border-t border-border" />
-          <span className="mx-4 text-sm text-muted-foreground">
-            or sign up with
-          </span>
-          <div className="flex-1 border-t border-border" />
-        </div>
+          {/* ===== OAUTH BUTTONS ===== */}
+          <div className="flex gap-2 justify-center">
+            <RippleButton
+              className="cursor-pointer"
+              type="button"
+              variant="outline"
+              onClick={() => {
+                window.location.href = `${API_BASE}/login_discord`;
+              }}
+            >
+              <img
+                className="h-6 w-6 cursor-pointer"
+                src={discordLogo}
+                alt="Discord logo"
+              />
+              Discord
+              <RippleButtonRipples />
+            </RippleButton>
 
-        {/* ===== OAUTH BUTTONS ===== */}
-        <div className="flex gap-2 justify-center">
-          <RippleButton
-            className="cursor-pointer"
-            type="button"
-            variant="outline"
-            onClick={() => {
-              window.location.href = `${API_BASE}/login_discord`;
-            }}
-          >
-            <img
-              className="h-6 w-6 cursor-pointer"
-              src={discordLogo}
-              alt="Discord logo"
-            />
-            Discord
-            <RippleButtonRipples />
-          </RippleButton>
+            <RippleButton
+              className="cursor-pointer"
+              type="button"
+              variant="outline"
+              onClick={() => {
+                window.location.href = `${API_BASE}/login_google`;
+              }}
+            >
+              <img
+                className="h-5.5 w-5.5 cursor-pointer"
+                src={googleLogo}
+                alt="Google logo"
+              />
+              Google
+              <RippleButtonRipples />
+            </RippleButton>
+          </div>
 
-          <RippleButton
-            className="cursor-pointer"
-            type="button"
-            variant="outline"
-            onClick={() => {
-              window.location.href = `${API_BASE}/login_google`;
-            }}
-          >
-            <img
-              className="h-5.5 w-5.5 cursor-pointer"
-              src={googleLogo}
-              alt="Google logo"
-            />
-            Google
-            <RippleButtonRipples />
-          </RippleButton>
-        </div>
-
-        {/* ===== LOGIN LINK ===== */}
-        <div className="flex items-center text-sm">
-          <span>Already have an account?&nbsp;</span>
-          <p
-            className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
-            onClick={handleBackToLogin}
-          >
-            Login here
-          </p>
-        </div>
-      </CardFooter>
+          {/* ===== LOGIN LINK ===== */}
+          <div className="flex items-center text-sm">
+            <span>Already have an account?&nbsp;</span>
+            <p
+              className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
+              onClick={handleBackToLogin}
+            >
+              Login here
+            </p>
+          </div>
+        </CardFooter>
       </form>
     </Card>
   );

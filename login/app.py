@@ -73,7 +73,7 @@ def make_session(token=None, state=None, scope=None):
         token=token,
         state=state,
         scope=scope,
-        # redirect_uri=DISCORD_OAUTH2_REDIRECT_URI,
+        redirect_uri=DISCORD_OAUTH2_REDIRECT_URI,
         auto_refresh_kwargs={
             "client_id": DISCORD_OAUTH2_CLIENT_ID,
             "client_secret": DISCORD_OAUTH2_CLIENT_SECRET,

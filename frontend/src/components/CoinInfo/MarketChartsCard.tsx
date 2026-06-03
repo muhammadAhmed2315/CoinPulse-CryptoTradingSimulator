@@ -287,7 +287,42 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                     credits: { enabled: false },
                     accessibility: { enabled: false },
                     rangeSelector: rangeSelectorConfig,
-                    navigator: { enabled: false },
+                    navigator: {
+                      enabled: true,
+                      height: 62,
+                      margin: 12,
+                      maskFill:
+                        resolvedTheme === "dark"
+                          ? "rgba(212, 212, 216, 0.08)"
+                          : "rgba(113, 113, 122, 0.10)",
+                      outlineColor: palette.border,
+                      outlineWidth: 1,
+                      handles: {
+                        backgroundColor: palette.selectFill,
+                        borderColor: palette.muted,
+                      },
+                      series: {
+                        type: "candlestick",
+                        color: palette.down,
+                        upColor: palette.up,
+                        lineColor: palette.down,
+                        upLineColor: palette.up,
+                      },
+                      xAxis: {
+                        gridLineColor: palette.grid,
+                        labels: {
+                          style: {
+                            color: palette.muted,
+                            fontFamily: "IBM Plex Mono, monospace",
+                            fontSize: "9px",
+                            letterSpacing: "0.04em",
+                          },
+                        },
+                      },
+                      // Scale the navigator y-axis by 1.5x so the series only fills
+                      // ~2/3 of the navigator's height instead of reaching the top.
+                      yAxis: { maxPadding: 0.5 },
+                    },
                     scrollbar: { enabled: false },
                     legend: { enabled: false },
                     xAxis: {
@@ -445,7 +480,42 @@ export default function MarketChartsCard({ currCoin }: MarketChartsCardProps) {
                     credits: { enabled: false },
                     accessibility: { enabled: false },
                     rangeSelector: rangeSelectorConfig,
-                    navigator: { enabled: false },
+                    navigator: {
+                      enabled: true,
+                      height: 62,
+                      margin: 12,
+                      maskFill:
+                        resolvedTheme === "dark"
+                          ? "rgba(212, 212, 216, 0.08)"
+                          : "rgba(113, 113, 122, 0.10)",
+                      outlineColor: palette.border,
+                      outlineWidth: 1,
+                      handles: {
+                        backgroundColor: palette.selectFill,
+                        borderColor: palette.muted,
+                      },
+                      series: {
+                        type: "column",
+                        color: palette.muted,
+                        borderWidth: 0,
+                        pointPadding: 0.05,
+                        groupPadding: 0.05,
+                      },
+                      xAxis: {
+                        gridLineColor: palette.grid,
+                        labels: {
+                          style: {
+                            color: palette.muted,
+                            fontFamily: "IBM Plex Mono, monospace",
+                            fontSize: "9px",
+                            letterSpacing: "0.04em",
+                          },
+                        },
+                      },
+                      // Scale the navigator y-axis by 1.5x so the series only fills
+                      // ~2/3 of the navigator's height instead of reaching the top.
+                      yAxis: { maxPadding: 0.5 },
+                    },
                     scrollbar: { enabled: false },
                     legend: { enabled: false },
                     xAxis: {

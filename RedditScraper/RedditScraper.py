@@ -53,6 +53,7 @@ class RedditScraper:
             auth=self.auth,
             data=self.data,
             headers=self.headers,
+            timeout=10,
         )
 
         # Requests access token from Reddit API
@@ -63,9 +64,9 @@ class RedditScraper:
             self.token_expires_at = 0
             raise RuntimeError("Failed to obtain Reddit access token") from exc
 
-        access_token = token_data.get("access_token") if isinstance(
-            token_data, dict
-        ) else None
+        access_token = (
+            token_data.get("access_token") if isinstance(token_data, dict) else None
+        )
 
         # If the response was not successful or did not contain a usable token, fail
         # loudly instead of proceeding with a "bearer None" header.
@@ -121,11 +122,13 @@ class RedditScraper:
             res = requests.get(
                 f"https://oauth.reddit.com/r/{subreddit}/{sort}.json?limit={limit}&t={time}",
                 headers=self.headers,
+                timeout=10,
             ).json()
         else:
             res = requests.get(
                 f"https://oauth.reddit.com/r/{subreddit}/{sort}.json?limit={limit}",
                 headers=self.headers,
+                timeout=10,
             ).json()
 
         posts = []
@@ -185,11 +188,13 @@ class RedditScraper:
             res = requests.get(
                 f"https://oauth.reddit.com/r/{subreddit}/search?q={keyword}&limit={limit}&restrict_sr=on&sort={sort}&t={time}",
                 headers=self.headers,
+                timeout=10,
             ).json()
         else:
             res = requests.get(
                 f"https://oauth.reddit.com/r/{subreddit}/search?q={keyword}&limit={limit}&restrict_sr=on&sort={sort}",
                 headers=self.headers,
+                timeout=10,
             ).json()
 
         posts = []
@@ -266,6 +271,7 @@ class RedditScraper:
             "https://oauth.reddit.com/search.json",
             params=params,
             headers=self.headers,
+            timeout=10,
         ).json()
 
         posts = []
@@ -334,6 +340,7 @@ class RedditScraper:
         res = requests.get(
             f"https://oauth.reddit.com/search.json?q={keyword}&type=sr&limit={limit}",
             headers=self.headers,
+            timeout=10,
         ).json()
 
         subreddits = []
@@ -381,6 +388,7 @@ class RedditScraper:
         res = requests.get(
             f"https://oauth.reddit.com/r/{subreddit}/comments/{post_id}?limit={limit}&sort={sort}&depth={depth}",
             headers=self.headers,
+            timeout=10,
         ).json()
 
         comments = []

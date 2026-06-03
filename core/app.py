@@ -41,18 +41,21 @@ def _lock_wallet(wallet_id):
 
 def get_coins_list_cached():
     """Returns the full CoinGecko /coins/list as a Python list, cached for COINS_LIST_CACHE_TTL_SECONDS."""
-    now = int(time.time())
-    if (
-        _COINS_LIST_CACHE["data"] is not None
-        and now - _COINS_LIST_CACHE["fetched_at"] < COINS_LIST_CACHE_TTL_SECONDS
-    ):
-        return _COINS_LIST_CACHE["data"]
-    url = "https://api.coingecko.com/api/v3/coins/list"
-    response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
-    data = response.json()
-    _COINS_LIST_CACHE["data"] = data
-    _COINS_LIST_CACHE["fetched_at"] = now
-    return data
+    try:
+        now = int(time.time())
+        if (
+            _COINS_LIST_CACHE["data"] is not None
+            and now - _COINS_LIST_CACHE["fetched_at"] < COINS_LIST_CACHE_TTL_SECONDS
+        ):
+            return _COINS_LIST_CACHE["data"]
+        url = "https://api.coingecko.com/api/v3/coins/list"
+        response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
+        data = response.json()
+        _COINS_LIST_CACHE["data"] = data
+        _COINS_LIST_CACHE["fetched_at"] = now
+        return data
+    except Exception:
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/get_trade_filter_counts", methods=["GET"])
@@ -763,7 +766,9 @@ def get_news_articles():
         if next_page != "":
             params["page"] = next_page
 
-        response = requests.get("https://newsdata.io/api/1/crypto", params=params)
+        response = requests.get(
+            "https://newsdata.io/api/1/crypto", params=params, timeout=10
+        )
         data = response.json()
 
         if data["status"] == "error":
@@ -1197,15 +1202,22 @@ def update_open_trades_in_background():
                             and coin_market_prices[transaction.coin_id]
                             <= transaction.price_per_unit
                         ):
-                            # If user has enough balance to execute the trade, execute it
-                            if wallet.has_enough_balance(
-                                transaction.quantity
-                                * coin_market_prices[transaction.coin_id]
-                            ):
+                            # Funds for this order were reserved at placement
+                            # (qty x trigger price). Only the overage above that
+                            # reservation - qty x (market - trigger), positive only
+                            # for a stop buy whose price rose past the trigger - must
+                            # come from available (unreserved) balance. Checking total
+                            # balance here would let a stop buy cross-spend funds
+                            # reserved for the user's other open orders.
+                            overage = transaction.quantity * (
+                                coin_market_prices[transaction.coin_id]
+                                - transaction.price_per_unit
+                            )
+                            if wallet.has_enough_available_balance(overage):
                                 # Execute the order
                                 execute_open_order(transaction, True, wallet)
                             else:
-                                # If user doesn't have enough balance to execute the trade, cancel it
+                                # Not enough free funds to cover the overage; cancel it
                                 cancel_open_order(transaction, wallet)
                         elif (
                             transaction.transactionType == "sell"
@@ -1227,15 +1239,22 @@ def update_open_trades_in_background():
                             and coin_market_prices[transaction.coin_id]
                             >= transaction.price_per_unit
                         ):
-                            # If user has enough balance to execute the trade, execute it
-                            if wallet.has_enough_balance(
-                                transaction.quantity
-                                * coin_market_prices[transaction.coin_id]
-                            ):
+                            # Funds for this order were reserved at placement
+                            # (qty x trigger price). Only the overage above that
+                            # reservation - qty x (market - trigger), positive only
+                            # for a stop buy whose price rose past the trigger - must
+                            # come from available (unreserved) balance. Checking total
+                            # balance here would let a stop buy cross-spend funds
+                            # reserved for the user's other open orders.
+                            overage = transaction.quantity * (
+                                coin_market_prices[transaction.coin_id]
+                                - transaction.price_per_unit
+                            )
+                            if wallet.has_enough_available_balance(overage):
                                 # Execute the order
                                 execute_open_order(transaction, True, wallet)
                             else:
-                                # If user doesn't have enough balance to execute the trade, cancel it
+                                # Not enough free funds to cover the overage; cancel it
                                 cancel_open_order(transaction, wallet)
                         elif (
                             transaction.transactionType == "sell"
@@ -1270,7 +1289,9 @@ def get_coins_data(coin_ids: str, precision: int | None = None):
         if precision:
             params = {**params, "precision": precision}
 
-        response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
+        response = requests.get(
+            url, params=params, headers=COINGECKO_API_HEADERS, timeout=10
+        )
         data = response.json()
 
     except Exception as e:
@@ -1596,20 +1617,25 @@ def get_coin_data(coin_id: str):
 @core.route("/get_coin_sparkline/<coin_id>", methods=["GET"])
 @jwt_required()
 def get_coin_sparkline(coin_id: str):
-    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
-    params = {
-        "vs_currency": "usd",
-        "days": "7",
-        "interval": "hourly",
-    }
+    try:
+        url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+        params = {
+            "vs_currency": "usd",
+            "days": "7",
+            "interval": "hourly",
+        }
 
-    response = requests.get(url, params=params, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    data = data["prices"]
-    data = [price for tick, price in data]
-    data = jsonify(data)
+        response = requests.get(
+            url, params=params, headers=COINGECKO_API_HEADERS, timeout=10
+        )
+        data = response.json()
+        data = data["prices"]
+        data = [price for tick, price in data]
+        data = jsonify(data)
 
-    return data
+        return data
+    except Exception:
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/get_user_balance", methods=["GET"])
@@ -1661,7 +1687,10 @@ def get_all_coin_names():
         Flask.Response: A JSON response containing a list of all cryptocurrencies, with each entry including
         the coin's ID, symbol, and name.
     """
-    return jsonify(get_coins_list_cached())
+    try:
+        return jsonify(get_coins_list_cached())
+    except Exception:
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/get_trending_coins")
@@ -1680,7 +1709,7 @@ def get_trending_coins():
     url = "https://api.coingecko.com/api/v3/search/trending"
 
     try:
-        response = requests.get(url, headers=COINGECKO_API_HEADERS)
+        response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
 
         data = response.json()
         data = data["coins"]
@@ -1724,13 +1753,16 @@ def get_coin_OHLC_data(coin_id: str):
     Returns:
         Flask.Response: A JSON response containing the OHLC data for the specified coin.
     """
-    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days=365"
+    try:
+        url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days=365"
 
-    response = requests.get(url, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    data = jsonify(data)
+        response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
+        data = response.json()
+        data = jsonify(data)
 
-    return data
+        return data
+    except Exception:
+        return jsonify({"error": "Internal server error"}), 502
 
 
 @core.route("/get_coin_historical_data/<coin_id>", methods=["GET"])
@@ -1746,10 +1778,13 @@ def get_coin_historical_data(coin_id: str):
     Returns:
         Flask.Response: A JSON response containing the historical market data.
     """
-    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
+    try:
+        url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
 
-    response = requests.get(url, headers=COINGECKO_API_HEADERS)
-    data = response.json()
-    data = jsonify(data)
+        response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
+        data = response.json()
+        data = jsonify(data)
 
-    return data
+        return data
+    except Exception:
+        return jsonify({"error": "Internal server error"}), 502

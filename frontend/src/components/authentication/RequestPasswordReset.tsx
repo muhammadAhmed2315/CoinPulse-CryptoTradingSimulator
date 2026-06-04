@@ -45,7 +45,7 @@ export default function RequestPasswordReset() {
   useDocumentTitle("Forgot Password | CoinPulse");
 
   // ===== STATE VARIABLES =====
-  const [email, setEmail] = useState(useLocation().state?.email);
+  const [email, setEmail] = useState(useLocation().state?.email ?? "");
   const [invalidEmail, setInvalidEmail] = useState(false);
   const navigate = useNavigate();
 
@@ -80,67 +80,73 @@ export default function RequestPasswordReset() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold tracking-tight">Reset your password</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">
+          Reset your password
+        </CardTitle>
         <CardDescription>
           Enter the email address associated your account and we'll send a link
           to reset your password.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSendEmailClick} className="flex flex-col gap-6">
-      <CardContent className="flex flex-col gap-4">
-        {/* ===== EMAIL FIELD ===== */}
-        <Field>
-          <FieldLabel htmlFor="input-email">Email</FieldLabel>
-          <Input
-            id="input-email"
-            type="email"
-            placeholder="john.doe@gmail.com"
-            value={email}
-            onChange={handleEmailInput}
-          />
-        </Field>
-        {/* ===== ERROR ALERTS ===== */}
-        {invalidEmail && (
-          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-            <AlertTitle>Invalid email address</AlertTitle>
-            <AlertDescription>
-              Please enter a valid email address (e.g., john.doe@gmail.com)
-            </AlertDescription>
-          </Alert>
-        )}
-        {sendResetEmailMutation.isError && (
-          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-            <AlertTitle>Something went wrong</AlertTitle>
-            <AlertDescription>Please try again later.</AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col gap-2.5">
-        {/* ===== SEND BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          type="submit"
-        >
-          {sendResetEmailMutation.isPending ? (
-            <Spinner />
-          ) : (
-            <>Send reset email</>
+        <CardContent className="flex flex-col gap-4">
+          {/* ===== EMAIL FIELD ===== */}
+          <Field>
+            <FieldLabel htmlFor="input-email">Email</FieldLabel>
+            <Input
+              id="input-email"
+              type="email"
+              placeholder="john.doe@gmail.com"
+              value={email}
+              onChange={handleEmailInput}
+            />
+          </Field>
+          {/* ===== ERROR ALERTS ===== */}
+          {invalidEmail && (
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>Invalid email address</AlertTitle>
+              <AlertDescription>
+                Please enter a valid email address (e.g., john.doe@gmail.com)
+              </AlertDescription>
+            </Alert>
           )}
-          <RippleButtonRipples />
-        </RippleButton>
-        {/* ===== BACK BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          variant="outline"
-          type="button"
-          onClick={handleBackToLogin}
-        >
-          ← Back to login
-          <RippleButtonRipples />
-        </RippleButton>
-      </CardFooter>
+          {sendResetEmailMutation.isError && (
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>Something went wrong</AlertTitle>
+              <AlertDescription>Please try again later.</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col gap-2.5">
+          {/* ===== SUBMIT BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            type="submit"
+            disabled={
+              sendResetEmailMutation.isPending ||
+              sendResetEmailMutation.isSuccess
+            }
+          >
+            {sendResetEmailMutation.isPending ? (
+              <Spinner />
+            ) : (
+              <>Send reset email</>
+            )}
+            <RippleButtonRipples />
+          </RippleButton>
+          {/* ===== BACK BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            variant="outline"
+            type="button"
+            onClick={handleBackToLogin}
+          >
+            ← Back to login
+            <RippleButtonRipples />
+          </RippleButton>
+        </CardFooter>
       </form>
     </Card>
   );

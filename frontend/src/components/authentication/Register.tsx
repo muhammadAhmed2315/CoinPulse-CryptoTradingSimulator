@@ -177,7 +177,13 @@ export default function CreateAccount() {
         </CardContent>
         <CardFooter className="flex flex-col gap-2.5">
           {/* ===== SUBMIT BUTTON ===== */}
-          <RippleButton className="w-full cursor-pointer" type="submit">
+          <RippleButton
+            className="w-full cursor-pointer"
+            type="submit"
+            disabled={
+              createAccountMutation.isPending || createAccountMutation.isSuccess
+            }
+          >
             {createAccountMutation.isPending ? (
               <Spinner />
             ) : (

@@ -25,15 +25,12 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 
 // ===== API FUNCTIONS =====
 async function requestVerificationEmail(email: string) {
-  const response = await fetch(
-    `${API_BASE}/retry_verification_from_email`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email }),
-      credentials: "include",
-    },
-  );
+  const response = await fetch(`${API_BASE}/retry_verification_from_email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email }),
+    credentials: "include",
+  });
 
   if (!response.ok) throw await response.json();
 
@@ -85,7 +82,9 @@ export default function EmailVerificationForm() {
         </div>
 
         {/* ===== HEADER ===== */}
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">SOMETHING WENT WRONG</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          SOMETHING WENT WRONG
+        </p>
         <p className="text-xl font-bold tracking-tight">Request a new link</p>
         <Separator />
 
@@ -101,34 +100,38 @@ export default function EmailVerificationForm() {
           onSubmit={handleEmailSubmit}
         >
           <Field>
-          <FieldLabel htmlFor="input-email">Email</FieldLabel>
-          <InputGroup>
-            <InputGroupAddon>
-              <img src={MailIcon} className="size-4 opacity-50" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="input-email"
-              type="email"
-              placeholder="john.doe@gmail.com"
-              value={email}
-              onChange={handleEmailInput}
-            />
-          </InputGroup>
-        </Field>
+            <FieldLabel htmlFor="input-email">Email</FieldLabel>
+            <InputGroup>
+              <InputGroupAddon>
+                <img src={MailIcon} className="size-4 opacity-50" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="input-email"
+                type="email"
+                placeholder="john.doe@gmail.com"
+                value={email}
+                onChange={handleEmailInput}
+              />
+            </InputGroup>
+          </Field>
 
-        {/* ===== ERROR ALERT ===== */}
-        {errorVisible && (
-          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-            <AlertTitle>Invalid email address</AlertTitle>
-            <AlertDescription>
-              Please enter a valid email address (e.g., john.doe@gmail.com)
-            </AlertDescription>
-          </Alert>
-        )}
+          {/* ===== ERROR ALERT ===== */}
+          {errorVisible && (
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>Invalid email address</AlertTitle>
+              <AlertDescription>
+                Please enter a valid email address (e.g., john.doe@gmail.com)
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* ===== SUBMIT BUTTON ===== */}
-          <RippleButton className="w-full cursor-pointer" type="submit">
+          <RippleButton
+            className="w-full cursor-pointer"
+            type="submit"
+            disabled={mutation.isPending || mutation.isSuccess}
+          >
             {mutation.isPending ? <Spinner /> : <>Send new link</>}
             <RippleButtonRipples />
           </RippleButton>

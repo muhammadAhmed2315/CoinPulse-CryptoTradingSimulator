@@ -203,7 +203,11 @@ export default function Login() {
         </CardContent>
         <CardFooter className="flex flex-col gap-2.5">
           {/* ===== LOGIN BUTTON ===== */}
-          <RippleButton className="w-full cursor-pointer" type="submit">
+          <RippleButton
+            className="w-full cursor-pointer"
+            type="submit"
+            disabled={loginMutation.isPending || loginMutation.isSuccess}
+          >
             {loginMutation.isPending ? <Spinner /> : <>Login</>}
             <RippleButtonRipples />
           </RippleButton>
@@ -214,6 +218,9 @@ export default function Login() {
             variant="outline"
             type="button"
             onClick={handleTestAccountLogin}
+            disabled={
+              loginTestMutation.isPending || loginTestMutation.isSuccess
+            }
           >
             Login to test account
             <RippleButtonRipples />

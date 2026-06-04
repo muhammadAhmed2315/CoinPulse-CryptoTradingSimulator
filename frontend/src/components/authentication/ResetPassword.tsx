@@ -101,7 +101,10 @@ export default function ResetPassword() {
     },
 
     onError: (err: { error: string; description: string; status: number }) => {
-      if (err.status === 401) navigate("/password_reset_link_invalid");
+      if (err.status === 401) {
+        navigate("/password_reset_link_invalid");
+        return;
+      }
       setError([err.error, err.description]);
     },
   });
@@ -168,7 +171,11 @@ export default function ResetPassword() {
           <RippleButton
             className="w-full cursor-pointer"
             type="submit"
-            disabled={successTimer > 0}
+            disabled={
+              successTimer > 0 ||
+              resetPasswordMutation.isPending ||
+              resetPasswordMutation.isSuccess
+            }
           >
             {resetPasswordMutation.isPending ? (
               <Spinner />

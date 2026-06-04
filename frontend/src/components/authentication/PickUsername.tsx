@@ -40,9 +40,8 @@ export default function PickUsername() {
     },
 
     onError: (err) => {
-      const data = (
-        err as AxiosError<{ error?: string; description?: string }>
-      ).response?.data;
+      const data = (err as AxiosError<{ error?: string; description?: string }>)
+        .response?.data;
       setError([
         data?.error ?? "Couldn't set username",
         data?.description ?? "Please try again.",
@@ -111,7 +110,11 @@ export default function PickUsername() {
           )}
 
           {/* ===== SUBMIT BUTTON ===== */}
-          <RippleButton type="submit" className="w-full cursor-pointer">
+          <RippleButton
+            type="submit"
+            className="w-full cursor-pointer"
+            disabled={mutation.isPending || mutation.isSuccess}
+          >
             {mutation.isPending ? <Spinner /> : <>Continue</>}
             <RippleButtonRipples />
           </RippleButton>

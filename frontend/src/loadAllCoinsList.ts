@@ -1,3 +1,5 @@
+import LoadAllCoinsWorker from "./lib/load-all-coins-worker.ts?worker";
+
 export type Coin = {
   id: string;
   name: string;
@@ -8,11 +10,17 @@ export type Coin = {
 export async function loadAllCoinsList(): Promise<Coin[]> {
   const response = await fetch("/coins.tsv");
   const text = await response.text();
-  return text
-    .trim()
-    .split("\n")
-    .map((line) => {
-      const [id, name, ticker, imgUrl] = line.split("\t");
-      return { id, name, ticker, imgUrl };
-    });
+
+  return new Promise((resolve, reject) => {
+    const worker = new LoadAllCoinsWorker();
+    worker.onmessage = (e: MessageEvent<Coin[]>) => {
+      resolve(e.data);
+      worker.terminate();
+    };
+    worker.onerror = (err) => {
+      reject(err);
+      worker.terminate();
+    };
+    worker.postMessage(text);
+  });
 }

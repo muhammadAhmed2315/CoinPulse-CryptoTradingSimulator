@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { RedditPost } from "./RedditFeed";
 
 // ===== TYPES =====
@@ -6,6 +7,8 @@ type RedditPostProps = {
 };
 
 export default function RedditPost({ post }: RedditPostProps) {
+  const [imgLoadFailed, setImgLoadFailed] = useState(false);
+
   return (
     <div className="border-b border-border last:border-b-0">
       <a
@@ -16,12 +19,11 @@ export default function RedditPost({ post }: RedditPostProps) {
       >
         <div className="flex gap-3.5 px-6 py-4.5 hover:bg-muted">
           {/* ===== THUMBNAIL ===== */}
-          {post.thumbnail !== "" &&
-          post.thumbnail !== "default" &&
-          post.thumbnail !== "image" ? (
+          {post.thumbnail !== "" && !imgLoadFailed ? (
             <img
               src={post.thumbnail}
               className="size-21 shrink-0 rounded-[10px] border border-border bg-muted object-cover"
+              onError={() => setImgLoadFailed(true)}
             />
           ) : (
             <div className="size-21 flex flex-col items-center justify-center gap-1.5 p-2 rounded-[10px] border border-border bg-muted shrink-0">

@@ -75,7 +75,12 @@ export default function Login() {
     ],
   };
   const [error, setError] = useState<[string, string]>(
-    oauthError ? (oauthErrorMessages[oauthError] ?? ["", ""]) : ["", ""],
+    oauthError
+      ? (oauthErrorMessages[oauthError] ?? [
+          "Sign-in failed",
+          "Something went wrong during the OAuth sign-in.",
+        ])
+      : ["", ""],
   );
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -148,127 +153,129 @@ export default function Login() {
     <Card className="w-96">
       {/* ===== HEADER ===== */}
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold tracking-tight">Welcome back</CardTitle>
+        <CardTitle className="text-xl font-bold tracking-tight">
+          Welcome back
+        </CardTitle>
         <CardDescription>
           Sign in to continue where you left off.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin} className="flex flex-col gap-6">
-      <CardContent className="flex flex-col gap-4">
-        {/* ===== EMAIL FIELD ===== */}
-        <Field>
-          <FieldLabel htmlFor="input-email">Email</FieldLabel>
-          <Input
-            id="input-email"
-            type="email"
-            placeholder="john.doe@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Field>
-        {/* ===== PASSWORD FIELD ===== */}
-        <Field>
-          <div className="flex items-center">
-            <Label htmlFor="input-password">Password</Label>
-            <p
-              className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
-              onClick={() => navigate("/request_password_reset")}
+        <CardContent className="flex flex-col gap-4">
+          {/* ===== EMAIL FIELD ===== */}
+          <Field>
+            <FieldLabel htmlFor="input-email">Email</FieldLabel>
+            <Input
+              id="input-email"
+              type="email"
+              placeholder="john.doe@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
+          {/* ===== PASSWORD FIELD ===== */}
+          <Field>
+            <div className="flex items-center">
+              <Label htmlFor="input-password">Password</Label>
+              <p
+                className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer"
+                onClick={() => navigate("/request_password_reset")}
+              >
+                Forgot your password?
+              </p>
+            </div>
+            <Input
+              id="input-password"
+              type="password"
+              placeholder="**********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+          {/* ===== ERROR ALERT ===== */}
+          {error.at(0) !== "" && error.at(1) !== "" && (
+            <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
+              <AlertCircleIcon className="text-red-600 dark:text-red-400" />
+              <AlertTitle>{error.at(0)}</AlertTitle>
+              <AlertDescription>{error.at(1)}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col gap-2.5">
+          {/* ===== LOGIN BUTTON ===== */}
+          <RippleButton className="w-full cursor-pointer" type="submit">
+            {loginMutation.isPending ? <Spinner /> : <>Login</>}
+            <RippleButtonRipples />
+          </RippleButton>
+
+          {/* ===== TEST LOGIN BUTTON ===== */}
+          <RippleButton
+            className="w-full cursor-pointer"
+            variant="outline"
+            type="button"
+            onClick={handleTestAccountLogin}
+          >
+            Login to test account
+            <RippleButtonRipples />
+          </RippleButton>
+
+          {/* ===== OAUTH DIVIDER ===== */}
+          <div className="flex w-full items-center">
+            <div className="flex-1 border-t border-border" />
+            <span className="mx-4 text-sm text-muted-foreground">
+              or login with
+            </span>
+            <div className="flex-1 border-t border-border" />
+          </div>
+
+          {/* ===== OAUTH BUTTONS ===== */}
+          <div className="flex gap-2 justify-center">
+            <RippleButton
+              className="cursor-pointer"
+              variant="outline"
+              type="button"
+              onClick={() => {
+                window.location.href = `${API_BASE}/login_discord`;
+              }}
             >
-              Forgot your password?
+              <img
+                className="h-6 w-6 cursor-pointer"
+                src={discordLogo}
+                alt="Discord logo"
+              />
+              Discord
+              <RippleButtonRipples />
+            </RippleButton>
+
+            <RippleButton
+              className="cursor-pointer"
+              variant="outline"
+              type="button"
+              onClick={() => {
+                window.location.href = `${API_BASE}/login_google`;
+              }}
+            >
+              <img
+                className="h-5.5 w-5.5 cursor-pointer"
+                src={googleLogo}
+                alt="Google logo"
+              />
+              Google
+              <RippleButtonRipples />
+            </RippleButton>
+          </div>
+
+          {/* ===== SIGNUP LINK ===== */}
+          <div className="flex items-center text-sm">
+            <span>Don't have an account?&nbsp;</span>
+            <p
+              className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
+              onClick={() => navigate("/create_account")}
+            >
+              Sign up here
             </p>
           </div>
-          <Input
-            id="input-password"
-            type="password"
-            placeholder="**********"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Field>
-        {/* ===== ERROR ALERT ===== */}
-        {error.at(0) !== "" && error.at(1) !== "" && (
-          <Alert className="max-w-md border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-50">
-            <AlertCircleIcon className="text-red-600 dark:text-red-400" />
-            <AlertTitle>{error.at(0)}</AlertTitle>
-            <AlertDescription>{error.at(1)}</AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col gap-2.5">
-        {/* ===== LOGIN BUTTON ===== */}
-        <RippleButton className="w-full cursor-pointer" type="submit">
-          {loginMutation.isPending ? <Spinner /> : <>Login</>}
-          <RippleButtonRipples />
-        </RippleButton>
-
-        {/* ===== TEST LOGIN BUTTON ===== */}
-        <RippleButton
-          className="w-full cursor-pointer"
-          variant="outline"
-          type="button"
-          onClick={handleTestAccountLogin}
-        >
-          Login to test account
-          <RippleButtonRipples />
-        </RippleButton>
-
-        {/* ===== OAUTH DIVIDER ===== */}
-        <div className="flex w-full items-center">
-          <div className="flex-1 border-t border-border" />
-          <span className="mx-4 text-sm text-muted-foreground">
-            or login with
-          </span>
-          <div className="flex-1 border-t border-border" />
-        </div>
-
-        {/* ===== OAUTH BUTTONS ===== */}
-        <div className="flex gap-2 justify-center">
-          <RippleButton
-            className="cursor-pointer"
-            variant="outline"
-            type="button"
-            onClick={() => {
-              window.location.href = `${API_BASE}/login_discord`;
-            }}
-          >
-            <img
-              className="h-6 w-6 cursor-pointer"
-              src={discordLogo}
-              alt="Discord logo"
-            />
-            Discord
-            <RippleButtonRipples />
-          </RippleButton>
-
-          <RippleButton
-            className="cursor-pointer"
-            variant="outline"
-            type="button"
-            onClick={() => {
-              window.location.href = `${API_BASE}/login_google`;
-            }}
-          >
-            <img
-              className="h-5.5 w-5.5 cursor-pointer"
-              src={googleLogo}
-              alt="Google logo"
-            />
-            Google
-            <RippleButtonRipples />
-          </RippleButton>
-        </div>
-
-        {/* ===== SIGNUP LINK ===== */}
-        <div className="flex items-center text-sm">
-          <span>Don't have an account?&nbsp;</span>
-          <p
-            className="ml-auto inline-block underline-offset-4 hover:underline cursor-pointer"
-            onClick={() => navigate("/create_account")}
-          >
-            Sign up here
-          </p>
-        </div>
-      </CardFooter>
+        </CardFooter>
       </form>
     </Card>
   );

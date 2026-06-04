@@ -886,6 +886,13 @@ def request_password_reset():
 @jwt_required()
 def authenticate_user():
     user = db.session.get(User, get_jwt_identity())
+
+    if user is None:
+        return {
+            "error": "User not found",
+            "description": "Your session is no longer valid. Please log in again.",
+        }, 401
+
     return {"email": user.email, "username": user.username}, 200
 
 

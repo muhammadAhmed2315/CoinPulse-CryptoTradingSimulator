@@ -44,15 +44,12 @@ export function prefetchTradesTable(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function fetchTradesHistory(page: number, filter: string) {
-  const response = await fetchWithRefresh(
-    `${API_BASE}/get_trades_info`,
-    {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ page, filter }),
-      credentials: "include",
-    },
-  );
+  const response = await fetchWithRefresh(`${API_BASE}/get_trades_info`, {
+    method: "post",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ page, filter }),
+    credentials: "include",
+  });
 
   if (!response.ok) {
     throw await response.json();
@@ -439,6 +436,7 @@ export default function TradesTable() {
         domLayout="autoHeight"
         onFirstDataRendered={autoSizeDynamicCols}
         onRowDataUpdated={autoSizeDynamicCols}
+        getRowId={(params) => params.data.id}
       />
     </div>
   );

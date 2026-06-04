@@ -454,6 +454,7 @@ export default function TopCoins() {
               onGridReady={onGridReady}
               onPaginationChanged={onPaginationChanged}
               onRowClicked={handleRowClick}
+              getRowId={(params) => params.data.id}
             />
           </div>
 

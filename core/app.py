@@ -20,7 +20,7 @@ from constants import (
     COINGECKO_API_HEADERS,
     OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
     WALLET_VALUE_UPDATE_INTERVAL_SECONDS,
-)c
+)
 from extensions import db
 from models import Transaction, TransactionLikes, User, Wallet
 from RedditScraper.RedditScraper import RedditScraper

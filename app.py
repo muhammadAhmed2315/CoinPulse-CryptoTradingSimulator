@@ -68,6 +68,9 @@ def create_app():
     app.config["MAIL_PASSWORD"] = MAIL_PASSWORD
     app.config["MAIL_USE_TLS"] = False
     app.config["MAIL_USE_SSL"] = True
+    # Gmail's SMTP requires the From address to be the authenticated account, so use
+    # MAIL_USERNAME as the default sender for all outgoing mail (reset + verification).
+    app.config["MAIL_DEFAULT_SENDER"] = ("CoinPulse", MAIL_USERNAME)
 
     # Initialise Mail object
     mail_server = Mail(app)

@@ -18,10 +18,9 @@ from sqlalchemy.orm import joinedload
 
 from constants import (
     COINGECKO_API_HEADERS,
-    COINGECKO_API_KEY,
     OPEN_TRADE_UPDATE_INTERVAL_SECONDS,
     WALLET_VALUE_UPDATE_INTERVAL_SECONDS,
-)
+)c
 from extensions import db
 from models import Transaction, TransactionLikes, User, Wallet
 from RedditScraper.RedditScraper import RedditScraper
@@ -337,7 +336,7 @@ def update_likes():
         current_user = User.query.filter_by(id=user_id).first()
 
         # Get the transaction object from the database
-        transaction = Transaction.query.get(transaction_id)
+        transaction = db.session.get(Transaction, transaction_id)
 
         # Guard against an unknown/missing transaction
         if transaction is None:
@@ -977,9 +976,8 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                         "per_page": 250,
                         "ids": current_batch,
                     }
-                    headers = {"X-CoinGecko-Api-Key": COINGECKO_API_KEY}
                     response = requests.get(
-                        url, params=params, headers=headers, timeout=10
+                        url, params=params, headers=COINGECKO_API_HEADERS, timeout=10
                     )
                     data = response.json()
 
@@ -1001,6 +999,24 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
             # - total_current_value
             try:
                 for wallet in all_wallets:
+                    # If we failed to fetch a price for any coin this wallet holds
+                    # (e.g. a CoinGecko 429 left a batch unpopulated), skip the
+                    # wallet this cycle. Otherwise the missing coins would be
+                    # silently valued at $0 and that falsely-low total would be
+                    # persisted to the value history.
+                    missing = [
+                        key
+                        for key in wallet.assets
+                        if wallet.assets[key] and key not in coin_market_prices
+                    ]
+                    if missing:
+                        logging.warning(
+                            "Skipping value update for wallet %s: missing prices for %s",
+                            wallet.id,
+                            missing,
+                        )
+                        continue
+
                     # Get current total value of assets
                     curr_assets_value = 0
                     for key in wallet.assets:

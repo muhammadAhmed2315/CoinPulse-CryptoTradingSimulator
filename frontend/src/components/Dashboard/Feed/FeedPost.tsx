@@ -10,7 +10,7 @@ import BannerFlickerGrid from "./BannerFlickerGrid";
 import ProfileAvatar from "./ProfileAvatar";
 import TradePill from "./TradePill";
 import LikeButton from "./LikeButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { fetchWithRefresh, API_BASE } from "@/lib/api";

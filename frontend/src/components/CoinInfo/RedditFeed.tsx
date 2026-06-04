@@ -62,15 +62,12 @@ export type RedditPost = {
 
 // ===== API FUNCTIONS =====
 async function getRedditPosts(coinName: string, after: string) {
-  const response = await fetchWithRefresh(
-    `${API_BASE}/get_reddit_posts`,
-    {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: coinName, after: after }),
-      credentials: "include",
-    },
-  );
+  const response = await fetchWithRefresh(`${API_BASE}/get_reddit_posts`, {
+    method: "post",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: coinName, after: after }),
+    credentials: "include",
+  });
 
   if (!response.ok) throw await response.json();
 
@@ -151,14 +148,14 @@ export default function RedditFeed({ coinName }: RedditFeedProps) {
         </div>
       ) : (
         <InfiniteScroll
-          dataLength={redditPostsQuery.data?.pages.length || 0}
+          dataLength={
+            redditPostsQuery.data?.pages.reduce((a, p) => a + p.length, 0) ?? 0
+          }
           next={redditPostsQuery.fetchNextPage}
           hasMore={!!redditPostsQuery.hasNextPage}
           loader={<span></span>}
           endMessage={
-            <p className="pt-8 text-center font-bold">
-              You're all caught up.
-            </p>
+            <p className="pt-8 text-center font-bold">You're all caught up.</p>
           }
           className="flex flex-col pb-8"
         >

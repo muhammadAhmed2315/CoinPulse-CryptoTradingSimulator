@@ -69,15 +69,12 @@ async function getNewsArticles(
   coinName: string,
   nextPage: string,
 ): Promise<NewsArticlesPage> {
-  const response = await fetchWithRefresh(
-    `${API_BASE}/get_news_articles`,
-    {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: coinName, nextPage: nextPage }),
-      credentials: "include",
-    },
-  );
+  const response = await fetchWithRefresh(`${API_BASE}/get_news_articles`, {
+    method: "post",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: coinName, nextPage: nextPage }),
+    credentials: "include",
+  });
 
   if (!response.ok) throw await response.json();
 
@@ -94,9 +91,7 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
   });
 
   // ===== DERIVED STATE =====
-  const numPosts = newsArticlesQuery.data
-    ? newsArticlesQuery.data.pages[0].totalResults
-    : 0;
+  const numPosts = newsArticlesQuery.data?.pages?.[0]?.totalResults ?? 0;
 
   return (
     <Card className="flex-1 gap-0 overflow-hidden rounded-[18px] border-border p-0 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
@@ -156,14 +151,17 @@ export default function NewsFeed({ coinName }: NewsFeedProps) {
         </div>
       ) : (
         <InfiniteScroll
-          dataLength={newsArticlesQuery.data?.pages.length || 0}
+          dataLength={
+            newsArticlesQuery.data?.pages.reduce(
+              (a, p) => a + p.results.length,
+              0,
+            ) ?? 0
+          }
           next={newsArticlesQuery.fetchNextPage}
           hasMore={!!newsArticlesQuery.hasNextPage}
           loader={<span></span>}
           endMessage={
-            <p className="pt-8 text-center font-bold">
-              You're all caught up.
-            </p>
+            <p className="pt-8 text-center font-bold">You're all caught up.</p>
           }
           className="flex flex-col pb-8"
         >

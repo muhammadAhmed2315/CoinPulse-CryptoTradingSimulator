@@ -39,15 +39,12 @@ export function prefetchFeedPosts(queryClient: QueryClient) {
 
 // ===== API FUNCTIONS =====
 async function fetchPosts(type: string, page: number = 0) {
-  const response = await fetchWithRefresh(
-    `${API_BASE}/get_feedposts`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, page }),
-      credentials: "include",
-    },
-  );
+  const response = await fetchWithRefresh(`${API_BASE}/get_feedposts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, page }),
+    credentials: "include",
+  });
 
   if (!response.ok) throw await response.json();
 
@@ -89,12 +86,12 @@ export default function FeedPostMenu() {
   // ===== DERIVED STATE =====
   const globalPostCount =
     globalFeedQuery.data?.pages.reduce(
-      (acc, pg) => acc + (pg.data?.length ?? 0),
+      (a, p) => a + (p.data?.length ?? 0),
       0,
     ) ?? 0;
   const privatePostCount =
     privateFeedQuery.data?.pages.reduce(
-      (acc, pg) => acc + (pg.data?.length ?? 0),
+      (a, p) => a + (p.data?.length ?? 0),
       0,
     ) ?? 0;
 
@@ -137,7 +134,7 @@ export default function FeedPostMenu() {
               </Card>
             ) : (
               <InfiniteScroll
-                dataLength={globalFeedQuery.data?.pages.length || 0}
+                dataLength={globalPostCount}
                 next={globalFeedQuery.fetchNextPage}
                 hasMore={!!globalFeedQuery.hasNextPage}
                 loader={<span></span>}
@@ -176,7 +173,7 @@ export default function FeedPostMenu() {
               </Card>
             ) : (
               <InfiniteScroll
-                dataLength={privateFeedQuery.data?.pages.length || 0}
+                dataLength={privatePostCount}
                 next={privateFeedQuery.fetchNextPage}
                 hasMore={!!privateFeedQuery.hasNextPage}
                 loader={<span></span>}

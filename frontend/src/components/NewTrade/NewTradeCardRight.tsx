@@ -36,7 +36,7 @@ async function placeOrder(
   comment: string,
   pricePerUnit: number,
 ) {
-  const data: any = {
+  const data = {
     transactionType: orderSide.toLowerCase(),
     orderType: orderType.toLowerCase(),
     quantity: quantity,
@@ -59,10 +59,20 @@ async function placeOrder(
 }
 
 // ===== TYPES =====
+/** Subset of the coin-info response consumed by this component. */
+export type CoinData = {
+  current_price: number;
+};
+
+/** Parsed JSON error body thrown by {@link placeOrder} on a failed request. */
+export type OrderError = {
+  error?: string;
+};
+
 export type NewTradeCardRightProps = {
-  userBalanceQuery: UseQueryResult<any, Error>;
-  coinDataQuery: UseQueryResult<any, Error>;
-  coinBalanceQuery: UseQueryResult<any, Error>;
+  userBalanceQuery: UseQueryResult<number, Error>;
+  coinDataQuery: UseQueryResult<CoinData, Error>;
+  coinBalanceQuery: UseQueryResult<number, Error>;
   currCoin: Coin;
 };
 
@@ -465,7 +475,7 @@ export default function NewTradeCardRight({
         ) : successTimer > 0 ? (
           <>Order successfully placed!</>
         ) : errorTimer > 0 ? (
-          <>{(placeOrderMutation.error as any)?.error}</>
+          <>{(placeOrderMutation.error as OrderError)?.error}</>
         ) : queryError ? (
           <>Order data unavailable</>
         ) : (

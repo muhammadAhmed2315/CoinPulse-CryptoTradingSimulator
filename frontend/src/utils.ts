@@ -43,6 +43,8 @@ export function formatUnixToDayMonthYear(unixTimestamp: number) {
 
 // =====
 export function numToMoney(num: number, abs: boolean = false, dp: number = 2) {
+  if (!Number.isFinite(num)) return "—";
+
   const absolute = abs ? Math.abs(num) : num;
 
   return new Intl.NumberFormat("en-US", {
@@ -62,14 +64,22 @@ export function toTitleCase(text: string) {
 
 // =====
 export default function formatCompactValue(num: number) {
-  if (num >= 1_000_000_000_000) {
-    return `${(num / 1_000_000_000_000).toPrecision(3)}T`;
-  } else if (num >= 1_000_000_000) {
-    return `${(num / 1_000_000_000).toPrecision(3)}B`;
-  } else if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toPrecision(3)}M`;
-  } else if (num >= 1_000) {
-    return `${(num / 1_000).toPrecision(3)}K`;
+  if (!Number.isFinite(num)) return "—";
+
+  const sign = num < 0 ? "-" : "";
+  const abs = Math.abs(num);
+
+  const format = (value: number, suffix: string) =>
+    `${sign}${value.toFixed(2).replace(/\.?0+$/, "")}${suffix}`;
+
+  if (abs >= 1_000_000_000_000) {
+    return format(abs / 1_000_000_000_000, "T");
+  } else if (abs >= 1_000_000_000) {
+    return format(abs / 1_000_000_000, "B");
+  } else if (abs >= 1_000_000) {
+    return format(abs / 1_000_000, "M");
+  } else if (abs >= 1_000) {
+    return format(abs / 1_000, "K");
   }
 
   return `${num}`;

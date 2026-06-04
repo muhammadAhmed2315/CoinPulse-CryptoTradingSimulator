@@ -110,7 +110,7 @@ function isSpecialChar(char: string) {
 }
 
 function isLetter(char: string) {
-  return (char.length === 1 && isUppercase(char)) || isLowercase(char);
+  return char.length === 1 && (isUppercase(char) || isLowercase(char));
 }
 
 export const PASSWORD_RULES = [

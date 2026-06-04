@@ -91,11 +91,9 @@ export default function CoinInfoCard({
   // ===== DERIVED STATE =====
   const coinData = detailedCoinDataQuery.data;
   const coinSparkline = coinSparklineQuery.data;
-  const allTimePercentage = coinData
-    ? ((coinData.current_price - coinData.atl) /
-        (coinData.ath - coinData.atl)) *
-      100
-    : 0;
+  const range = coinData ? coinData.ath - coinData.atl : 0;
+  const allTimePercentage =
+    range > 0 ? ((coinData.current_price - coinData.atl) / range) * 100 : 0;
   const hasBodyError =
     detailedCoinDataQuery.isError || coinSparklineQuery.isError;
 
@@ -301,7 +299,9 @@ export default function CoinInfoCard({
                     Max Supply
                   </span>
                   <span className="font-mono text-[13px] font-semibold">
-                    {numToMoney(coinData.max_supply, false, 0)}
+                    {coinData.max_supply
+                      ? numToMoney(coinData.max_supply, false, 0)
+                      : "∞"}
                   </span>
                 </div>
 

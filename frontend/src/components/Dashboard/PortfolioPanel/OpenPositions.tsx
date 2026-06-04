@@ -96,7 +96,7 @@ export default function OpenPositions() {
       }))
     : [];
 
-  const openOrdersSummarySorted = openOrdersSummary.sort(
+  const openOrdersSummarySorted = [...openOrdersSummary].sort(
     (a, b) => b.totalValue - a.totalValue,
   );
 

@@ -10,6 +10,32 @@ export default function SparklineGraph({
   height = 64,
   width = 240,
 }: SparklineGraphProps) {
+  // ===== INSUFFICIENT-DATA GUARD =====
+  // With <2 points there is no range to plot: 0 points makes Math.min/max
+  // Infinity and 1 point makes i/(length-1) divide by zero. Show a message
+  // instead of rendering a broken graph.
+  if (data.length < 2) {
+    return (
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        width={width}
+        height={height}
+        style={{ display: "block" }}
+      >
+        <text
+          x={width / 2}
+          y={height / 2}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize="13"
+          fill="#9ca3af"
+        >
+          Not enough data to render sparkline
+        </text>
+      </svg>
+    );
+  }
+
   // ===== DERIVED STATE =====
   const positive = data.length > 0 ? data.at(0)! < data.at(-1)! : true;
 

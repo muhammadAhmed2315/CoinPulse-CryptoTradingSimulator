@@ -114,10 +114,15 @@ export default function NewTradeCardRight({
     userBalanceQuery.isError ||
     coinBalanceQuery.isError;
 
+  // Query data is `undefined` until loaded; fall back to 0 so the numeric
+  // comparisons below stay well-defined while the queries are in flight.
+  const userBalance = userBalanceQuery.data ?? 0;
+  const coinBalance = coinBalanceQuery.data ?? 0;
+
   const placeOrderBtnDisabled =
     queryError ||
-    (orderSide === "BUY" && parseFloat(usdAmount) > userBalanceQuery.data) ||
-    (orderSide === "SELL" && parseFloat(coinAmount) > coinBalanceQuery.data) ||
+    (orderSide === "BUY" && parseFloat(usdAmount) > userBalance) ||
+    (orderSide === "SELL" && parseFloat(coinAmount) > coinBalance) ||
     (orderType !== "MARKET" && orderPrice === "") ||
     parseFloat(orderPrice) === 0 ||
     parseFloat(usdAmount) === 0 ||
@@ -138,7 +143,7 @@ export default function NewTradeCardRight({
         shareOnTimeline,
         timelineMsg,
         orderType === "MARKET"
-          ? coinDataQuery.data.current_price
+          ? (coinDataQuery.data?.current_price ?? 0)
           : parseFloat(orderPrice),
       ),
 
@@ -307,7 +312,7 @@ export default function NewTradeCardRight({
       </p>
       <Field
         data-invalid={
-          amountZero || parseFloat(usdAmount) > userBalanceQuery.data
+          amountZero || parseFloat(usdAmount) > userBalance
         }
         className="bg-muted mb-1 gap-1"
       >
@@ -320,7 +325,7 @@ export default function NewTradeCardRight({
             className="placeholder:font-semibold font-semibold"
             aria-invalid={
               orderSide === "BUY" &&
-              (amountZero || parseFloat(usdAmount) > userBalanceQuery.data)
+              (amountZero || parseFloat(usdAmount) > userBalance)
             }
           />
           <InputGroupAddon align="inline-start">
@@ -331,7 +336,7 @@ export default function NewTradeCardRight({
       {amountZero && <p className="text-red-500">Amount cannot be zero.</p>}
       {orderSide === "BUY" &&
         !amountZero &&
-        parseFloat(usdAmount) > userBalanceQuery.data && (
+        parseFloat(usdAmount) > userBalance && (
           <p className="text-red-500">
             Insufficient balance. Please enter a lower amount.
           </p>
@@ -402,7 +407,7 @@ export default function NewTradeCardRight({
       </p>
       <Field
         data-invalid={
-          amountZero || parseFloat(coinAmount) > coinBalanceQuery.data
+          amountZero || parseFloat(coinAmount) > coinBalance
         }
         className="bg-muted gap-1"
       >
@@ -415,7 +420,7 @@ export default function NewTradeCardRight({
             className="placeholder:font-bold font-semibold"
             aria-invalid={
               orderSide === "SELL" &&
-              (amountZero || parseFloat(coinAmount) > coinBalanceQuery.data)
+              (amountZero || parseFloat(coinAmount) > coinBalance)
             }
           />
           <InputGroupAddon align="inline-start">
@@ -425,7 +430,7 @@ export default function NewTradeCardRight({
       </Field>
       {amountZero && <p className="text-red-500">Amount cannot be zero.</p>}
       {orderSide === "SELL" &&
-        parseFloat(coinAmount) > coinBalanceQuery.data && (
+        parseFloat(coinAmount) > coinBalance && (
           <p className="text-red-500">
             Not enough {currCoin.ticker.toUpperCase()} to sell.
           </p>

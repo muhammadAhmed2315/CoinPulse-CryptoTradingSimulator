@@ -937,6 +937,8 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
     while True:
         from app import app
 
+        start = time.monotonic()
+
         with app.app_context():
             coins = set()
             coin_market_prices = {}
@@ -1020,7 +1022,8 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                 logging.exception("Failed to update wallet value history")
 
         if not current_wallet_id:
-            time.sleep(WALLET_VALUE_UPDATE_INTERVAL_SECONDS)
+            elapsed = time.monotonic() - start
+            time.sleep(max(0, WALLET_VALUE_UPDATE_INTERVAL_SECONDS - elapsed))
         else:
             break
 
@@ -1128,6 +1131,8 @@ def update_open_trades_in_background():
 
     while True:
         from app import app
+
+        start = time.monotonic()
 
         with app.app_context():
             coins = set()
@@ -1285,7 +1290,8 @@ def update_open_trades_in_background():
                     db.session.rollback()
                     continue
 
-        time.sleep(OPEN_TRADE_UPDATE_INTERVAL_SECONDS)
+        elapsed = time.monotonic() - start
+        time.sleep(max(0, OPEN_TRADE_UPDATE_INTERVAL_SECONDS - elapsed))
 
 
 @jwt_required()

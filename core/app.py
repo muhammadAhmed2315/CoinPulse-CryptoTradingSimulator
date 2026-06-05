@@ -436,6 +436,12 @@ def process_order():
         if key not in data:
             return jsonify({"error": "Invalid order request"}), 422
 
+    # Validate data properties are correct
+    if data["orderType"] not in ["market", "limit", "stop"] or data[
+        "transactionType"
+    ] not in ["buy", "sell"]:
+        return jsonify({"error": "Invalid order request"}), 422
+
     # Make sure user did not enter an invalid quantity
     if (
         not isinstance(data["quantity"], (int, float))
@@ -448,7 +454,7 @@ def process_order():
             422,
         )
 
-    # Validate correct quoted price
+    # Validate correct trigger/quoted price
     if (
         not isinstance(data["price_per_unit"], (int, float))
         or isinstance(data["price_per_unit"], bool)
@@ -460,32 +466,25 @@ def process_order():
             422,
         )
 
-    # Fetch current price for market orders; validate coin exists for limit/stop orders
+    # Validate that the coin exists and get its current price
+    try:
+        market_data = get_coins_data(data["coin_id"])
+        current_price = market_data[0]["current_price"]
+    except (requests.RequestException, IndexError, KeyError, TypeError, ValueError):
+        return (
+            jsonify({"error": "Invalid coin_id. Coin does not exist."}),
+            422,
+        )
+
+    # CoinGecko can return a null/zero price for unknown or delisted coins
+    if not isinstance(current_price, (int, float)) or current_price <= 0:
+        return (
+            jsonify({"error": "No valid market price for this coin"}),
+            422,
+        )
+
+    # Validate unfavourable slippage tolerance for market orders
     if data["orderType"] == "market":
-        try:
-            market_data = get_coins_data(data["coin_id"])
-            current_price = market_data[0]["current_price"]
-        except (requests.RequestException, IndexError, KeyError, TypeError, ValueError):
-            return (
-                jsonify({"error": "Could not fetch current market price"}),
-                502,
-            )
-    else:
-        try:
-            market_data = get_coins_data(data["coin_id"])
-            if not market_data:
-                return jsonify({"error": "Invalid coin"}), 422
-        except (requests.RequestException, KeyError, TypeError, ValueError):
-            return jsonify({"error": "Could not validate coin"}), 502
-
-        # CoinGecko can return a null/zero price for unknown or delisted coins
-        if not isinstance(current_price, (int, float)) or current_price <= 0:
-            return (
-                jsonify({"error": "No valid market price for this coin"}),
-                502,
-            )
-
-        # Validate unfavourable slippage tolerance
         if (
             data["transactionType"] == "buy"
             and ((current_price - data["price_per_unit"]) / data["price_per_unit"])
@@ -497,7 +496,6 @@ def process_order():
                 ),
                 409,
             )
-
         elif (
             data["transactionType"] == "sell"
             and ((current_price - data["price_per_unit"]) / data["price_per_unit"])
@@ -510,7 +508,27 @@ def process_order():
                 409,
             )
 
-        data["price_per_unit"] = current_price
+    # A limit/stop trigger must sit on the meaningful side of the current market
+    # price; otherwise the order would fill on the next executor pass at ~the
+    # current price (defeating the point of the order type). The frontend enforces
+    # this, but validate server-side too so a direct API client can't place a
+    # wrong-side order.
+    trigger_side_error = None
+    if data["orderType"] == "limit" and data["transactionType"] == "buy":
+        if data["price_per_unit"] > current_price:
+            trigger_side_error = "A limit buy price must be at or below the current market price."
+    elif data["orderType"] == "limit" and data["transactionType"] == "sell":
+        if data["price_per_unit"] < current_price:
+            trigger_side_error = "A limit sell price must be at or above the current market price."
+    elif data["orderType"] == "stop" and data["transactionType"] == "buy":
+        if data["price_per_unit"] < current_price:
+            trigger_side_error = "A stop buy price must be at or above the current market price."
+    elif data["orderType"] == "stop" and data["transactionType"] == "sell":
+        if data["price_per_unit"] > current_price:
+            trigger_side_error = "A stop sell price must be at or below the current market price."
+
+    if trigger_side_error:
+        return jsonify({"error": trigger_side_error}), 422
 
     # Get the current user
     user_id = get_jwt_identity()
@@ -544,7 +562,9 @@ def process_order():
         orderType=data["orderType"],
         coin_id=data["coin_id"],
         quantity=data["quantity"],
-        price_per_unit=data["price_per_unit"],
+        price_per_unit=(
+            current_price if data["orderType"] == "market" else data["price_per_unit"]
+        ),
         wallet_id=user.wallet.id,
         comment=data["comment"],
         balance_before=user.wallet.balance,

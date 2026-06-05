@@ -130,7 +130,9 @@ class Wallet(db.Model):
     )
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    balance = db.Column(db.Float, default=1000000)
+    balance = db.Column(
+        db.Float, default=1000000, server_default="1000000", nullable=False
+    )
     assets = db.Column(MutableDict.as_mutable(JSONB), default={}, nullable=False)
     reserved_balance = db.Column(db.Float, default=0.0, nullable=False)
     reserved_assets = db.Column(
@@ -285,7 +287,12 @@ class ValueHistory(db.Model):
     __tablename__ = "value_histories"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    wallet_id = db.Column(UUID(as_uuid=True), db.ForeignKey("wallets.id"))
+    wallet_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey("wallets.id"),
+        nullable=False,
+        unique=True,
+    )
     balance_history = db.Column(
         MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [1000000]
     )
@@ -484,7 +491,9 @@ class TransactionLikes(db.Model):
         MutableList.as_mutable(ARRAY(UUID(as_uuid=True))),
         default=lambda: [],
     )
-    transaction_id = db.Column(UUID(as_uuid=True), db.ForeignKey("transactions.id"))
+    transaction_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey("transactions.id"), unique=True
+    )
 
     def __init__(self, transaction_id):
         """

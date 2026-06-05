@@ -24,9 +24,7 @@ const CSRF_HEADER = "X-CSRF-TOKEN";
 const MUTATING_METHODS = new Set(["post", "put", "patch", "delete"]);
 
 function getCookie(name: string): string | undefined {
-  const match = document.cookie.match(
-    new RegExp(`(?:^|;\\s*)${name}=([^;]*)`),
-  );
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : undefined;
 }
 

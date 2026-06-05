@@ -52,6 +52,7 @@ def get_coins_list_cached():
         url = "https://api.coingecko.com/api/v3/coins/list"
         response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
         data = response.json()
+
         _COINS_LIST_CACHE["data"] = data
         _COINS_LIST_CACHE["fetched_at"] = now
         _COINS_LIST_CACHE_SET = set([coin["id"] for coin in data])

@@ -145,7 +145,7 @@ export default function NewTradeCardLeft({
           {userBalanceQuery.isLoading ? (
             <CustomSkeleton className="h-6 w-25" />
           ) : (
-            <p className="font-bold">{numToMoney(userBalanceQuery.data)}</p>
+            <p className="font-bold">${numToMoney(userBalanceQuery.data)}</p>
           )}
         </div>
         <img src={PlayUSD} className="size-6.5" />

@@ -1,5 +1,5 @@
 import type { Coin } from "@/loadAllCoinsList";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Field } from "./ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { SearchIcon } from "lucide-react";
@@ -26,6 +26,7 @@ export default function CoinSearchBar({
 }: CoinSearchBarProps) {
   // ===== STATE VARIABLES =====
   const [showDropdown, setShowDropdown] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED STATE =====
   const matchingCoins = useMemo(() => {
@@ -41,6 +42,18 @@ export default function CoinSearchBar({
     return coins.filter((c) => c.name.toLowerCase().startsWith(debouncedQuery));
   }, [coins, debouncedQuery]);
 
+  // ===== USEEFFECT HOOKS =====
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // ===== EVENT HANDLERS =====
   function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {
     setQuery(e.target.value);
@@ -54,7 +67,7 @@ export default function CoinSearchBar({
   }
 
   return (
-    <div className="relative flex flex-col gap-1">
+    <div className="relative flex flex-col gap-1" ref={ref}>
       {/* ===== SEARCH INPUT ===== */}
       <Field className="max-w-sm">
         <InputGroup>

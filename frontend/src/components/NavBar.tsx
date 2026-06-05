@@ -96,7 +96,10 @@ export default function NavBar() {
         withCredentials: true,
       }),
 
-    onSuccess: async () => {
+    // Clear local session regardless of the server response: if /logout fails
+    // (network error, 4xx/5xx) we must still drop the client session so the user
+    // isn't left logged in on the client after clicking "log out".
+    onSettled: async () => {
       await clearCachedSession();
       navigate("/login");
     },

@@ -338,11 +338,18 @@ def update_likes():
         user_id = get_jwt_identity()
         current_user = User.query.filter_by(id=user_id).first()
 
+        # Verify that the current user exists
+        if current_user is None:
+            return jsonify({"error": "Transaction not found"}), 404
+
         # Get the transaction object from the database
         transaction = db.session.get(Transaction, transaction_id)
 
         # Guard against an unknown/missing transaction
-        if transaction is None:
+        if transaction is None or (
+            not transaction.visibility
+            and transaction.wallet_id != current_user.wallet.id
+        ):
             return jsonify({"error": "Transaction not found"}), 404
 
         # Guard against a transaction without a TransactionLikes row by creating one

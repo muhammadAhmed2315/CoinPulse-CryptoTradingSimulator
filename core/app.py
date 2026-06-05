@@ -1,3 +1,4 @@
+from flask_jwt_extended import verify_jwt_in_request
 from constants import NEWSDATA_API_KEY
 import logging
 import math
@@ -11,7 +12,7 @@ from flask import (
     request,
     session,
 )
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 from flask_login import current_user
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload
@@ -62,8 +63,16 @@ def get_coins_list_cached():
         return jsonify({"error": "Internal server error"}), 502
 
 
+# Verify user has a username
+@core.before_request
+def require_username():
+    verify_jwt_in_request()
+    user = db.session.get(User, get_jwt_identity())
+    if user is None or not user.username:
+        return jsonify({"error": "username required"}), 403
+
+
 @core.route("/get_trade_filter_counts", methods=["GET"])
-@jwt_required()
 def get_trade_filter_counts():
     try:
         # Get current user
@@ -92,7 +101,6 @@ def get_trade_filter_counts():
 
 
 @core.route("/get_trades_info", methods=["POST"])
-@jwt_required()
 def get_trades_info():
     """
     Fetches the transaction history for the currently logged-in user and returns (as a
@@ -217,7 +225,6 @@ def get_trades_info():
 
 
 @core.route("/get_feedposts", methods=["POST"])
-@jwt_required()
 def get_feedposts():
     """
     Fetches and returns a list of feed posts (transactions) based on the specified type
@@ -318,7 +325,6 @@ def get_feedposts():
 
 
 @core.route("/update_likes", methods=["POST"])
-@jwt_required()
 def update_likes():
     """
     Updates the like count for a specific transaction.
@@ -389,7 +395,6 @@ def update_likes():
 
 
 @core.route("/process_order", methods=["POST"])
-@jwt_required()
 def process_order():
     """
     Processes a cryptocurrency transaction submitted via a POST request containing JSON
@@ -709,7 +714,6 @@ def process_order():
 
 
 @core.route("/get_wallet_history", methods=["GET"])
-@jwt_required()
 def get_wallet_history():
     """
     Retrieves the wallet value history for the currently logged-in user.
@@ -756,7 +760,6 @@ def get_wallet_history():
 
 
 @core.route("/get_wallet_total_current_value", methods=["GET"])
-@jwt_required()
 def get_wallet_total_current_value():
     """
     Retrieves the current total value of the current user's wallet (i.e., returns
@@ -797,7 +800,6 @@ def get_wallet_total_current_value():
 
 
 @core.route("/get_news_articles", methods=["POST"])
-@jwt_required()
 def get_news_articles():
     """
     Fetch news articles based on a user-specified query and page number.
@@ -870,7 +872,6 @@ def get_reddit_scraper():
 
 
 @core.route("/get_reddit_posts", methods=["POST"])
-@jwt_required()
 def get_reddit_posts():
     """
     Fetches posts from Reddit based on a user-specified query and pagination parameter.
@@ -1363,7 +1364,6 @@ def update_open_trades_in_background():
         time.sleep(max(0, OPEN_TRADE_UPDATE_INTERVAL_SECONDS - elapsed))
 
 
-@jwt_required()
 def get_coins_data(coin_ids: str, precision: int | None = None):
     try:
         url = "https://api.coingecko.com/api/v3/coins/markets"
@@ -1383,7 +1383,6 @@ def get_coins_data(coin_ids: str, precision: int | None = None):
 
 
 @core.route("/get_wallet_assets", methods=["GET"])
-@jwt_required()
 def get_wallet_assets():
     """
     Retrieves and returns the assets and balance of the currently logged-in user's
@@ -1454,7 +1453,6 @@ def get_wallet_assets():
 
 
 @core.route("/get_open_trades", methods=["GET"])
-@jwt_required()
 def get_open_trades():
     """
     Retrieves and returns a list of open trade transactions (i.e., limit or stop orders
@@ -1518,7 +1516,6 @@ def get_open_trades():
 
 
 @core.route("/cancel_open_trade", methods=["POST"])
-@jwt_required()
 def cancel_open_trade():
     """
     Cancels an open trade transaction (i.e., a limit or stop order that is currently
@@ -1592,7 +1589,6 @@ def cancel_open_trade():
 
 
 @core.route("/get_top_coins", methods=["POST"])
-@jwt_required()
 def get_top_coins():
     """
     Retrieve and return a list of the top coins from the CoinGecko API, sorted by a
@@ -1662,7 +1658,6 @@ def get_top_coins():
 
 
 @core.route("/get_coin_data/<coin_id>", methods=["GET"])
-@jwt_required()
 def get_coin_data(coin_id: str):
     """
     Fetches and returns detailed market data for a specific coin.
@@ -1697,7 +1692,6 @@ def get_coin_data(coin_id: str):
 
 
 @core.route("/get_coin_sparkline/<coin_id>", methods=["GET"])
-@jwt_required()
 def get_coin_sparkline(coin_id: str):
     try:
         get_coins_list_cached()
@@ -1725,7 +1719,6 @@ def get_coin_sparkline(coin_id: str):
 
 
 @core.route("/get_user_balance", methods=["GET"])
-@jwt_required()
 def get_user_balance():
     user_id = get_jwt_identity()
     user = User.query.filter_by(id=user_id).first()
@@ -1735,7 +1728,6 @@ def get_user_balance():
 
 
 @core.route("/get_coin_balance/<coin_id>", methods=["GET"])
-@jwt_required()
 def get_coin_balance(coin_id: str):
     """
     Fetches and returns the balance of a specific coin from the current user's wallet.
@@ -1760,7 +1752,6 @@ def get_coin_balance(coin_id: str):
 
 
 @core.route("/get_all_coin_names")
-@jwt_required()
 def get_all_coin_names():
     """
     Fetch and return a list of all cryptocurrency coins available on CoinGecko.
@@ -1780,7 +1771,6 @@ def get_all_coin_names():
 
 
 @core.route("/get_trending_coins")
-@jwt_required()
 def get_trending_coins():
     """
     Fetch and return data for currently trending coins from the CoinGecko API.
@@ -1826,7 +1816,6 @@ def get_trending_coins():
 
 
 @core.route("/get_coin_OHLC_data/<coin_id>", methods=["GET"])
-@jwt_required()
 def get_coin_OHLC_data(coin_id: str):
     """
     Fetch and return the Open, High, Low, and Close (OHLC) market data for a specified
@@ -1856,7 +1845,6 @@ def get_coin_OHLC_data(coin_id: str):
 
 
 @core.route("/get_coin_historical_data/<coin_id>", methods=["GET"])
-@jwt_required()
 def get_coin_historical_data(coin_id: str):
     """
     Fetch and return historical market data for a specified coin over the past year.

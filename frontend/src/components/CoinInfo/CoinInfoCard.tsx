@@ -172,7 +172,7 @@ export default function CoinInfoCard({
 
                 <div className="flex flex-col items-end gap-1.5 text-right shrink-0">
                   <p className="font-mono text-2xl font-semibold tracking-[-0.02em] leading-none">
-                    ${numToMoney(coinData.current_price.toFixed(2))}
+                    ${numToMoney(Number(coinData.current_price.toFixed(2)))}
                   </p>
                   <div className="flex items-center gap-2.5">
                     <p

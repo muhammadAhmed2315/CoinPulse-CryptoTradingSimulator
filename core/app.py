@@ -28,6 +28,7 @@ from RedditScraper.RedditScraper import RedditScraper
 core = Blueprint("core", __name__)
 
 _COINS_LIST_CACHE = {"data": None, "fetched_at": 0}
+_COINS_LIST_CACHE_SET = set()
 COINS_LIST_CACHE_TTL_SECONDS = 600  # 10 minutes
 
 
@@ -40,6 +41,7 @@ def _lock_wallet(wallet_id):
 
 def get_coins_list_cached():
     """Returns the full CoinGecko /coins/list as a Python list, cached for COINS_LIST_CACHE_TTL_SECONDS."""
+    global _COINS_LIST_CACHE_SET
     try:
         now = int(time.time())
         if (
@@ -52,6 +54,7 @@ def get_coins_list_cached():
         data = response.json()
         _COINS_LIST_CACHE["data"] = data
         _COINS_LIST_CACHE["fetched_at"] = now
+        _COINS_LIST_CACHE_SET = set([coin["id"] for coin in data])
         return data
     except Exception:
         return jsonify({"error": "Internal server error"}), 502
@@ -1647,6 +1650,10 @@ def get_coin_data(coin_id: str):
 @jwt_required()
 def get_coin_sparkline(coin_id: str):
     try:
+        get_coins_list_cached()
+        if coin_id not in _COINS_LIST_CACHE_SET:
+            return jsonify({"error": f"Unknown coin id: {coin_id}"}), 404
+
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
         params = {
             "vs_currency": "usd",
@@ -1783,6 +1790,10 @@ def get_coin_OHLC_data(coin_id: str):
         Flask.Response: A JSON response containing the OHLC data for the specified coin.
     """
     try:
+        get_coins_list_cached()
+        if coin_id not in _COINS_LIST_CACHE_SET:
+            return jsonify({"error": f"Unknown coin id: {coin_id}"}), 404
+
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days=365"
 
         response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)
@@ -1808,6 +1819,10 @@ def get_coin_historical_data(coin_id: str):
         Flask.Response: A JSON response containing the historical market data.
     """
     try:
+        get_coins_list_cached()
+        if coin_id not in _COINS_LIST_CACHE_SET:
+            return jsonify({"error": f"Unknown coin id: {coin_id}"}), 404
+
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=365&interval=daily"
 
         response = requests.get(url, headers=COINGECKO_API_HEADERS, timeout=10)

@@ -530,16 +530,24 @@ def process_order():
     trigger_side_error = None
     if data["orderType"] == "limit" and data["transactionType"] == "buy":
         if data["price_per_unit"] > current_price:
-            trigger_side_error = "A limit buy price must be at or below the current market price."
+            trigger_side_error = (
+                "A limit buy price must be at or below the current market price."
+            )
     elif data["orderType"] == "limit" and data["transactionType"] == "sell":
         if data["price_per_unit"] < current_price:
-            trigger_side_error = "A limit sell price must be at or above the current market price."
+            trigger_side_error = (
+                "A limit sell price must be at or above the current market price."
+            )
     elif data["orderType"] == "stop" and data["transactionType"] == "buy":
         if data["price_per_unit"] < current_price:
-            trigger_side_error = "A stop buy price must be at or above the current market price."
+            trigger_side_error = (
+                "A stop buy price must be at or above the current market price."
+            )
     elif data["orderType"] == "stop" and data["transactionType"] == "sell":
         if data["price_per_unit"] > current_price:
-            trigger_side_error = "A stop sell price must be at or below the current market price."
+            trigger_side_error = (
+                "A stop sell price must be at or below the current market price."
+            )
 
     if trigger_side_error:
         return jsonify({"error": trigger_side_error}), 422

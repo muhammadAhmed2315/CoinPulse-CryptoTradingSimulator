@@ -119,6 +119,23 @@ export default function NewTradeCardRight({
   const userBalance = userBalanceQuery.data ?? 0;
   const coinBalance = coinBalanceQuery.data ?? 0;
 
+  const invalidLimitBuyOrderPrice =
+    orderSide === "BUY" &&
+    orderType === "LIMIT" &&
+    parseFloat(orderPrice) > (coinDataQuery.data?.current_price ?? 0);
+  const invalidLimitSellOrderPrice =
+    orderSide === "SELL" &&
+    orderType === "LIMIT" &&
+    parseFloat(orderPrice) < (coinDataQuery.data?.current_price ?? 0);
+  const invalidStopBuyOrderPrice =
+    orderSide === "BUY" &&
+    orderType === "STOP" &&
+    parseFloat(orderPrice) < (coinDataQuery.data?.current_price ?? 0);
+  const invalidStopSellOrderPrice =
+    orderSide === "SELL" &&
+    orderType === "STOP" &&
+    parseFloat(orderPrice) > (coinDataQuery.data?.current_price ?? 0);
+
   const placeOrderBtnDisabled =
     queryError ||
     (orderSide === "BUY" && parseFloat(usdAmount) > userBalance) ||
@@ -128,7 +145,11 @@ export default function NewTradeCardRight({
     parseFloat(usdAmount) === 0 ||
     usdAmount === "" ||
     parseFloat(coinAmount) === 0 ||
-    coinAmount === "";
+    coinAmount === "" ||
+    invalidLimitBuyOrderPrice ||
+    invalidLimitSellOrderPrice ||
+    invalidStopBuyOrderPrice ||
+    invalidStopSellOrderPrice;
 
   // ===== REACT QUERY HOOKS =====
   const invalidateTradeQueries = useInvalidateTradeQueries();
@@ -311,9 +332,7 @@ export default function NewTradeCardRight({
         TOTAL (USD)
       </p>
       <Field
-        data-invalid={
-          amountZero || parseFloat(usdAmount) > userBalance
-        }
+        data-invalid={amountZero || parseFloat(usdAmount) > userBalance}
         className="bg-muted mb-1 gap-1"
       >
         <InputGroup className="h-10">
@@ -397,6 +416,26 @@ export default function NewTradeCardRight({
           {orderPriceZero && (
             <p className="text-red-500">Price cannot be zero.</p>
           )}
+          {invalidLimitBuyOrderPrice && (
+            <p className="text-red-500">
+              Limit price must be below market price.
+            </p>
+          )}
+          {invalidLimitSellOrderPrice && !orderPriceZero && (
+            <p className="text-red-500">
+              Limit price must be above market price.
+            </p>
+          )}
+          {invalidStopBuyOrderPrice && !orderPriceZero && (
+            <p className="text-red-500">
+              Stop price must be above market price.
+            </p>
+          )}
+          {invalidStopSellOrderPrice && (
+            <p className="text-red-500">
+              Stop price must be below market price.
+            </p>
+          )}
           <div className="mb-4" />
         </>
       )}
@@ -406,9 +445,7 @@ export default function NewTradeCardRight({
         AMOUNT ({currCoin.ticker})
       </p>
       <Field
-        data-invalid={
-          amountZero || parseFloat(coinAmount) > coinBalance
-        }
+        data-invalid={amountZero || parseFloat(coinAmount) > coinBalance}
         className="bg-muted gap-1"
       >
         <InputGroup className="h-10">
@@ -429,12 +466,11 @@ export default function NewTradeCardRight({
         </InputGroup>
       </Field>
       {amountZero && <p className="text-red-500">Amount cannot be zero.</p>}
-      {orderSide === "SELL" &&
-        parseFloat(coinAmount) > coinBalance && (
-          <p className="text-red-500">
-            Not enough {currCoin.ticker.toUpperCase()} to sell.
-          </p>
-        )}
+      {orderSide === "SELL" && parseFloat(coinAmount) > coinBalance && (
+        <p className="text-red-500">
+          Not enough {currCoin.ticker.toUpperCase()} to sell.
+        </p>
+      )}
 
       <Separator className="mt-6 mb-4" />
 

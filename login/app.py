@@ -134,7 +134,15 @@ def resolve_oauth_user(provider, provider_id, email, email_verified):
     user = User(email=email, provider=provider, provider_id=provider_id)
     user.verified = True
     db.session.add(user)
-    db.session.commit()
+    db.session.flush()  # assigns user.id without committing
+
+    wallet = Wallet(user.id)
+    db.session.add(wallet)
+    db.session.flush()  # assigns wallet.id
+
+    db.session.add(ValueHistory(wallet.id))
+    db.session.commit()  # single atomic commit for all three
+
     return user, None
 
 
@@ -445,9 +453,8 @@ def pick_username():
     Behavior:
     - If the user already has a username, they are redirected to the dashboard.
     - On GET request: Displays the username selection form.
-    - On POST request: Validates the username's format and uniqueness, updates the
-                       user's profile, and initializes related models like Wallet and
-                       ValueHistory for the user.
+    - On POST request: Validates the username's format and uniqueness and updates the
+                       user's profile.
 
     Returns:
     - If the user already has a username: Redirects to the dashboard.
@@ -458,9 +465,9 @@ def pick_username():
     data = request.get_json()
     username = data["username"]
 
-    # A user may only pick a username (and be granted a wallet) once. Without this
-    # guard, a repeat call would overwrite the username and create a duplicate wallet
-    # for the same owner, resetting the user's balance to a fresh $1,000,000.
+    # A user may only set their username once. Without this guard, a repeat call
+    # would overwrite an already-chosen username. (The wallet is created at signup,
+    # not here, so this no longer affects the user's balance.)
     current = db.session.get(User, get_jwt_identity())
     if current is None:
         return {
@@ -505,14 +512,6 @@ def pick_username():
     user = db.session.get(User, user_id)
     user.update_username(username)
     db.session.add(user)
-    db.session.commit()
-
-    wallet = Wallet(user.id)
-    db.session.add(wallet)
-    db.session.commit()
-
-    valueHistory = ValueHistory(wallet.id)
-    db.session.add(valueHistory)
     db.session.commit()
 
     return {"success": "Username has been successfully picked"}, 200

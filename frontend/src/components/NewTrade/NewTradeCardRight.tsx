@@ -199,6 +199,20 @@ export default function NewTradeCardRight({
     return () => clearTimeout(id);
   }, [errorTimer]);
 
+  // Keep the displayed USD total in sync with the live price so the cost shown
+  // matches what will actually be charged at submit. This adjusts state during
+  // render (React's recommended alternative to a sync effect) and only fires
+  // when the PRICE moves — not when the user types — so it never clobbers an
+  // in-progress edit. https://react.dev/learn/you-might-not-need-an-effect
+  const [prevPrice, setPrevPrice] = useState(coinDataQuery.data?.current_price);
+  const livePrice = coinDataQuery.data?.current_price;
+  if (livePrice !== undefined && livePrice !== prevPrice) {
+    setPrevPrice(livePrice);
+    if (coinAmount !== "") {
+      setUsdAmount((parseFloat(coinAmount) * livePrice).toFixed(2));
+    }
+  }
+
   // ===== EVENT HANDLERS =====
   function handleUsdAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!coinDataQuery.data || !userBalanceQuery.data) return;

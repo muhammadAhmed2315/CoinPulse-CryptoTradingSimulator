@@ -19,7 +19,7 @@ from constants import (
     FLASK_ENV,
 )
 from extensions import db, jwt, login_manager, limiter
-from models import User
+from models import TokenBlocklist, User
 
 
 def create_app():
@@ -111,6 +111,18 @@ def create_app():
         400 "User claims verification failed". Return a clean 401 instead.
         """
         return jsonify({"error": "Unauthorised", "message": "Invalid token"}), 401
+
+    @jwt.token_in_blocklist_loader
+    def token_revoked(jwt_header, jwt_payload):
+        """
+        Consulted by every @jwt_required() request. Returns True if the token's JTI has
+        been revoked (refresh-token rotation on /refresh, or invalidation on /logout),
+        causing the request to be rejected with a 401.
+        """
+        jti = jwt_payload["jti"]
+        return (
+            db.session.query(TokenBlocklist.id).filter_by(jti=jti).first() is not None
+        )
 
     # Initialize database
     db.init_app(app)

@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import os
 import time
+import uuid
 from datetime import timedelta
 
 from flask import (
@@ -18,11 +19,13 @@ from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     decode_token,
+    get_jwt,
     get_jwt_identity,
     jwt_required,
     set_access_cookies,
     set_refresh_cookies,
     unset_jwt_cookies,
+    verify_jwt_in_request,
 )
 from flask_mail import Message
 from jwt.exceptions import (
@@ -53,7 +56,7 @@ from constants import (
     FLASK_ENV,
 )
 from extensions import db
-from models import User, ValueHistory, Wallet
+from models import TokenBlocklist, User, ValueHistory, Wallet
 
 user_authentication = Blueprint("user_authentication", __name__)
 
@@ -312,9 +315,27 @@ def login():
 @jwt_required(refresh=True)
 def refresh():
     identity = get_jwt_identity()
+
+    # Rotate the refresh token: revoke the presented one so it can no longer be used.
+    # Replaying a rotated refresh token is then rejected by the blocklist loader, which
+    # is how stolen-token reuse is detected.
+    claims = get_jwt()
+    db.session.add(
+        TokenBlocklist(
+            jti=claims["jti"],
+            token_type="refresh",
+            user_id=uuid.UUID(identity) if isinstance(identity, str) else identity,
+            expires_at=claims.get("exp"),
+        )
+    )
+    db.session.commit()
+
+    # Issue fresh access AND refresh tokens, and set both cookies.
     access_token = create_access_token(identity=identity)
+    refresh_token = create_refresh_token(identity=identity)
     response = make_response({"message": "Token refreshed"}, 200)
     set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
     return response
 
 
@@ -499,6 +520,28 @@ def pick_username():
 
 @user_authentication.route("/logout", methods=["get"])
 def logout():
+    # Best-effort revocation: if a valid refresh token is presented, blocklist its JTI
+    # so it cannot be reused after logout. Logout must never fail on a missing/expired
+    # cookie, so token verification is optional and cookies are always cleared.
+    try:
+        verify_jwt_in_request(refresh=True, optional=True)
+        claims = get_jwt()
+        if claims:
+            identity = get_jwt_identity()
+            db.session.add(
+                TokenBlocklist(
+                    jti=claims["jti"],
+                    token_type="refresh",
+                    user_id=(
+                        uuid.UUID(identity) if isinstance(identity, str) else identity
+                    ),
+                    expires_at=claims.get("exp"),
+                )
+            )
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+
     response = make_response({"message": "Logged out"}, 200)
     unset_jwt_cookies(response)
     return response

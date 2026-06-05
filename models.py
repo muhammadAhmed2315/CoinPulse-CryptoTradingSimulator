@@ -523,3 +523,47 @@ class TransactionLikes(db.Model):
         """
         if user_id in self.liked_by_user_ids:
             self.liked_by_user_ids.remove(user_id)
+
+
+class TokenBlocklist(db.Model):
+    """
+    TokenBlocklist model class (for the database) that stores the JTIs of revoked JWTs.
+
+    A token is revoked when its JTI is present in this table. The blocklist is consulted
+    by the @jwt.token_in_blocklist_loader callback on every @jwt_required() request, so
+    any revoked access or refresh token is rejected. Refresh tokens are added here when
+    they are rotated (on /refresh) or invalidated (on /logout).
+
+    Attributes:
+        id: Unique identifier for the blocklist entry, serves as the primary key
+        jti: The unique identifier (JTI claim) of the revoked token
+        token_type: The type of the revoked token (e.g. "access" or "refresh")
+        user_id: The ID of the user the token was issued to (supports bulk revocation)
+        created_at: Unix timestamp of when the token was revoked
+        expires_at: Unix timestamp of the token's natural expiry (for later cleanup)
+    """
+
+    __tablename__ = "token_blocklist"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    jti = db.Column(db.String(36), nullable=False, unique=True, index=True)
+    token_type = db.Column(db.String(16), nullable=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), index=True)
+    created_at = db.Column(db.Integer, nullable=False)
+    expires_at = db.Column(db.Integer, nullable=True)
+
+    def __init__(self, jti, token_type=None, user_id=None, expires_at=None):
+        """
+        Initialize a TokenBlocklist instance.
+
+        Args:
+            jti (str): The JTI claim of the token being revoked.
+            token_type (str): The type of token (e.g. "access" or "refresh").
+            user_id (UUID): The ID of the user the token was issued to.
+            expires_at (int): Unix timestamp of the token's natural expiry.
+        """
+        self.jti = jti
+        self.token_type = token_type
+        self.user_id = user_id
+        self.created_at = int(time.time())
+        self.expires_at = expires_at

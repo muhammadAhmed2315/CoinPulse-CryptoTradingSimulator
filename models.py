@@ -1,5 +1,6 @@
 import time
 import uuid
+from decimal import Decimal
 
 from flask_login import UserMixin
 from sqlalchemy import ARRAY, Boolean
@@ -8,6 +9,7 @@ from sqlalchemy.ext.mutable import MutableDict, MutableList
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
+from money import D, DUST_QTY, qty_get, qty_set, quantize_qty, quantize_usd
 
 
 class User(db.Model, UserMixin):
@@ -131,10 +133,15 @@ class Wallet(db.Model):
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     balance = db.Column(
-        db.Float, default=1000000, server_default="1000000", nullable=False
+        db.Numeric(20, 8),
+        default=Decimal("1000000"),
+        server_default="1000000",
+        nullable=False,
     )
     assets = db.Column(MutableDict.as_mutable(JSONB), default={}, nullable=False)
-    reserved_balance = db.Column(db.Float, default=0.0, nullable=False)
+    reserved_balance = db.Column(
+        db.Numeric(20, 8), default=Decimal("0"), nullable=False
+    )
     reserved_assets = db.Column(
         MutableDict.as_mutable(JSONB), default=dict, nullable=False
     )
@@ -142,7 +149,9 @@ class Wallet(db.Model):
         db.Integer, default=lambda: int(time.time()), nullable=False
     )
     status = db.Column(db.Text, default="active", nullable=False)
-    total_current_value = db.Column(db.Float, default=0.0, nullable=False)
+    total_current_value = db.Column(
+        db.Numeric(20, 8), default=Decimal("0"), nullable=False
+    )
     owner_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), unique=True)
     transactions = db.relationship("Transaction", backref="wallet", lazy="dynamic")
     value_history = db.relationship("ValueHistory", backref="wallet", uselist=False)
@@ -156,118 +165,78 @@ class Wallet(db.Model):
         """
         self.owner_id = owner_id
 
-    def update_balance_add(self, amount: float):
-        """
-        Adds a specified amount to the wallet's balance.
+    def update_balance_add(self, amount):
+        """Adds a specified amount (USD) to the wallet's balance."""
+        self.balance = D(self.balance) + D(amount)
 
-        Parameters:
-            amount (float): The amount to add to the balance.
-        """
-        self.balance += amount
+    def update_balance_subtract(self, amount):
+        """Subtracts a specified amount (USD) from the wallet's balance."""
+        self.balance = D(self.balance) - D(amount)
 
-    def update_balance_subtract(self, amount: float):
-        """
-        Subtracts a specified amount from the wallet's balance.
+    def update_assets_add(self, coin_id: str, quantity):
+        """Adds a specified quantity of a coin to the wallet's assets."""
+        qty_set(self.assets, coin_id, qty_get(self.assets, coin_id) + D(quantity))
 
-        Parameters:
-            amount (float): The amount to subtract from the balance.
-        """
-        self.balance -= amount
-
-    def update_assets_add(self, coin_id: str, quantity: float):
-        """
-        Adds a specified quantity of a coin to the wallet's assets.
-
-        Parameters:
-            coin_id (str): The identifier for the coin.
-            quantity (float): The amount of the coin to add.
-        """
-        if coin_id in self.assets:
-            self.assets[coin_id] += quantity
-        else:
-            self.assets[coin_id] = quantity
-
-    def update_assets_subtract(self, coin_id: str, quantity: float):
+    def update_assets_subtract(self, coin_id: str, quantity):
         """
         Subtracts a specified quantity of a coin from the wallet's assets.
 
-        Parameters:
-            coin_id (str): The identifier for the coin.
-            quantity (float): The amount of the coin to subtract.
-
-        Note:
-            If subtracting the quantity results in zero holdings of the coin,
-            it is removed from the assets dictionary.
+        If the resulting holding is dust-or-below, the coin is removed from the
+        dictionary so a sell-to-zero doesn't leave a stray key behind.
         """
-        # If transaction results in User owning ~0 of the coin, then remove the coin
-        # from the assets dictionary. Use an epsilon comparison rather than exact
-        # equality so floating-point error doesn't leave behind tiny dust holdings.
-        remaining = self.assets[coin_id] - quantity
-        if remaining <= 1e-8:
-            self.assets.pop(coin_id)
+        remaining = qty_get(self.assets, coin_id) - D(quantity)
+        if remaining <= DUST_QTY:
+            self.assets.pop(coin_id, None)
         else:
-            self.assets[coin_id] = remaining
+            qty_set(self.assets, coin_id, remaining)
 
-    def has_enough_balance(self, amount: float):
-        """
-        Determines if the wallet has enough balance for a transaction.
+    def has_enough_balance(self, amount):
+        """True if the wallet's balance covers the amount (USD)."""
+        return D(self.balance) >= D(amount)
 
-        Parameters:
-            amount (float): The amount to check against the wallet's balance.
-
-        Returns:
-            bool: True if the wallet has enough balance, False otherwise.
-        """
-        return self.balance >= amount
-
-    def has_enough_coins(self, coin_id: str, coin_quantity: float):
-        """
-        Determines if the wallet has enough of a specific coin for a transaction.
-
-        Parameters:
-            coin_id (str): The identifier for the coin to check.
-            coin_quantity (float): The quantity of the coin to check.
-
-        Returns:
-            bool: True if the wallet has enough of the specified coin, False otherwise.
-        """
-        return self.assets.get(coin_id, 0) >= coin_quantity
+    def has_enough_coins(self, coin_id: str, coin_quantity):
+        """True if the wallet holds at least coin_quantity of the coin."""
+        return qty_get(self.assets, coin_id) >= D(coin_quantity)
 
     def available_balance(self):
         """Returns the spendable USD balance (total balance minus reserved funds)."""
-        return self.balance - self.reserved_balance
+        return D(self.balance) - D(self.reserved_balance)
 
     def available_coins(self, coin_id):
         """Returns the spendable quantity of a coin (holdings minus reserved coins)."""
-        return self.assets.get(coin_id, 0) - self.reserved_assets.get(coin_id, 0)
+        return qty_get(self.assets, coin_id) - qty_get(self.reserved_assets, coin_id)
 
     def has_enough_available_balance(self, amount):
         """Returns True if available (unreserved) USD balance covers the amount."""
-        return self.available_balance() >= amount
+        return self.available_balance() >= D(amount)
 
     def has_enough_available_coins(self, coin_id, quantity):
         """Returns True if available (unreserved) holdings cover the quantity."""
-        return self.available_coins(coin_id) >= quantity
+        return self.available_coins(coin_id) >= D(quantity)
 
     def reserve_balance(self, amount):
         """Reserves USD against the wallet for an open buy order."""
-        self.reserved_balance += amount
+        self.reserved_balance = D(self.reserved_balance) + D(amount)
 
     def release_balance(self, amount):
         """Releases previously reserved USD (clamped at zero)."""
-        self.reserved_balance = max(0.0, self.reserved_balance - amount)
+        self.reserved_balance = max(D(0), D(self.reserved_balance) - D(amount))
 
     def reserve_coins(self, coin_id, quantity):
         """Reserves a quantity of a coin against the wallet for an open sell order."""
-        self.reserved_assets[coin_id] = self.reserved_assets.get(coin_id, 0) + quantity
+        qty_set(
+            self.reserved_assets,
+            coin_id,
+            qty_get(self.reserved_assets, coin_id) + D(quantity),
+        )
 
     def release_coins(self, coin_id, quantity):
         """Releases previously reserved coins, removing the key when it reaches ~0."""
-        remaining = self.reserved_assets.get(coin_id, 0) - quantity
-        if remaining <= 1e-8:
+        remaining = qty_get(self.reserved_assets, coin_id) - D(quantity)
+        if remaining <= DUST_QTY:
             self.reserved_assets.pop(coin_id, None)
         else:
-            self.reserved_assets[coin_id] = remaining
+            qty_set(self.reserved_assets, coin_id, remaining)
 
 
 class ValueHistory(db.Model):
@@ -294,13 +263,16 @@ class ValueHistory(db.Model):
         unique=True,
     )
     balance_history = db.Column(
-        MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [1000000]
+        MutableList.as_mutable(ARRAY(db.Numeric(20, 8))),
+        default=lambda: [Decimal("1000000")],
     )
     assets_value_history = db.Column(
-        MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [0]
+        MutableList.as_mutable(ARRAY(db.Numeric(20, 8))),
+        default=lambda: [Decimal("0")],
     )
     total_value_history = db.Column(
-        MutableList.as_mutable(ARRAY(db.Float)), default=lambda: [1000000]
+        MutableList.as_mutable(ARRAY(db.Numeric(20, 8))),
+        default=lambda: [Decimal("1000000")],
     )
     timestamps = db.Column(
         MutableList.as_mutable(ARRAY(db.Integer)), default=lambda: [int(time.time())]
@@ -328,9 +300,11 @@ class ValueHistory(db.Model):
             time (int): The UNIX timestamp (in seconds) of when the values were
                         recorded.
         """
-        self.balance_history.append(balance_value)
-        self.assets_value_history.append(assets_value)
-        self.total_value_history.append(balance_value + assets_value)
+        self.balance_history.append(quantize_usd(D(balance_value)))
+        self.assets_value_history.append(quantize_usd(D(assets_value)))
+        self.total_value_history.append(
+            quantize_usd(D(balance_value) + D(assets_value))
+        )
         self.timestamps.append(time)
 
 
@@ -369,13 +343,13 @@ class Transaction(db.Model):
     orderType = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.Integer, default=lambda: int(time.time()), nullable=False)
     coin_id = db.Column(db.Text, nullable=False)
-    quantity = db.Column(db.Float, nullable=False)
-    price_per_unit = db.Column(db.Float, nullable=False)
-    price_per_unit_at_execution = db.Column(db.Float, default=-1)
+    quantity = db.Column(db.Numeric(38, 18), nullable=False)
+    price_per_unit = db.Column(db.Numeric(20, 8), nullable=False)
+    price_per_unit_at_execution = db.Column(db.Numeric(20, 8), default=Decimal("-1"))
     comment = db.Column(db.Text)
-    balance_before = db.Column(db.Float, nullable=False)
-    balance_after = db.Column(db.Float)
-    total_value = db.Column(db.Float, nullable=False)
+    balance_before = db.Column(db.Numeric(20, 8), nullable=False)
+    balance_after = db.Column(db.Numeric(20, 8))
+    total_value = db.Column(db.Numeric(20, 8), nullable=False)
     likes = db.relationship("TransactionLikes", backref="transaction", uselist=False)
     visibility = db.Column(db.Boolean, nullable=False)
     wallet_id = db.Column(UUID(as_uuid=True), db.ForeignKey("wallets.id"))
@@ -399,19 +373,23 @@ class Transaction(db.Model):
         self.transactionType = transactionType
         self.orderType = orderType
         self.coin_id = coin_id
-        self.quantity = quantity
+        self.quantity = quantize_qty(D(quantity))
         self.comment = comment
-        self.price_per_unit = price_per_unit
+        self.price_per_unit = quantize_usd(D(price_per_unit))
         self.wallet_id = wallet_id
-        self.total_value = quantity * price_per_unit
-        self.balance_before = balance_before
+        self.total_value = quantize_usd(D(quantity) * D(price_per_unit))
+        self.balance_before = quantize_usd(D(balance_before))
 
         if orderType == "market":
-            self.price_per_unit_at_execution = price_per_unit
+            self.price_per_unit_at_execution = quantize_usd(D(price_per_unit))
             if transactionType == "buy":
-                self.balance_after = balance_before - (quantity * price_per_unit)
+                self.balance_after = quantize_usd(
+                    D(balance_before) - D(quantity) * D(price_per_unit)
+                )
             elif transactionType == "sell":
-                self.balance_after = balance_before + (quantity * price_per_unit)
+                self.balance_after = quantize_usd(
+                    D(balance_before) + D(quantity) * D(price_per_unit)
+                )
         elif orderType == "limit" or orderType == "stop":
             self.price_per_unit_at_execution = None
             self.balance_after = None
@@ -452,15 +430,15 @@ class Transaction(db.Model):
             price_per_unit_at_execution (float): The price per unit at which the order
                                                  is executed.
         """
-        self.price_per_unit_at_execution = price_per_unit_at_execution
+        self.price_per_unit_at_execution = quantize_usd(D(price_per_unit_at_execution))
 
         if self.transactionType == "buy":
-            self.balance_after = self.balance_before - (
-                self.quantity * price_per_unit_at_execution
+            self.balance_after = quantize_usd(
+                D(self.balance_before) - D(self.quantity) * D(price_per_unit_at_execution)
             )
         elif self.transactionType == "sell":
-            self.balance_after = self.balance_before + (
-                self.quantity * price_per_unit_at_execution
+            self.balance_after = quantize_usd(
+                D(self.balance_before) + D(self.quantity) * D(price_per_unit_at_execution)
             )
         self.status = "finished"
 
@@ -469,7 +447,7 @@ class Transaction(db.Model):
         Cancels an open order and sets the user's balance_after to "N/A". Also updates
         the transaction status to "cancelled".
         """
-        self.balance_after = -1
+        self.balance_after = Decimal("-1")
         self.status = "cancelled"
 
 

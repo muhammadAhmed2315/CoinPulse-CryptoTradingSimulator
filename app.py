@@ -2,12 +2,28 @@ import os
 import threading
 import uuid
 from datetime import timedelta
+from decimal import Decimal
 
 from flask import Flask, jsonify, send_from_directory
+from flask.json.provider import DefaultJSONProvider
 from flask_compress import Compress
 from flask_cors import CORS
 from flask_mail import Mail
 from flask_migrate import Migrate
+
+
+class DecimalJSONProvider(DefaultJSONProvider):
+    """JSON provider that serializes ``Decimal`` (our exact-money type) as a
+    float on the wire, so existing frontend code (parseFloat, numeric sorting)
+    keeps working unchanged. Money stays exact in the database and in every
+    server-side calculation; only the final serialized representation is a float.
+    """
+
+    @staticmethod
+    def default(o):
+        if isinstance(o, Decimal):
+            return float(o)
+        return DefaultJSONProvider.default(o)
 
 from constants import (
     JWT_ACCESS_TOKEN_EXPIRES_HOURS,
@@ -35,6 +51,8 @@ def create_app():
     """
     # Initialize Flask app
     app = Flask(__name__)
+    # Serialize Decimal money values as floats for the frontend (see provider).
+    app.json = DecimalJSONProvider(app)
     CORS(
         app,
         supports_credentials=True,

@@ -23,6 +23,7 @@ from constants import (
 )
 from extensions import db
 from models import Transaction, TransactionLikes, User, Wallet
+from money import D, qty_get
 from RedditScraper.RedditScraper import RedditScraper
 
 core = Blueprint("core", __name__)
@@ -466,22 +467,35 @@ def process_order():
             422,
         )
 
+    # All money/quantity math below runs in Decimal. Convert the validated request
+    # values once here so the float values from JSON never enter the ledger.
+    data["quantity"] = D(data["quantity"])
+    data["price_per_unit"] = D(data["price_per_unit"])
+
     # Validate that the coin exists and get its current price
     try:
         market_data = get_coins_data(data["coin_id"])
-        current_price = market_data[0]["current_price"]
+        raw_price = market_data[0]["current_price"]
     except (requests.RequestException, IndexError, KeyError, TypeError, ValueError):
         return (
             jsonify({"error": "Invalid coin_id. Coin does not exist."}),
             422,
         )
 
-    # CoinGecko can return a null/zero price for unknown or delisted coins
-    if not isinstance(current_price, (int, float)) or current_price <= 0:
+    # CoinGecko can return a null/zero price for unknown or delisted coins. Validate
+    # the raw number, then convert into the Decimal ledger domain.
+    if (
+        not isinstance(raw_price, (int, float))
+        or isinstance(raw_price, bool)
+        or not math.isfinite(raw_price)
+        or raw_price <= 0
+    ):
         return (
             jsonify({"error": "No valid market price for this coin"}),
             422,
         )
+
+    current_price = D(raw_price)
 
     # Validate unfavourable slippage tolerance for market orders
     if data["orderType"] == "market":
@@ -1013,7 +1027,7 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                     data = response.json()
 
                     for coin in data:
-                        coin_market_prices[coin["id"]] = coin["current_price"]
+                        coin_market_prices[coin["id"]] = D(coin["current_price"])
                 except Exception:
                     continue
 
@@ -1038,7 +1052,7 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                     missing = [
                         key
                         for key in wallet.assets
-                        if wallet.assets[key] and key not in coin_market_prices
+                        if qty_get(wallet.assets, key) and key not in coin_market_prices
                     ]
                     if missing:
                         logging.warning(
@@ -1049,11 +1063,11 @@ def update_user_wallet_value_in_background(current_wallet_id=None):
                         continue
 
                     # Get current total value of assets
-                    curr_assets_value = 0
+                    curr_assets_value = D(0)
                     for key in wallet.assets:
                         if key in coin_market_prices:
                             curr_assets_value += (
-                                wallet.assets[key] * coin_market_prices[key]
+                                qty_get(wallet.assets, key) * coin_market_prices[key]
                             )
 
                     wallet.value_history.update_value_history(
@@ -1228,7 +1242,7 @@ def update_open_trades_in_background():
                     continue
 
                 for coin in data:
-                    coin_market_prices[coin["id"]] = coin["current_price"]
+                    coin_market_prices[coin["id"]] = D(coin["current_price"])
 
             # Update each open trade, seeing if it can be closed. Each trade is
             # processed under a row-level lock on its wallet and committed
@@ -1406,9 +1420,9 @@ def get_wallet_assets():
         # Merge market data and wallet assets data
         data = [
             {
-                "amount": val,
+                "amount": D(val),
                 **coin_market_data[c],
-                "totalValue": val * coin_market_data[c]["current_price"],
+                "totalValue": D(val) * D(coin_market_data[c]["current_price"]),
             }
             for c, val in current_assets.items()
         ]
@@ -1731,7 +1745,7 @@ def get_coin_balance(coin_id: str):
     user = User.query.filter_by(id=user_id).first()
 
     # Get coin balance from curent user's wallet corresponding with the coin_id
-    coin_balance = user.wallet.assets.get(coin_id, 0)
+    coin_balance = qty_get(user.wallet.assets, coin_id)
     data = jsonify(coin_balance)
 
     return data, 200

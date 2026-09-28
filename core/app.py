@@ -484,7 +484,10 @@ def process_order():
     try:
         market_data = get_coins_data(data["coin_id"])
         raw_price = market_data[0]["current_price"]
-    except (requests.RequestException, IndexError, KeyError, TypeError, ValueError):
+    except MarketDataUnavailable:
+        logging.exception("Market data unavailable while processing order")
+        return jsonify({"error": "Market data temporarily unavailable"}), 503
+    except (IndexError, KeyError, TypeError):
         return (
             jsonify({"error": "Invalid coin_id. Coin does not exist."}),
             422,
@@ -1367,20 +1370,29 @@ def update_open_trades_in_background():
         time.sleep(max(0, OPEN_TRADE_UPDATE_INTERVAL_SECONDS - elapsed))
 
 
-def get_coins_data(coin_ids: str, precision: int | None = None):
-    try:
-        url = "https://api.coingecko.com/api/v3/coins/markets"
-        params = {"vs_currency": "usd", "ids": coin_ids}
-        if precision:
-            params = {**params, "precision": precision}
+class MarketDataUnavailable(Exception):
+    """Raised when CoinGecko market data can't be fetched (network error, rate
+    limit/quota exhausted, or an unexpected response body)."""
 
+
+def get_coins_data(coin_ids: str, precision: int | None = None):
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {"vs_currency": "usd", "ids": coin_ids}
+    if precision:
+        params = {**params, "precision": precision}
+
+    try:
         response = requests.get(
             url, params=params, headers=COINGECKO_API_HEADERS, timeout=10
         )
+        response.raise_for_status()
         data = response.json()
+    except (requests.RequestException, ValueError) as e:
+        raise MarketDataUnavailable(str(e)) from e
 
-    except Exception as e:
-        raise e
+    # A rate-limit/error body may be a dict rather than the expected list
+    if not isinstance(data, list):
+        raise MarketDataUnavailable(f"Unexpected CoinGecko response: {data}")
 
     return data
 
@@ -1448,6 +1460,9 @@ def get_wallet_assets():
         # Sort by totalValue
         data.sort(key=lambda x: -x["totalValue"])
 
+    except MarketDataUnavailable:
+        logging.exception("Market data unavailable for wallet assets")
+        return jsonify({"error": "Market data temporarily unavailable"}), 503
     except Exception:
         logging.exception("Failed to retrieve wallet assets")
         return jsonify({"error": "Internal server error"}), 500
@@ -1513,6 +1528,9 @@ def get_open_trades():
             coin["name"] = coins_data[coin["coin_id"]][3]
 
         return jsonify(res), 200
+    except MarketDataUnavailable:
+        logging.exception("Market data unavailable for open trades")
+        return jsonify({"error": "Market data temporarily unavailable"}), 503
     except Exception:
         logging.exception("get_open_trades failed")
         return jsonify({"error": "Internal server error"}), 502
